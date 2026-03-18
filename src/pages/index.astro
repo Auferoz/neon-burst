@@ -1,11 +1,14 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 ---
 
 <Layout>
-	<Welcome />
+	<section class="container p-4">
+		<div class="flex flex-col items-center justify-center gap-4">
+			<h1>Inicio - Neon Burst</h1>
+			<a href="/playedGames">Juegos Jugados</a>
+			<a href="/mySteamGames">mis Juegos de Steam</a>
+			<a href="/nextGames">Próximos Juegos</a>
+		</div>
+	</section>
 </Layout>
