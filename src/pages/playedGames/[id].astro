@@ -1,0 +1,438 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import { getGameById } from '../../services/gamesService';
+import GameEditButton from '../../components/Vue/GameEditButton.vue';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const game = await getGameById(env.DB, Number(id));
+
+if (!game) {
+	return Astro.redirect('/playedGames');
+}
+
+function igdbImage(imageId: string, size: string) {
+	if (!imageId) return '';
+	const clean = imageId.replace(/\.\w+$/, '');
+	return `https://images.igdb.com/igdb/image/upload/t_${size}/${clean}.webp`;
+}
+
+const posterUrl = igdbImage(game.poster, 'cover_big_2x');
+const artworkUrl = igdbImage(game.artworks, 'screenshot_huge');
+const trailerUrl = game.trailer || '';
+
+const estadoColor: Record<string, string> = {
+	Completado: 'text-neon-green border-neon-green/30 bg-neon-green/10',
+	Abandonado: 'text-neon-pink border-neon-pink/30 bg-neon-pink/10',
+	Jugando: 'text-neon-blue border-neon-blue/30 bg-neon-blue/10',
+	Pausado: 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10',
+};
+
+const logrosPercent = game.logros_total > 0
+	? Math.round((game.logros_obt / game.logros_total) * 100)
+	: 0;
+
+const genres = game.genre ? game.genre.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+const totalHoras = game.dates_played.reduce((sum, d) => sum + (d.horas || 0), 0);
+const hasTrailer = !!trailerUrl;
+const hasArtwork = !!artworkUrl;
+const hasMedia = hasTrailer || hasArtwork;
+---
+
+<Layout title={`Neon Burst | ${game.title}`}>
+	<!-- Top bar -->
+	<div class="flex items-center justify-between mb-6">
+		<a
+			href="/playedGames"
+			class="inline-flex items-center gap-2 text-sm text-text-muted hover:text-neon-blue transition-colors duration-200 group"
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-0.5 transition-transform duration-200">
+				<polyline points="15 18 9 12 15 6" />
+			</svg>
+			Volver a la lista
+		</a>
+		<GameEditButton client:load game={JSON.parse(JSON.stringify(game))} />
+	</div>
+
+	<!-- Hero section with artwork background -->
+	<div class="relative rounded-2xl overflow-hidden mb-8">
+		{artworkUrl && (
+			<div class="absolute inset-0 z-0">
+				<img
+					src={artworkUrl}
+					alt=""
+					class="w-full h-full object-cover object-top opacity-40"
+				/>
+				<div class="absolute inset-0 bg-gradient-to-t from-surface-0 via-surface-0/85 to-surface-0/50" />
+			</div>
+		)}
+
+		<div class="relative z-10 flex flex-col sm:flex-row gap-6 p-6 sm:p-8">
+			<!-- Poster with view transition -->
+			<div class="shrink-0 self-center sm:self-start">
+				{posterUrl ? (
+					<img
+						src={posterUrl}
+						alt={game.title}
+						class="w-36 sm:w-44 rounded-xl object-cover aspect-[3/4] bg-surface-3 shadow-lg shadow-black/30"
+						style={`view-transition-name: poster-${game.id};`}
+						width="176"
+						height="235"
+					/>
+				) : (
+					<div class="w-36 sm:w-44 rounded-xl aspect-[3/4] bg-surface-3 flex items-center justify-center text-text-muted text-sm">
+						?
+					</div>
+				)}
+			</div>
+
+			<!-- Game info -->
+			<div class="flex-1 min-w-0 flex flex-col justify-center">
+				<!-- Title + Estado -->
+				<div class="flex flex-wrap items-start gap-3 mb-3">
+					<h1 class="text-2xl sm:text-3xl font-bold text-text-primary leading-tight">{game.title}</h1>
+					<span class:list={[
+						'shrink-0 text-xs font-medium px-3 py-1 rounded-lg border',
+						estadoColor[game.estado] || 'text-text-muted border-border-default bg-surface-2'
+					]}>
+						{game.estado}
+					</span>
+				</div>
+
+				<!-- Meta row -->
+				<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary mb-4">
+					{game.companie && <span>{game.companie}</span>}
+					{game.companie && game.released && <span class="text-border-hover">&middot;</span>}
+					{game.released && <span>{game.released}</span>}
+					<span class="text-border-hover">&middot;</span>
+					<span>{game.console_pc}</span>
+				</div>
+
+				<!-- Genre tags -->
+				{genres.length > 0 && (
+					<div class="flex flex-wrap gap-1.5 mb-4">
+						{genres.map((g: string) => (
+							<span class="text-xs text-text-muted bg-surface-3/80 border border-border-default px-2.5 py-1 rounded-md">
+								{g}
+							</span>
+						))}
+					</div>
+				)}
+
+				<!-- Stats row -->
+				<div class="flex flex-wrap gap-4 text-sm">
+					<div class="flex items-center gap-2">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-neon-cyan">
+							<circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+						</svg>
+						<span class="text-text-secondary">{game.horas_total}h totales</span>
+					</div>
+					{game.logros_total > 0 && (
+						<div class="flex items-center gap-2">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-neon-yellow">
+								<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7" />
+								<path d="M4 22h16" /><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+								<path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+								<path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+							</svg>
+							<span class="text-text-secondary">{game.logros_obt}/{game.logros_total} logros ({logrosPercent}%)</span>
+						</div>
+					)}
+				</div>
+
+				<!-- Ratings -->
+				{(game.rating_metacritic || game.rating_rawg) && (
+					<div class="flex flex-wrap gap-3 mt-4">
+						{game.rating_metacritic && (
+							<div class="flex items-center gap-2">
+								<span class:list={[
+									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border',
+									game.rating_metacritic >= 75 ? 'text-neon-green border-neon-green/30 bg-neon-green/10' :
+									game.rating_metacritic >= 50 ? 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10' :
+									'text-neon-pink border-neon-pink/30 bg-neon-pink/10'
+								]}>
+									{game.rating_metacritic}
+								</span>
+								<span class="text-xs text-text-muted">Metacritic</span>
+							</div>
+						)}
+						{game.rating_rawg && (
+							<div class="flex items-center gap-2">
+								<span class:list={[
+									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border',
+									game.rating_rawg >= 4.0 ? 'text-neon-green border-neon-green/30 bg-neon-green/10' :
+									game.rating_rawg >= 3.0 ? 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10' :
+									'text-neon-pink border-neon-pink/30 bg-neon-pink/10'
+								]}>
+									{game.rating_rawg}
+								</span>
+								<span class="text-xs text-text-muted">RAWG</span>
+							</div>
+						)}
+					</div>
+				)}
+			</div>
+		</div>
+	</div>
+
+	<!-- Content grid -->
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+		<!-- Left column (2/3) -->
+		<div class="lg:col-span-2 space-y-6">
+			<!-- Description -->
+			{game.description && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Descripción</h2>
+					<div class="h-px bg-gradient-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
+					<p class="text-sm text-text-secondary leading-relaxed whitespace-pre-line">{game.description}</p>
+				</div>
+			)}
+
+			<!-- Media: Trailer + Artwork tabs -->
+			{hasMedia && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6" id="media-card">
+					<!-- Tabs -->
+					<div class="flex gap-1 mb-4" role="tablist" aria-label="Media">
+						{hasTrailer && (
+							<button
+								role="tab"
+								aria-selected="true"
+								aria-controls="panel-trailer"
+								id="tab-trailer"
+								class="media-tab active px-4 py-2 text-xs font-medium rounded-lg border transition-colors duration-200 cursor-pointer"
+								data-tab="trailer"
+							>
+								<span class="flex items-center gap-1.5">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+										<polygon points="6 3 20 12 6 21 6 3" />
+									</svg>
+									Trailer
+								</span>
+							</button>
+						)}
+						{hasArtwork && (
+							<button
+								role="tab"
+								aria-selected={!hasTrailer ? 'true' : 'false'}
+								aria-controls="panel-artwork"
+								id="tab-artwork"
+								class:list={['media-tab px-4 py-2 text-xs font-medium rounded-lg border transition-colors duration-200 cursor-pointer', !hasTrailer && 'active']}
+								data-tab="artwork"
+							>
+								<span class="flex items-center gap-1.5">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+										<rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" />
+										<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+									</svg>
+									Artwork
+								</span>
+							</button>
+						)}
+					</div>
+
+					<!-- Trailer panel -->
+					{hasTrailer && (
+						<div
+							id="panel-trailer"
+							role="tabpanel"
+							aria-labelledby="tab-trailer"
+							class="media-panel"
+						>
+							<div class="relative aspect-video rounded-lg overflow-hidden bg-surface-3">
+								<iframe
+									src={`https://www.youtube.com/embed/${trailerUrl}`}
+									title={`Trailer de ${game.title}`}
+									class="absolute inset-0 w-full h-full"
+									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+									allowfullscreen
+									loading="lazy"
+								/>
+							</div>
+						</div>
+					)}
+
+					<!-- Artwork panel -->
+					{hasArtwork && (
+						<div
+							id="panel-artwork"
+							role="tabpanel"
+							aria-labelledby="tab-artwork"
+							class:list={['media-panel', hasTrailer && 'hidden']}
+						>
+							<img
+								src={artworkUrl}
+								alt={`Artwork de ${game.title}`}
+								class="w-full rounded-lg object-cover"
+								loading="lazy"
+							/>
+						</div>
+					)}
+				</div>
+			)}
+		</div>
+
+		<!-- Right column (1/3): Logros → Detalles → Historial -->
+		<div class="space-y-6">
+			<!-- Logros -->
+			{game.logros_total > 0 && (
+				<div class="border border-border-default rounded-xl p-5">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Logros</h2>
+					<div class="h-px bg-gradient-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
+					<div class="flex items-end justify-between mb-2">
+						<span class="text-3xl font-bold text-neon-blue">{logrosPercent}%</span>
+						<span class="text-xs text-text-muted">{game.logros_obt} de {game.logros_total}</span>
+					</div>
+					<div class="h-2 bg-surface-3 rounded-full overflow-hidden">
+						<div
+							class="h-full bg-neon-blue rounded-full transition-all duration-500"
+							style={`width: ${logrosPercent}%;`}
+						/>
+					</div>
+				</div>
+			)}
+
+			<!-- Detalles técnicos -->
+			<div class="border border-border-default rounded-xl p-5">
+				<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Detalles</h2>
+				<div class="h-px bg-gradient-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
+				<dl class="space-y-3 text-sm">
+					<div class="flex justify-between">
+						<dt class="text-text-muted">Plataforma</dt>
+						<dd class="text-text-primary font-medium">{game.console_pc}</dd>
+					</div>
+					{game.companie && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Compañía</dt>
+							<dd class="text-text-primary font-medium">{game.companie}</dd>
+						</div>
+					)}
+					{game.released && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Lanzamiento</dt>
+							<dd class="text-text-primary font-medium">{game.released}</dd>
+						</div>
+					)}
+					{game.first_year_played && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Primer año jugado</dt>
+							<dd class="text-text-primary font-medium">{game.first_year_played}</dd>
+						</div>
+					)}
+					{game.rating_metacritic && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Metacritic</dt>
+							<dd class:list={[
+								'font-bold',
+								game.rating_metacritic >= 75 ? 'text-neon-green' :
+								game.rating_metacritic >= 50 ? 'text-neon-yellow' : 'text-neon-pink'
+							]}>{game.rating_metacritic}</dd>
+						</div>
+					)}
+					{game.rating_rawg && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">RAWG</dt>
+							<dd class:list={[
+								'font-bold',
+								game.rating_rawg >= 4.0 ? 'text-neon-green' :
+								game.rating_rawg >= 3.0 ? 'text-neon-yellow' : 'text-neon-pink'
+							]}>{game.rating_rawg}</dd>
+						</div>
+					)}
+					{game.igdb_id && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">IGDB</dt>
+							<dd>
+								<a
+									href={`https://www.igdb.com/games/${game.igdb_id}`}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-neon-blue hover:underline text-xs"
+								>
+									Ver en IGDB
+								</a>
+							</dd>
+						</div>
+					)}
+				</dl>
+			</div>
+
+			<!-- Historial de juego -->
+			<div class="border border-border-default rounded-xl p-5">
+				<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Historial</h2>
+				<div class="h-px bg-gradient-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
+
+				{game.dates_played.length > 0 ? (
+					<div class="space-y-3">
+						{game.dates_played.map((d) => (
+							<div class="flex items-center justify-between py-2 border-b border-border-default last:border-0">
+								<div>
+									<div class="text-sm font-semibold text-text-primary">{d.year}</div>
+									<div class="text-[11px] text-text-muted">
+										{d.fecha_inicio || '—'} → {d.fecha_final || 'en curso'}
+									</div>
+								</div>
+								<span class="text-xs text-neon-cyan font-medium">{d.horas}h</span>
+							</div>
+						))}
+						<div class="flex items-center justify-between pt-2 border-t border-border-hover">
+							<span class="text-xs text-text-muted uppercase tracking-wider">Total</span>
+							<span class="text-sm font-bold text-neon-blue">{totalHoras}h</span>
+						</div>
+					</div>
+				) : (
+					<p class="text-xs text-text-muted">Sin registros de fechas</p>
+				)}
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	/* Media tabs */
+	.media-tab {
+		color: var(--color-text-muted);
+		border-color: var(--color-border-default);
+		background: transparent;
+	}
+	.media-tab:hover {
+		color: var(--color-text-secondary);
+		border-color: var(--color-border-hover);
+	}
+	.media-tab.active {
+		color: var(--color-neon-blue);
+		border-color: rgba(30, 144, 255, 0.3);
+		background: rgba(30, 144, 255, 0.1);
+	}
+</style>
+
+<script>
+	document.addEventListener('astro:page-load', () => {
+		const tabs = document.querySelectorAll<HTMLButtonElement>('.media-tab');
+		const panels = document.querySelectorAll<HTMLElement>('.media-panel');
+
+		tabs.forEach(tab => {
+			tab.addEventListener('click', () => {
+				const target = tab.dataset.tab;
+
+				// Update tabs
+				tabs.forEach(t => {
+					t.classList.remove('active');
+					t.setAttribute('aria-selected', 'false');
+				});
+				tab.classList.add('active');
+				tab.setAttribute('aria-selected', 'true');
+
+				// Update panels
+				panels.forEach(p => {
+					if (p.id === `panel-${target}`) {
+						p.classList.remove('hidden');
+					} else {
+						p.classList.add('hidden');
+					}
+				});
+			});
+		});
+	});
+</script>
