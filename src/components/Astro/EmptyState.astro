@@ -1,0 +1,28 @@
+---
+interface Props {
+	message?: string;
+	description?: string;
+	accentColor?: 'blue' | 'cyan' | 'pink';
+}
+
+const { message = 'Módulo en construcción', description, accentColor = 'blue' } = Astro.props;
+
+const borderColor = {
+	blue: 'border-neon-blue/20',
+	cyan: 'border-neon-cyan/20',
+	pink: 'border-neon-pink/20',
+}[accentColor];
+
+const textColor = {
+	blue: 'text-neon-blue/60',
+	cyan: 'text-neon-cyan/60',
+	pink: 'text-neon-pink/60',
+}[accentColor];
+---
+
+<div class={`border border-dashed ${borderColor} rounded-xl p-10 sm:p-14 text-center`}>
+	<div class={`text-sm ${textColor} font-medium mb-3`}>[ {message} ]</div>
+	{description && (
+		<p class="text-text-muted text-xs sm:text-sm leading-relaxed max-w-sm mx-auto">{description}</p>
+	)}
+</div>

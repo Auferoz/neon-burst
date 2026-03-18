@@ -1,41 +1,99 @@
 ---
 import '../styles/global.css'
+import FloatingNav from '../components/Astro/FloatingNav.astro';
+
+interface Props {
+	title?: string;
+}
+
+const { title = 'Neon Burst' } = Astro.props;
+const currentPath = Astro.url.pathname;
 ---
 <!doctype html>
 <html lang="es">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
-		<title>Neon - Burst</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet" />
+		<title>{title}</title>
 	</head>
-	<body>
-		<slot />
+	<body class="bg-surface-0 text-text-primary font-mono min-h-dvh flex flex-col antialiased">
+
+		<!-- Skip link — a11y: keyboard nav -->
+		<a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-surface-2 focus:text-neon-blue focus:px-4 focus:py-2 focus:rounded-lg focus:outline-2 focus:outline-neon-blue">
+			Saltar al contenido
+		</a>
+
+		<!-- Main content area with bottom padding for floating nav -->
+		<main id="main-content" class="flex-1 max-w-5xl mx-auto w-full px-5 sm:px-8 pt-8 sm:pt-12 pb-28 sm:pb-24">
+			<slot />
+		</main>
+
+		<FloatingNav currentPath={currentPath} />
+
 	</body>
 </html>
 
 <style>
-
-* { margin: 0; padding: 0; }
+/* === Reset === */
 *, *::before, *::after { box-sizing: border-box; }
-
-body { min-height: 100dvh; }
 input, button, textarea, select { font: inherit; }
-
 p { text-wrap: pretty; }
 h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
-
 img, video, svg { height: auto; max-width: 100%; }
 
+/* === Neon glow utilities === */
+.neon-glow-blue {
+	text-shadow: 0 0 8px rgba(30, 144, 255, 0.5), 0 0 24px rgba(30, 144, 255, 0.2);
+}
+.neon-glow-cyan {
+	text-shadow: 0 0 8px rgba(0, 229, 255, 0.4), 0 0 24px rgba(0, 229, 255, 0.15);
+}
+.neon-glow-pink {
+	text-shadow: 0 0 8px rgba(255, 45, 149, 0.4), 0 0 24px rgba(255, 45, 149, 0.15);
+}
+.neon-glow-green {
+	text-shadow: 0 0 8px rgba(57, 255, 20, 0.4), 0 0 24px rgba(57, 255, 20, 0.15);
+}
+
+.neon-border-blue {
+	box-shadow: 0 0 8px rgba(30, 144, 255, 0.2), inset 0 0 8px rgba(30, 144, 255, 0.06);
+}
+.neon-border-cyan {
+	box-shadow: 0 0 8px rgba(0, 229, 255, 0.15), inset 0 0 8px rgba(0, 229, 255, 0.05);
+}
+.neon-border-pink {
+	box-shadow: 0 0 8px rgba(255, 45, 149, 0.15), inset 0 0 8px rgba(255, 45, 149, 0.05);
+}
+
+/* Scanline overlay (subtle CRT effect) */
+body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 9999;
+	background: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.03) 2px,
+		rgba(0, 0, 0, 0.03) 4px
+	);
+}
+
+/* === Reduced motion === */
 @media (prefers-reduced-motion: reduce) {
-	*::after {
+	*, *::before, *::after {
 		animation-duration: 0.01ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;
-		transition: none;
 	}
+	body::before { display: none; }
 }
-
 </style>

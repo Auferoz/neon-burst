@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+@theme {
+  /* Neon accent palette — cyberpunk/hacker aesthetic */
+  --color-neon-blue: #1e90ff;
+  --color-neon-blue-dim: #1e90ff66;
+  --color-neon-cyan: #00e5ff;
+  --color-neon-cyan-dim: #00e5ff66;
+  --color-neon-pink: #ff2d95;
+  --color-neon-pink-dim: #ff2d9566;
+  --color-neon-purple: #b026ff;
+  --color-neon-yellow: #e5ff00;
+  --color-neon-green: #39ff14;
+
+  /* Dark surfaces — layered elevation */
+  --color-surface-0: #06060a;
+  --color-surface-1: #0c0c14;
+  --color-surface-2: #12121e;
+  --color-surface-3: #1a1a2a;
+  --color-surface-4: #222236;
+
+  /* Text hierarchy — WCAG AA compliant on surface-0 */
+  --color-text-primary: #e8e8f0;
+  --color-text-secondary: #9898b0;
+  --color-text-muted: #5c5c78;
+
+  /* Borders */
+  --color-border-default: #1e1e30;
+  --color-border-hover: #2a2a42;
+
+  /* Font stack — monospace for terminal aesthetic */
+  --font-mono: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace;
+
+  /* Type scale (rem) */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+}

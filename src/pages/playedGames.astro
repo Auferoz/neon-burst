@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/Astro/PageHeader.astro';
+import EmptyState from '../components/Astro/EmptyState.astro';
+---
+
+<Layout title="Neon Burst | Juegos Jugados">
+	<section>
+		<PageHeader
+			title="juegos_jugados"
+			subtitle="Historial de juegos completados, abandonados y en progreso"
+			accentColor="blue"
+		/>
+
+		<div class="border border-border-default rounded-xl bg-surface-1/30 p-5 sm:p-8">
+			<EmptyState
+				message="Conectando con la base de datos"
+				description="Aquí se mostrarán todos tus juegos con su estado, horas jugadas y logros."
+				accentColor="blue"
+			/>
+		</div>
+	</section>
+</Layout>

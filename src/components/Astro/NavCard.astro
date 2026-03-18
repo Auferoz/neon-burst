@@ -1,0 +1,72 @@
+---
+interface Props {
+	href: string;
+	title: string;
+	subtitle: string;
+	accentColor?: 'blue' | 'cyan' | 'pink';
+}
+
+const { href, title, subtitle, accentColor = 'blue' } = Astro.props;
+
+const colorMap = {
+	blue: {
+		border: 'hover:border-neon-blue/40',
+		bg: 'hover:bg-neon-blue/[0.03]',
+		outline: 'focus-visible:outline-neon-blue',
+		iconBg: 'bg-neon-blue/8 group-hover:bg-neon-blue/15',
+		iconText: 'text-neon-blue',
+		titleHover: 'group-hover:text-neon-blue',
+	},
+	cyan: {
+		border: 'hover:border-neon-cyan/40',
+		bg: 'hover:bg-neon-cyan/[0.03]',
+		outline: 'focus-visible:outline-neon-cyan',
+		iconBg: 'bg-neon-cyan/8 group-hover:bg-neon-cyan/15',
+		iconText: 'text-neon-cyan',
+		titleHover: 'group-hover:text-neon-cyan',
+	},
+	pink: {
+		border: 'hover:border-neon-pink/40',
+		bg: 'hover:bg-neon-pink/[0.03]',
+		outline: 'focus-visible:outline-neon-pink',
+		iconBg: 'bg-neon-pink/8 group-hover:bg-neon-pink/15',
+		iconText: 'text-neon-pink',
+		titleHover: 'group-hover:text-neon-pink',
+	},
+};
+
+const c = colorMap[accentColor];
+---
+
+<a
+	href={href}
+	class:list={[
+		'nav-card group border border-border-default rounded-xl p-6 sm:p-7 transition-all duration-250 focus-visible:outline-2 focus-visible:outline-offset-2',
+		c.border, c.bg, c.outline
+	]}
+>
+	<div class="flex flex-col items-center gap-4 text-center">
+		<div class:list={['w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-250', c.iconBg, c.iconText]}>
+			<slot />
+		</div>
+		<div class="space-y-1">
+			<span class:list={['block text-sm font-semibold text-text-primary transition-colors duration-250', c.titleHover]}>
+				{title}
+			</span>
+			<span class="block text-xs text-text-muted">{subtitle}</span>
+		</div>
+	</div>
+</a>
+
+<style>
+.nav-card {
+	transform: translateY(0);
+}
+.nav-card:hover {
+	transform: translateY(-2px);
+}
+.nav-card:active {
+	transform: translateY(0) scale(0.98);
+	transition-duration: 100ms;
+}
+</style>

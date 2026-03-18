@@ -1,0 +1,55 @@
+---
+import IconHome from '../Icons/IconHome.astro';
+import IconGamepad from '../Icons/IconGamepad.astro';
+import IconLibrary from '../Icons/IconLibrary.astro';
+import IconRocket from '../Icons/IconRocket.astro';
+
+interface Props {
+	currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+const navLinks = [
+	{ href: '/', label: 'Inicio', icon: 'home' },
+	{ href: '/playedGames', label: 'Jugados', icon: 'gamepad' },
+	{ href: '/mySteamGames', label: 'Steam', icon: 'library' },
+	{ href: '/nextGames', label: 'Próximos', icon: 'rocket' },
+];
+
+function isActive(href: string) {
+	if (href === '/') return currentPath === '/';
+	return currentPath.startsWith(href);
+}
+---
+
+<nav class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50" aria-label="Navegación principal">
+	<div class="flex items-center gap-11 lg:gap-2 bg-surface-1/95 backdrop-blur-xl border border-border-default rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.5)] p-1.5">
+		{navLinks.map(link => (
+			<a
+				href={link.href}
+				aria-current={isActive(link.href) ? 'page' : undefined}
+				aria-label={link.label}
+				class:list={[
+					'nav-item relative flex items-center justify-center gap-2 rounded-xl transition-all duration-200',
+					'w-11 h-11 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5',
+					isActive(link.href)
+						? 'text-neon-blue bg-neon-blue/10 nav-active'
+						: 'text-text-muted hover:text-text-primary hover:bg-surface-3/60 active:scale-95'
+				]}
+			>
+				{link.icon === 'home' && <IconHome size={18} class="shrink-0" />}
+				{link.icon === 'gamepad' && <IconGamepad size={18} class="shrink-0" />}
+				{link.icon === 'library' && <IconLibrary size={18} class="shrink-0" />}
+				{link.icon === 'rocket' && <IconRocket size={18} class="shrink-0" />}
+				<span class="hidden sm:inline text-xs font-medium">{link.label}</span>
+			</a>
+		))}
+	</div>
+</nav>
+
+<style>
+.nav-active {
+	box-shadow: 0 0 12px rgba(30, 144, 255, 0.25);
+}
+</style>

@@ -1,14 +1,50 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import NavCard from '../components/Astro/NavCard.astro';
+import IconGamepad from '../components/Icons/IconGamepad.astro';
+import IconLibrary from '../components/Icons/IconLibrary.astro';
+import IconRocket from '../components/Icons/IconRocket.astro';
+import IconTerminal from '../components/Icons/IconTerminal.astro';
 ---
 
-<Layout>
-	<section class="container p-4">
-		<div class="flex flex-col items-center justify-center gap-4">
-			<h1>Inicio - Neon Burst</h1>
-			<a href="/playedGames">Juegos Jugados</a>
-			<a href="/mySteamGames">mis Juegos de Steam</a>
-			<a href="/nextGames">Próximos Juegos</a>
+<Layout title="Neon Burst | Inicio">
+	<section class="flex flex-col items-center gap-10 sm:gap-14 py-8 sm:py-16">
+
+		<!-- Hero -->
+		<div class="text-center space-y-4 px-2">
+			<h1 class="text-3xl sm:text-4xl font-bold text-neon-blue neon-glow-blue leading-tight">
+				NEON_BURST
+			</h1>
+			<p class="text-text-secondary text-sm sm:text-base leading-relaxed max-w-md mx-auto">
+				Gaming tracker personal — juegos jugados, biblioteca Steam y próximos lanzamientos.
+			</p>
 		</div>
+
+		<!-- Navigation cards -->
+		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 w-full max-w-2xl">
+			<NavCard href="/playedGames" title="Juegos Jugados" subtitle="Completados y más" accentColor="blue">
+				<IconGamepad size={22} />
+			</NavCard>
+
+			<NavCard href="/mySteamGames" title="Mis Juegos Steam" subtitle="Biblioteca completa" accentColor="cyan">
+				<IconLibrary size={22} />
+			</NavCard>
+
+			<NavCard href="/nextGames" title="Próximos Juegos" subtitle="Lanzamientos" accentColor="pink">
+				<IconRocket size={22} />
+			</NavCard>
+		</div>
+
+		<!-- Terminal decorative block -->
+		<div class="w-full max-w-lg border border-border-default rounded-xl overflow-hidden">
+			<div class="flex items-center gap-2 px-4 py-2.5 bg-surface-2 border-b border-border-default">
+				<IconTerminal size={14} class="text-neon-blue/60" />
+				<span class="text-xs text-text-muted">terminal</span>
+			</div>
+			<div class="p-5 bg-surface-1/50">
+				<pre class="text-xs sm:text-sm text-text-secondary leading-loose"><code><span class="text-neon-blue">$</span> system.status<br/><span class="text-neon-cyan">  online</span> <span class="text-text-muted">— all modules loaded</span><br/><span class="text-neon-blue">$</span> db.connection<br/><span class="text-neon-cyan">  connected</span> <span class="text-text-muted">— cloudflare d1</span><br/><span class="text-neon-blue">$</span> <span class="inline-block w-2 h-4 bg-neon-blue/70 animate-pulse align-middle rounded-sm"></span></code></pre>
+			</div>
+		</div>
+
 	</section>
 </Layout>

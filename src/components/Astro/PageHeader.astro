@@ -1,0 +1,29 @@
+---
+interface Props {
+	title: string;
+	subtitle?: string;
+	accentColor?: 'blue' | 'cyan' | 'pink';
+}
+
+const { title, subtitle, accentColor = 'blue' } = Astro.props;
+
+const colorMap = {
+	blue: { text: 'text-neon-blue', glow: 'neon-glow-blue', dot: 'bg-neon-blue' },
+	cyan: { text: 'text-neon-cyan', glow: 'neon-glow-cyan', dot: 'bg-neon-cyan' },
+	pink: { text: 'text-neon-pink', glow: 'neon-glow-pink', dot: 'bg-neon-pink' },
+};
+
+const colors = colorMap[accentColor];
+---
+
+<div class="mb-8 sm:mb-10">
+	<div class="flex items-center gap-3 mb-2">
+		<span class={`w-2 h-2 rounded-full ${colors.dot} shrink-0`} aria-hidden="true"></span>
+		<h1 class={`text-xl sm:text-2xl font-bold ${colors.text} ${colors.glow} leading-tight`}>
+			{title}
+		</h1>
+	</div>
+	{subtitle && (
+		<p class="text-text-secondary text-sm leading-relaxed pl-5 mt-1">{subtitle}</p>
+	)}
+</div>
