@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS games (
   artworks TEXT,
   genre TEXT,
   estado TEXT NOT NULL DEFAULT 'Jugando',
-  horas_total REAL DEFAULT 0,
   logros_obt INTEGER DEFAULT 0,
   logros_total INTEGER DEFAULT 0,
   console_pc TEXT,

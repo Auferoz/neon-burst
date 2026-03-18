@@ -18,7 +18,6 @@ for (const game of ListGames) {
   const artworks = escape(game.artworks);
   const genre = escape(game.genre);
   const estado = escape(game.estado);
-  const horasTotal = game.horasTotal ?? 0;
   const logrosObt = game.logros_obt ?? 0;
   const logrosTotal = game.logros_total ?? 0;
   const consolePc = escape(game.console_pc);
@@ -27,7 +26,7 @@ for (const game of ListGames) {
   const description = escape(game.description || '');
 
   lines.push(
-    `INSERT OR IGNORE INTO games (title, released, companie, poster, trailer, artworks, genre, estado, horas_total, logros_obt, logros_total, console_pc, igdb_id, first_year_played, description) VALUES ('${title}', '${released}', '${companie}', '${poster}', '${trailer}', '${artworks}', '${genre}', '${estado}', ${horasTotal}, ${logrosObt}, ${logrosTotal}, '${consolePc}', ${igdbId}, ${firstYear}, '${description}');`
+    `INSERT OR IGNORE INTO games (title, released, companie, poster, trailer, artworks, genre, estado, logros_obt, logros_total, console_pc, igdb_id, first_year_played, description) VALUES ('${title}', '${released}', '${companie}', '${poster}', '${trailer}', '${artworks}', '${genre}', '${estado}', ${logrosObt}, ${logrosTotal}, '${consolePc}', ${igdbId}, ${firstYear}, '${description}');`
   );
 
   // Insert dates_played entries (only years with actual data)

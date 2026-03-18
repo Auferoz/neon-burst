@@ -18,7 +18,6 @@ interface GameData {
   artworks: string;
   genre: string;
   estado: string;
-  horas_total: number | '';
   logros_obt: number | '';
   logros_total: number | '';
   console_pc: string;
@@ -49,7 +48,7 @@ const form = ref<GameData>(emptyForm());
 function emptyForm(): GameData {
   return {
     title: '', released: '', companie: '', poster: '', trailer: '',
-    artworks: '', genre: '', estado: 'Jugando', horas_total: '',
+    artworks: '', genre: '', estado: 'Jugando',
     logros_obt: '', logros_total: '', console_pc: '', igdb_id: '',
     first_year_played: '', description: '', rating_metacritic: '',
     rating_rawg: '', dates_played: [],
@@ -62,7 +61,6 @@ watch(() => props.open, (val) => {
       isEdit.value = true;
       form.value = {
         ...props.game,
-        horas_total: props.game.horas_total || '',
         logros_obt: props.game.logros_obt || '',
         logros_total: props.game.logros_total || '',
         igdb_id: props.game.igdb_id || '',
@@ -103,7 +101,6 @@ async function save() {
 
   const payload = {
     ...form.value,
-    horas_total: Number(form.value.horas_total) || 0,
     logros_obt: Number(form.value.logros_obt) || 0,
     logros_total: Number(form.value.logros_total) || 0,
     igdb_id: Number(form.value.igdb_id) || null,
@@ -256,11 +253,7 @@ function onBackdrop(e: MouseEvent) {
           </div>
 
           <!-- Stats -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div>
-              <label for="game-horas" class="block text-xs text-text-muted mb-1">Horas total</label>
-              <input id="game-horas" v-model="form.horas_total" type="number" step="0.1" min="0" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0" />
-            </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label for="game-logros-obt" class="block text-xs text-text-muted mb-1">Logros obt.</label>
               <input id="game-logros-obt" v-model="form.logros_obt" type="number" min="0" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0" />

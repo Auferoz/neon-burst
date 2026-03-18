@@ -12,7 +12,6 @@ export interface Game {
   artworks: string;
   genre: string;
   estado: string;
-  horas_total: number;
   logros_obt: number;
   logros_total: number;
   console_pc: string;
@@ -36,10 +35,12 @@ export interface DatePlayed {
 
 export interface GameWithYears extends Game {
   years_played: number[];
+  horas_total: number;
 }
 
 export interface GameWithDates extends Game {
   dates_played: DatePlayed[];
+  horas_total: number;
 }
 
 export async function getAllGames(db: D1Database): Promise<GameWithYears[]> {
@@ -47,20 +48,23 @@ export async function getAllGames(db: D1Database): Promise<GameWithYears[]> {
     'SELECT * FROM games ORDER BY title ASC'
   ).all<Game>();
 
-  const { results: yearRows } = await db.prepare(
-    'SELECT game_id, year FROM dates_played ORDER BY year DESC'
-  ).all<{ game_id: number; year: number }>();
+  const { results: dateRows } = await db.prepare(
+    'SELECT game_id, year, horas FROM dates_played ORDER BY year DESC'
+  ).all<{ game_id: number; year: number; horas: number }>();
 
   const yearsByGame = new Map<number, number[]>();
-  for (const row of yearRows) {
+  const horasByGame = new Map<number, number>();
+  for (const row of dateRows) {
     const arr = yearsByGame.get(row.game_id) || [];
     arr.push(row.year);
     yearsByGame.set(row.game_id, arr);
+    horasByGame.set(row.game_id, (horasByGame.get(row.game_id) || 0) + (row.horas || 0));
   }
 
   return games.map(g => ({
     ...g,
-    years_played: yearsByGame.get(g.id) || [],
+    years_played: [...new Set(yearsByGame.get(g.id) || [])],
+    horas_total: horasByGame.get(g.id) || 0,
   }));
 }
 
@@ -75,7 +79,9 @@ export async function getGameById(db: D1Database, id: number): Promise<GameWithD
     'SELECT * FROM dates_played WHERE game_id = ? ORDER BY year DESC'
   ).bind(id).all<DatePlayed>();
 
-  return { ...game, dates_played: dates };
+  const horas_total = dates.reduce((sum, d) => sum + (d.horas || 0), 0);
+
+  return { ...game, dates_played: dates, horas_total };
 }
 
 export async function createGame(
@@ -83,11 +89,11 @@ export async function createGame(
   data: Partial<Omit<Game, 'id' | 'created_at' | 'updated_at'>> & { title: string; estado: string; dates_played?: Omit<DatePlayed, 'id' | 'game_id'>[] }
 ): Promise<GameWithDates> {
   const result = await db.prepare(`
-    INSERT INTO games (title, released, companie, poster, trailer, artworks, genre, estado, horas_total, logros_obt, logros_total, console_pc, igdb_id, first_year_played, description, rating_metacritic, rating_rawg)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO games (title, released, companie, poster, trailer, artworks, genre, estado, logros_obt, logros_total, console_pc, igdb_id, first_year_played, description, rating_metacritic, rating_rawg)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     data.title, data.released || '', data.companie || '', data.poster || '', data.trailer || '',
-    data.artworks || '', data.genre || '', data.estado, data.horas_total || 0, data.logros_obt || 0,
+    data.artworks || '', data.genre || '', data.estado, data.logros_obt || 0,
     data.logros_total || 0, data.console_pc || '', data.igdb_id || null, data.first_year_played || null,
     data.description || '', data.rating_metacritic || null, data.rating_rawg || null
   ).run();
