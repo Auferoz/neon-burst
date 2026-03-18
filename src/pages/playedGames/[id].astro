@@ -65,7 +65,7 @@ const hasMedia = hasTrailer || hasArtwork;
 					alt=""
 					class="w-full h-full object-cover object-top opacity-40"
 				/>
-				<div class="absolute inset-0 bg-gradient-to-t from-surface-0 via-surface-0/85 to-surface-0/50" />
+				<div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/85 to-surface-0/50" />
 			</div>
 		)}
 
@@ -76,13 +76,13 @@ const hasMedia = hasTrailer || hasArtwork;
 					<img
 						src={posterUrl}
 						alt={game.title}
-						class="w-36 sm:w-44 rounded-xl object-cover aspect-[3/4] bg-surface-3 shadow-lg shadow-black/30"
+						class="w-36 sm:w-44 rounded-xl object-cover aspect-3/4 bg-surface-3 shadow-lg shadow-black/30"
 						style={`view-transition-name: poster-${game.id};`}
 						width="176"
 						height="235"
 					/>
 				) : (
-					<div class="w-36 sm:w-44 rounded-xl aspect-[3/4] bg-surface-3 flex items-center justify-center text-text-muted text-sm">
+					<div class="w-36 sm:w-44 rounded-xl aspect-3/4 bg-surface-3 flex items-center justify-center text-text-muted text-sm">
 						?
 					</div>
 				)}
@@ -148,7 +148,7 @@ const hasMedia = hasTrailer || hasArtwork;
 						{game.rating_metacritic && (
 							<div class="flex items-center gap-2">
 								<span class:list={[
-									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border',
+									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border px-6',
 									game.rating_metacritic >= 75 ? 'text-neon-green border-neon-green/30 bg-neon-green/10' :
 									game.rating_metacritic >= 50 ? 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10' :
 									'text-neon-pink border-neon-pink/30 bg-neon-pink/10'
@@ -161,7 +161,7 @@ const hasMedia = hasTrailer || hasArtwork;
 						{game.rating_rawg && (
 							<div class="flex items-center gap-2">
 								<span class:list={[
-									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border',
+									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border px-6',
 									game.rating_rawg >= 4.0 ? 'text-neon-green border-neon-green/30 bg-neon-green/10' :
 									game.rating_rawg >= 3.0 ? 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10' :
 									'text-neon-pink border-neon-pink/30 bg-neon-pink/10'
@@ -185,7 +185,7 @@ const hasMedia = hasTrailer || hasArtwork;
 			{game.description && (
 				<div class="border border-border-default rounded-xl p-5 sm:p-6">
 					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Descripción</h2>
-					<div class="h-px bg-gradient-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
+					<div class="h-px bg-linear-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
 					<p class="text-sm text-text-secondary leading-relaxed whitespace-pre-line">{game.description}</p>
 				</div>
 			)}
@@ -279,7 +279,7 @@ const hasMedia = hasTrailer || hasArtwork;
 			{game.logros_total > 0 && (
 				<div class="border border-border-default rounded-xl p-5">
 					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Logros</h2>
-					<div class="h-px bg-gradient-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
+					<div class="h-px bg-linear-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
 					<div class="flex items-end justify-between mb-2">
 						<span class="text-3xl font-bold text-neon-blue">{logrosPercent}%</span>
 						<span class="text-xs text-text-muted">{game.logros_obt} de {game.logros_total}</span>
@@ -296,7 +296,7 @@ const hasMedia = hasTrailer || hasArtwork;
 			<!-- Detalles técnicos -->
 			<div class="border border-border-default rounded-xl p-5">
 				<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Detalles</h2>
-				<div class="h-px bg-gradient-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
+				<div class="h-px bg-linear-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
 				<dl class="space-y-3 text-sm">
 					<div class="flex justify-between">
 						<dt class="text-text-muted">Plataforma</dt>
@@ -361,7 +361,7 @@ const hasMedia = hasTrailer || hasArtwork;
 			<!-- Historial de juego -->
 			<div class="border border-border-default rounded-xl p-5">
 				<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Historial</h2>
-				<div class="h-px bg-gradient-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
+				<div class="h-px bg-linear-to-r from-neon-blue/30 via-neon-cyan/15 to-transparent mb-4"></div>
 
 				{game.dates_played.length > 0 ? (
 					<div class="space-y-3">
