@@ -5,6 +5,7 @@ import IconGamepad from '../components/Icons/IconGamepad.astro';
 import IconLibrary from '../components/Icons/IconLibrary.astro';
 import IconRocket from '../components/Icons/IconRocket.astro';
 import IconTerminal from '../components/Icons/IconTerminal.astro';
+import IconHome from '../components/Icons/IconHome.astro';
 ---
 
 <Layout title="Neon Burst | Inicio">
@@ -21,17 +22,29 @@ import IconTerminal from '../components/Icons/IconTerminal.astro';
 		</div>
 
 		<!-- Navigation cards -->
-		<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 w-full max-w-2xl">
-			<NavCard href="/playedGames" title="Juegos Jugados" subtitle="Completados y más" accentColor="blue">
+		<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5 w-full max-w-2xl">
+			<NavCard href="/playedGames" title="Played Games" subtitle="Completados y más" accentColor="blue">
 				<IconGamepad size={22} />
 			</NavCard>
 
-			<NavCard href="/mySteamGames" title="Mis Juegos Steam" subtitle="Biblioteca completa" accentColor="cyan">
+			<NavCard href="/mySteamGames" title="My Steam Games" subtitle="Biblioteca completa" accentColor="cyan">
 				<IconLibrary size={22} />
 			</NavCard>
 
-			<NavCard href="/nextGames" title="Próximos Juegos" subtitle="Lanzamientos" accentColor="pink">
+			<NavCard href="/nextGames" title="Next Games" subtitle="Lanzamientos" accentColor="pink">
 				<IconRocket size={22} />
+			</NavCard>
+
+			<NavCard href="/series" title="Series" subtitle="Lista de series" accentColor="white">
+				<IconHome size={22} />
+			</NavCard>
+
+			<NavCard href="/movies" title="Movies" subtitle="Lista de peliculas" accentColor="white">
+				<IconHome size={22} />
+			</NavCard>
+
+			<NavCard href="https://serviceswebporfolio.adesigns7.workers.dev/" title="Services Web" subtitle="Página de servicios web" accentColor="white">
+				<IconHome size={22} />
 			</NavCard>
 		</div>
 
