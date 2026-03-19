@@ -18,12 +18,11 @@ const colors = colorMap[accentColor];
 
 <div class="mb-8 sm:mb-10">
 	<div class="flex items-center gap-3 mb-2">
-		<span class={`w-2 h-2 rounded-full ${colors.dot} shrink-0`} aria-hidden="true"></span>
 		<h1 class={`text-xl sm:text-2xl font-bold ${colors.text} ${colors.glow} leading-tight`}>
 			{title}
 		</h1>
 	</div>
 	{subtitle && (
-		<p class="text-text-secondary text-sm leading-relaxed pl-5 mt-1">{subtitle}</p>
+		<p class="text-text-secondary text-sm leading-relaxed mt-1">{subtitle}</p>
 	)}
 </div>

@@ -4,6 +4,10 @@ import GameCard from './GameCard.vue';
 import GamesFilter from './GamesFilter.vue';
 import GamesDashboard from './GamesDashboard.vue';
 import GameFormModal from './GameFormModal.vue';
+import IconGrid from '../Icons/IconGrid.vue';
+import IconClock from '../Icons/IconClock.vue';
+import IconTrophy from '../Icons/IconTrophy.vue';
+import IconPlusCircle from '../Icons/IconPlusCircle.vue';
 
 interface Game {
   id: number;
@@ -108,23 +112,42 @@ onMounted(fetchGames);
   <div class="space-y-6">
     <!-- Header + Dashboard -->
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-2">
-      <!-- Title -->
+      <!-- Title + Totals -->
       <div class="shrink-0">
         <div class="flex items-center gap-3 mb-1">
-          <span class="w-2 h-2 rounded-full bg-neon-blue shrink-0" aria-hidden="true"></span>
           <h1 class="text-xl sm:text-2xl font-bold text-neon-blue neon-glow-blue leading-tight">played_games</h1>
         </div>
-        <p class="text-text-secondary text-sm leading-relaxed pl-5">Historial de juegos completados, abandonados y en progreso</p>
+        <p class="text-text-secondary text-sm leading-relaxed">Historial de juegos completados, abandonados y en progreso</p>
+
+        <!-- Totals inline -->
+        <div v-if="!loading && games.length > 0" class="flex items-center gap-2 lg:gap-4 mt-2 text-xs text-text-muted">
+          <span class="inline-flex items-center gap-1">
+            <IconGrid :size="14" class="text-neon-cyan" />
+            <span class="text-neon-cyan font-semibold">{{ games.length }}</span> juegos
+          </span>
+          <span class="text-border-default">&middot;</span>
+          <span class="inline-flex items-center gap-1">
+            <IconClock :size="14" class="text-neon-blue" />
+            <span class="text-neon-blue font-semibold">{{ Math.round(games.reduce((s, g) => s + (g.horas_total || 0), 0)).toLocaleString() }}h</span> jugadas
+          </span>
+          <span class="text-border-default">&middot;</span>
+          <span class="inline-flex items-center gap-1">
+            <IconTrophy :size="14" class="text-neon-green" />
+            <span class="text-neon-green font-semibold">{{ games.reduce((s, g) => s + (g.logros_obt || 0), 0).toLocaleString() }}</span> logros
+          </span>
+        </div>
+
+        <!-- Agregar juego -->
         <button
           @click="showCreateModal = true"
-          class="mt-2 ml-5 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-neon-blue/10 transition-colors cursor-pointer"
+          class="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-neon-blue/10 transition-colors cursor-pointer"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
-          </svg>
+          <IconPlusCircle :size="14" />
           Agregar juego
         </button>
+
       </div>
+
 
       <!-- Stats -->
       <GamesDashboard v-if="!loading && games.length > 0" :games="games" />

@@ -3,7 +3,7 @@ interface Props {
 	href: string;
 	title: string;
 	subtitle: string;
-	accentColor?: 'blue' | 'cyan' | 'pink' | 'white';
+	accentColor?: 'blue' | 'cyan' | 'pink' | 'emerald' | 'indigo' | 'white';
 }
 
 const { href, title, subtitle, accentColor = 'blue' } = Astro.props;
@@ -32,6 +32,22 @@ const colorMap = {
 		iconBg: 'bg-neon-pink/8 group-hover:bg-neon-pink/15',
 		iconText: 'text-neon-pink',
 		titleHover: 'group-hover:text-neon-pink',
+	},
+	emerald: {
+		border: 'hover:border-neon-emerald/40',
+		bg: 'hover:bg-neon-emerald/[0.03]',
+		outline: 'focus-visible:outline-neon-emerald',
+		iconBg: 'bg-neon-emerald/8 group-hover:bg-neon-emerald/15',
+		iconText: 'text-neon-emerald',
+		titleHover: 'group-hover:text-neon-emerald',
+	},
+	indigo: {
+		border: 'hover:border-neon-indigo/40',
+		bg: 'hover:bg-neon-indigo/[0.03]',
+		outline: 'focus-visible:outline-neon-indigo',
+		iconBg: 'bg-neon-indigo/8 group-hover:bg-neon-indigo/15',
+		iconText: 'text-neon-indigo',
+		titleHover: 'group-hover:text-neon-indigo',
 	},
 	white: {
 		border: 'hover:border-neon-white/40',

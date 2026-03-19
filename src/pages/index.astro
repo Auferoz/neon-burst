@@ -35,11 +35,11 @@ import IconHome from '../components/Icons/IconHome.astro';
 				<IconRocket size={22} />
 			</NavCard>
 
-			<NavCard href="/series" title="Series" subtitle="Lista de series" accentColor="white">
+			<NavCard href="/series" title="Series" subtitle="Lista de series" accentColor="indigo">
 				<IconHome size={22} />
 			</NavCard>
 
-			<NavCard href="/movies" title="Movies" subtitle="Lista de peliculas" accentColor="white">
+			<NavCard href="/movies" title="Movies" subtitle="Lista de peliculas" accentColor="emerald">
 				<IconHome size={22} />
 			</NavCard>
 
@@ -47,17 +47,7 @@ import IconHome from '../components/Icons/IconHome.astro';
 				<IconHome size={22} />
 			</NavCard>
 		</div>
-
-		<!-- Terminal decorative block -->
-		<div class="w-full max-w-lg border border-border-default rounded-xl overflow-hidden">
-			<div class="flex items-center gap-2 px-4 py-2.5 bg-surface-2 border-b border-border-default">
-				<IconTerminal size={14} class="text-neon-blue/60" />
-				<span class="text-xs text-text-muted">terminal</span>
-			</div>
-			<div class="p-5 bg-surface-1/50">
-				<pre class="text-xs sm:text-sm text-text-secondary leading-loose"><code><span class="text-neon-blue">$</span> system.status<br/><span class="text-neon-cyan">  online</span> <span class="text-text-muted">— all modules loaded</span><br/><span class="text-neon-blue">$</span> db.connection<br/><span class="text-neon-cyan">  connected</span> <span class="text-text-muted">— cloudflare d1</span><br/><span class="text-neon-blue">$</span> <span class="inline-block w-2 h-4 bg-neon-blue/70 animate-pulse align-middle rounded-sm"></span></code></pre>
-			</div>
-		</div>
+		
 
 	</section>
 </Layout>

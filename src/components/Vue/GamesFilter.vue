@@ -31,7 +31,7 @@ const hasActiveFilters = computed(() =>
     <h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider">Filtros</h2>
 
     <!-- Search -->
-    <div>
+    <!-- <div>
       <label for="search-games" class="sr-only">Buscar juegos</label>
       <input
         id="search-games"
@@ -41,10 +41,10 @@ const hasActiveFilters = computed(() =>
         placeholder="Buscar juego..."
         class="w-full bg-surface-2 border border-border-default rounded-lg px-4 py-2.5 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors duration-200"
       />
-    </div>
+    </div> -->
 
     <!-- Filter row -->
-    <div class="flex flex-wrap gap-3 items-center">
+    <div class="flex flex-wrap gap-3 items-center justify-between">
       <div>
         <label for="filter-año" class="sr-only">Filtrar por año</label>
         <select
