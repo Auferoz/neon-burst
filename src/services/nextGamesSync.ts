@@ -3,8 +3,10 @@
  * and caches them in D1 (next_games_cache table).
  */
 
-const TWITCH_CLIENT_ID = 'zn6jdy9rvb46v2qspncyfjd3xgcqgj';
-const TWITCH_CLIENT_SECRET = '3m891dgkjr9badkieo5ud716d9ozt3';
+import { env } from 'cloudflare:workers';
+
+const TWITCH_CLIENT_ID = env.TWITCH_CLIENT_ID;
+const TWITCH_CLIENT_SECRET = env.TWITCH_CLIENT_SECRET;
 
 interface IgdbGame {
   id: number;

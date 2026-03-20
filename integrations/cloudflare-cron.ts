@@ -6,9 +6,9 @@ import type { AstroIntegration } from 'astro';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-const CRON_SECRET = 'neon-burst-cron-2026';
-const STEAM_SYNC_URL = 'https://neon-burst.adesigns7.workers.dev/api/steam/sync';
-const NEXT_GAMES_SYNC_URL = 'https://neon-burst.adesigns7.workers.dev/api/next-games/sync';
+const CRON_SECRET = process.env.CRON_SECRET || '';
+const STEAM_SYNC_URL = process.env.STEAM_SYNC_URL || '';
+const NEXT_GAMES_SYNC_URL = process.env.NEXT_GAMES_SYNC_URL || '';
 
 export default function cloudflareCron(): AstroIntegration {
   return {

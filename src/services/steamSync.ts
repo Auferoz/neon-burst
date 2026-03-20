@@ -3,12 +3,14 @@
  * Fetches owned games + Steam Store details + HLTB times.
  */
 
-const STEAM_API_KEY = 'B57C4DAE4299172CE3AEF49F31B73E20';
-const STEAM_ID = '76561198071323076';
+import { env } from 'cloudflare:workers';
+
+const STEAM_API_KEY = env.STEAM_API_KEY;
+const STEAM_ID = env.STEAM_ID;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
-const TWITCH_CLIENT_ID = 'zn6jdy9rvb46v2qspncyfjd3xgcqgj';
-const TWITCH_CLIENT_SECRET = '3m891dgkjr9badkieo5ud716d9ozt3';
+const TWITCH_CLIENT_ID = env.TWITCH_CLIENT_ID;
+const TWITCH_CLIENT_SECRET = env.TWITCH_CLIENT_SECRET;
 let igdbAccessToken: string | null = null;
 
 interface SteamOwnedGame {

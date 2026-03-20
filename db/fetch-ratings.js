@@ -6,7 +6,7 @@
  * Fetches RAWG rating + Metacritic score for each game.
  */
 
-const RAWG_API_KEY = '3dc1bd459a81415caebcb7eae0411687';
+const RAWG_API_KEY = process.env.RAWG_API_KEY;
 const RAWG_BASE = 'https://api.rawg.io/api';
 
 async function searchGame(title) {

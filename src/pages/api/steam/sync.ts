@@ -4,7 +4,7 @@ import { syncSteamLibrary } from '../../../services/steamSync';
 
 export const prerender = false;
 
-const CRON_SECRET = 'neon-burst-cron-2026';
+const CRON_SECRET = env.CRON_SECRET;
 
 export const GET: APIRoute = async ({ request }) => {
   // Allow internal cron calls or manual calls with secret

@@ -4,7 +4,7 @@ import { syncNextGames } from '../../../services/nextGamesSync';
 
 export const prerender = false;
 
-const CRON_SECRET = 'neon-burst-cron-2026';
+const CRON_SECRET = env.CRON_SECRET;
 
 export const GET: APIRoute = async ({ request }) => {
   const authHeader = request.headers.get('x-cron-secret');
