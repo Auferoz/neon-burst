@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 import cloudflare from '@astrojs/cloudflare';
 
 import vue from '@astrojs/vue';
+import cloudflareCron from './integrations/cloudflare-cron';
 
 // https://astro.build/config
 export default defineConfig({
@@ -19,5 +20,5 @@ export default defineConfig({
   },
 
   adapter: cloudflare(),
-  integrations: [vue()]
+  integrations: [vue(), cloudflareCron()]
 });

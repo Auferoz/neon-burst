@@ -8,6 +8,8 @@ import IconGrid from '../Icons/IconGrid.vue';
 import IconClock from '../Icons/IconClock.vue';
 import IconTrophy from '../Icons/IconTrophy.vue';
 import IconPlusCircle from '../Icons/IconPlusCircle.vue';
+import IconLibrary from '../Icons/IconLibrary.vue';
+import IconRocket from '../Icons/IconRocket.vue';
 
 interface Game {
   id: number;
@@ -137,14 +139,30 @@ onMounted(fetchGames);
           </span>
         </div>
 
-        <!-- Agregar juego -->
-        <button
-          @click="showCreateModal = true"
-          class="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-neon-blue/10 transition-colors cursor-pointer"
-        >
-          <IconPlusCircle :size="14" />
-          Agregar juego
-        </button>
+        <!-- Actions -->
+        <div class="flex items-center gap-2 mt-4">
+          <button
+            @click="showCreateModal = true"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-neon-blue/10 transition-colors cursor-pointer"
+          >
+            <IconPlusCircle :size="14" />
+            Agregar juego
+          </button>
+          <a
+            href="/mySteamGames"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-cyan border border-neon-cyan/30 rounded-lg hover:bg-neon-cyan/10 transition-colors"
+          >
+            <IconLibrary :size="14" />
+            Steam
+          </a>
+          <a
+            href="/nextGames"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-pink border border-neon-pink/30 rounded-lg hover:bg-neon-pink/10 transition-colors"
+          >
+            <IconRocket :size="14" />
+            Próximos
+          </a>
+        </div>
 
       </div>
 

@@ -1,8 +1,8 @@
 ---
 import IconHome from '../Icons/IconHome.astro';
 import IconGamepad from '../Icons/IconGamepad.astro';
-import IconLibrary from '../Icons/IconLibrary.astro';
-import IconRocket from '../Icons/IconRocket.astro';
+import IconFilm from '../Icons/IconFilm.astro';
+import IconTv from '../Icons/IconTv.astro';
 
 interface Props {
 	currentPath: string;
@@ -13,8 +13,8 @@ const { currentPath } = Astro.props;
 const navLinks = [
 	{ href: '/', label: 'Inicio', icon: 'home' },
 	{ href: '/playedGames', label: 'Jugados', icon: 'gamepad' },
-	{ href: '/mySteamGames', label: 'Steam', icon: 'library' },
-	{ href: '/nextGames', label: 'Próximos', icon: 'rocket' },
+	{ href: '/ListMovies', label: 'Movies', icon: 'film' },
+	{ href: '/ListSeries', label: 'Series', icon: 'tv' },
 ];
 
 function isActive(href: string) {
@@ -40,8 +40,8 @@ function isActive(href: string) {
 			>
 				{link.icon === 'home' && <IconHome size={24} class="shrink-0" />}
 				{link.icon === 'gamepad' && <IconGamepad size={24} class="shrink-0" />}
-				{link.icon === 'library' && <IconLibrary size={24} class="shrink-0" />}
-				{link.icon === 'rocket' && <IconRocket size={24} class="shrink-0" />}
+				{link.icon === 'film' && <IconFilm size={24} class="shrink-0" />}
+				{link.icon === 'tv' && <IconTv size={24} class="shrink-0" />}
 				<span class="hidden sm:inline text-xs font-medium">{link.label}</span>
 			</a>
 		))}

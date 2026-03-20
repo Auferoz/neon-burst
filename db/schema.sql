@@ -38,3 +38,21 @@ CREATE INDEX IF NOT EXISTS idx_games_console ON games(console_pc);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_dates_unique ON dates_played(game_id, year, fecha_inicio);
 CREATE INDEX IF NOT EXISTS idx_dates_played_game ON dates_played(game_id);
 CREATE INDEX IF NOT EXISTS idx_dates_played_year ON dates_played(year);
+
+CREATE TABLE IF NOT EXISTS steam_cache (
+  appid INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  developer TEXT,
+  publisher TEXT,
+  genres TEXT,
+  released TEXT,
+  poster TEXT,
+  playtime INTEGER DEFAULT 0,
+  last_played INTEGER DEFAULT 0,
+  hltb_main REAL,
+  hltb_extra REAL,
+  hltb_completionist REAL,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_steam_cache_name ON steam_cache(name);

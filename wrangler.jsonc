@@ -16,5 +16,8 @@
 			"database_name": "neon-burst-db",
 			"database_id": "05bef0a4-d062-4295-a688-68961e0887e6"
 		}
-	]
+	],
+	"triggers": {
+		"crons": ["0 1 * * *"]
+	}
 }

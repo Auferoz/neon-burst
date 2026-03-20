@@ -1,23 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import PageHeader from '../components/Astro/PageHeader.astro';
-import EmptyState from '../components/Astro/EmptyState.astro';
+import SteamLibrary from '../components/Vue/SteamLibrary.vue';
+
+export const prerender = false;
 ---
 
-<Layout title="Neon Burst | Mis Juegos Steam">
-	<section>
-		<PageHeader
-			title="steam_library"
-			subtitle="Tu colección completa de juegos en Steam"
-			accentColor="cyan"
-		/>
-
-		<div class="border border-border-default rounded-xl bg-surface-1/30 p-5 sm:p-8">
-			<EmptyState
-				message="Conectando con Steam API"
-				description="Aquí se mostrará tu biblioteca de juegos de Steam sincronizada."
-				accentColor="cyan"
-			/>
-		</div>
-	</section>
+<Layout title="Neon Burst | Steam Library">
+	<SteamLibrary client:load />
 </Layout>
