@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import GameCard from './GameCard.vue';
-import GamesFilter from './GamesFilter.vue';
-import GamesDashboard from './GamesDashboard.vue';
-import GameFormModal from './GameFormModal.vue';
+import PlayedGamesCard from './PlayedGamesCard.vue';
+import PlayedGamesFilter from './PlayedGamesFilter.vue';
+import PlayedGamesDashboard from './PlayedGamesDashboard.vue';
+import PlayedGamesFormModal from './PlayedGamesFormModal.vue';
 import IconGrid from '../Icons/IconGrid.vue';
 import IconClock from '../Icons/IconClock.vue';
 import IconTrophy from '../Icons/IconTrophy.vue';
@@ -29,6 +29,7 @@ interface Game {
   first_year_played: number | null;
   years_played: number[];
   description: string;
+  latest_fecha_inicio: string;
 }
 
 const currentYear = new Date().getFullYear();
@@ -79,8 +80,21 @@ const filteredGames = computed(() => {
     result = result.filter(g => g.console_pc === selectedPlataforma.value);
   }
 
-  return result;
+  return [...result].sort((a, b) => {
+    const dateA = parseFecha(a.latest_fecha_inicio);
+    const dateB = parseFecha(b.latest_fecha_inicio);
+    return dateB - dateA;
+  });
 });
+
+function parseFecha(fecha: string): number {
+  if (!fecha) return 0;
+  const parts = fecha.split('/');
+  if (parts.length === 3) {
+    return new Date(+parts[2], +parts[1] - 1, +parts[0]).getTime();
+  }
+  return 0;
+}
 
 async function fetchGames() {
   loading.value = true;
@@ -122,17 +136,17 @@ onMounted(fetchGames);
         <p class="text-text-secondary text-sm leading-relaxed">Historial de juegos completados, abandonados y en progreso</p>
 
         <!-- Totals inline -->
-        <div v-if="!loading && games.length > 0" class="flex items-center gap-2 lg:gap-4 mt-2 text-xs text-text-muted">
+        <div v-if="!loading && games.length > 0" class="flex items-center gap-2 lg:gap-4 mt-2 text-xs text-text-secondary">
           <span class="inline-flex items-center gap-1">
             <IconGrid :size="14" class="text-neon-cyan" />
             <span class="text-neon-cyan font-semibold">{{ games.length }}</span> juegos
           </span>
-          <span class="text-border-default">&middot;</span>
+          <span class="text-surface-4" aria-hidden="true">&middot;</span>
           <span class="inline-flex items-center gap-1">
             <IconClock :size="14" class="text-neon-blue" />
             <span class="text-neon-blue font-semibold">{{ Math.round(games.reduce((s, g) => s + (g.horas_total || 0), 0)).toLocaleString() }}h</span> jugadas
           </span>
-          <span class="text-border-default">&middot;</span>
+          <span class="text-surface-4" aria-hidden="true">&middot;</span>
           <span class="inline-flex items-center gap-1">
             <IconTrophy :size="14" class="text-neon-green" />
             <span class="text-neon-green font-semibold">{{ games.reduce((s, g) => s + (g.logros_obt || 0), 0).toLocaleString() }}</span> logros
@@ -168,14 +182,14 @@ onMounted(fetchGames);
 
 
       <!-- Stats -->
-      <GamesDashboard v-if="!loading && games.length > 0" :games="games" />
+      <PlayedGamesDashboard v-if="!loading && games.length > 0" :games="games" />
     </div>
 
     <!-- Separacion entre header y filtros -->
     <div class="h-px bg-linear-to-r from-neon-blue/40 via-neon-cyan/20 to-transparent my-4"></div>
 
     <!-- Filters -->
-    <GamesFilter
+    <PlayedGamesFilter
       v-if="!loading && games.length > 0"
       :años="años"
       :estados="estados"
@@ -190,13 +204,13 @@ onMounted(fetchGames);
 
     <!-- Loading -->
     <div v-if="loading" class="border border-dashed border-neon-blue/20 rounded-xl p-10 sm:p-14 text-center">
-      <div class="text-sm text-neon-blue/60 font-medium animate-pulse">[ Cargando juegos... ]</div>
+      <div class="text-sm text-neon-blue font-medium animate-pulse" role="status">[ Cargando juegos... ]</div>
     </div>
 
     <!-- Error -->
     <div v-else-if="error" class="border border-dashed border-neon-pink/20 rounded-xl p-10 sm:p-14 text-center">
-      <div class="text-sm text-neon-pink/60 font-medium mb-2">[ Error ]</div>
-      <p class="text-text-muted text-xs">{{ error }}</p>
+      <div class="text-sm text-neon-pink font-medium mb-2" role="alert">[ Error ]</div>
+      <p class="text-text-secondary text-xs">{{ error }}</p>
       <button
         @click="fetchGames"
         class="mt-4 px-4 py-2 text-xs text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-neon-blue/10 transition-colors duration-200 cursor-pointer"
@@ -207,18 +221,18 @@ onMounted(fetchGames);
 
     <!-- Empty state -->
     <div v-else-if="games.length === 0" class="border border-dashed border-neon-blue/20 rounded-xl p-10 sm:p-14 text-center">
-      <div class="text-sm text-neon-blue/60 font-medium mb-3">[ Sin juegos ]</div>
-      <p class="text-text-muted text-xs">No hay juegos registrados en la base de datos.</p>
+      <div class="text-sm text-neon-blue font-medium mb-3">[ Sin juegos ]</div>
+      <p class="text-text-secondary text-xs">No hay juegos registrados en la base de datos.</p>
     </div>
 
     <!-- No results for filters -->
     <div v-else-if="filteredGames.length === 0" class="border border-dashed border-neon-blue/20 rounded-xl p-10 text-center">
-      <div class="text-sm text-text-muted font-medium">Sin resultados para los filtros aplicados</div>
+      <div class="text-sm text-text-secondary font-medium">Sin resultados para los filtros aplicados</div>
     </div>
 
     <!-- Games grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <GameCard
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Juegos jugados">
+      <PlayedGamesCard
         v-for="game in filteredGames"
         :key="game.id"
         :game="game"
@@ -226,7 +240,7 @@ onMounted(fetchGames);
     </div>
 
     <!-- Create modal -->
-    <GameFormModal
+    <PlayedGamesFormModal
       :open="showCreateModal"
       @close="showCreateModal = false"
       @saved="onGameCreated"

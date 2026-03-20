@@ -7,7 +7,8 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const CRON_SECRET = 'neon-burst-cron-2026';
-const SYNC_URL = 'https://neon-burst.adesigns7.workers.dev/api/steam/sync';
+const STEAM_SYNC_URL = 'https://neon-burst.adesigns7.workers.dev/api/steam/sync';
+const NEXT_GAMES_SYNC_URL = 'https://neon-burst.adesigns7.workers.dev/api/next-games/sync';
 
 export default function cloudflareCron(): AstroIntegration {
   return {
@@ -37,10 +38,16 @@ export default function cloudflareCron(): AstroIntegration {
 const _cronWrapped = {
   ...${varName},
   async scheduled(controller, env, ctx) {
-    const request = new Request('${SYNC_URL}', {
+    const steamReq = new Request('${STEAM_SYNC_URL}', {
       headers: { 'x-cron-secret': '${CRON_SECRET}' },
     });
-    ctx.waitUntil(${varName}.fetch(request, env, ctx));
+    const nextGamesReq = new Request('${NEXT_GAMES_SYNC_URL}', {
+      headers: { 'x-cron-secret': '${CRON_SECRET}' },
+    });
+    ctx.waitUntil(
+      ${varName}.fetch(steamReq, env, ctx)
+        .then(() => ${varName}.fetch(nextGamesReq, env, ctx))
+    );
   },
 };
 export { _cronWrapped as default };`

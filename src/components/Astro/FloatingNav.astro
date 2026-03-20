@@ -28,6 +28,7 @@ function isActive(href: string) {
 		{navLinks.map(link => (
 			<a
 				href={link.href}
+				data-astro-reload
 				aria-current={isActive(link.href) ? 'page' : undefined}
 				aria-label={link.label}
 				class:list={[

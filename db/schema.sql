@@ -56,3 +56,26 @@ CREATE TABLE IF NOT EXISTS steam_cache (
 );
 
 CREATE INDEX IF NOT EXISTS idx_steam_cache_name ON steam_cache(name);
+
+CREATE TABLE IF NOT EXISTS next_games_cache (
+  igdb_id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  developer TEXT,
+  publisher TEXT,
+  genres TEXT,
+  cover TEXT,
+  bg_image TEXT,
+  release_date INTEGER DEFAULT 0,
+  platforms TEXT,
+  steam_url TEXT,
+  hypes INTEGER DEFAULT 0,
+  follows INTEGER DEFAULT 0,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_next_games_cache_date ON next_games_cache(release_date);
+
+CREATE TABLE IF NOT EXISTS next_games_featured (
+  igdb_id INTEGER PRIMARY KEY,
+  created_at TEXT DEFAULT (datetime('now'))
+);

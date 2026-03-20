@@ -36,6 +36,7 @@ export interface DatePlayed {
 export interface GameWithYears extends Game {
   years_played: number[];
   horas_total: number;
+  latest_fecha_inicio: string;
 }
 
 export interface GameWithDates extends Game {
@@ -49,22 +50,27 @@ export async function getAllGames(db: D1Database): Promise<GameWithYears[]> {
   ).all<Game>();
 
   const { results: dateRows } = await db.prepare(
-    'SELECT game_id, year, horas FROM dates_played ORDER BY year DESC'
-  ).all<{ game_id: number; year: number; horas: number }>();
+    'SELECT game_id, year, fecha_inicio, horas FROM dates_played ORDER BY year DESC, fecha_inicio DESC'
+  ).all<{ game_id: number; year: number; fecha_inicio: string; horas: number }>();
 
   const yearsByGame = new Map<number, number[]>();
   const horasByGame = new Map<number, number>();
+  const latestFechaByGame = new Map<number, string>();
   for (const row of dateRows) {
     const arr = yearsByGame.get(row.game_id) || [];
     arr.push(row.year);
     yearsByGame.set(row.game_id, arr);
     horasByGame.set(row.game_id, (horasByGame.get(row.game_id) || 0) + (row.horas || 0));
+    if (!latestFechaByGame.has(row.game_id) && row.fecha_inicio) {
+      latestFechaByGame.set(row.game_id, row.fecha_inicio);
+    }
   }
 
   return games.map(g => ({
     ...g,
     years_played: [...new Set(yearsByGame.get(g.id) || [])],
     horas_total: horasByGame.get(g.id) || 0,
+    latest_fecha_inicio: latestFechaByGame.get(g.id) || '',
   }));
 }
 

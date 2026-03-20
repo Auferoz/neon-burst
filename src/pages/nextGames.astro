@@ -1,23 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import PageHeader from '../components/Astro/PageHeader.astro';
-import EmptyState from '../components/Astro/EmptyState.astro';
+import NextGamesMain from '../components/Vue/NextGamesMain.vue';
+
+export const prerender = false;
 ---
 
 <Layout title="Neon Burst | Próximos Juegos">
-	<section>
-		<PageHeader
-			title="próximos_juegos"
-			subtitle="Lanzamientos que tienes en el radar"
-			accentColor="pink"
-		/>
-
-		<div class="border border-border-default rounded-xl bg-surface-1/30 p-5 sm:p-8">
-			<EmptyState
-				message="Escaneando lanzamientos"
-				description="Aquí se mostrarán los próximos juegos con fechas de lanzamiento y detalles."
-				accentColor="pink"
-			/>
-		</div>
-	</section>
+	<NextGamesMain client:load />
 </Layout>

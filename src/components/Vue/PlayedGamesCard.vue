@@ -42,20 +42,21 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
 </script>
 
 <template>
-  <a :href="`/playedGames/${game.id}`" class="block h-full">
+  <a :href="`/playedGames/${game.id}`" class="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-blue rounded-xl" :aria-label="`${game.title}, ${game.estado}, ${game.horas_total}h jugadas`">
   <article class="group relative border border-border-default rounded-xl overflow-hidden transition-all duration-200 hover:border-border-hover h-full flex flex-col cursor-pointer">
-    <!-- Artwork background with blur -->
+    <!-- Artwork background (decorative) -->
     <div
       v-if="artworkUrl"
       class="absolute inset-0 z-0"
+      aria-hidden="true"
     >
       <img
         :src="artworkUrl"
-        :alt="''"
-        class="w-full h-full object-cover object-top scale-105 opacity-70 group-hover:opacity-30 group-hover:blur-sm transition-all duration-300"
+        alt=""
+        class="w-full h-full object-cover object-top scale-105 group-hover:opacity-30 group-hover:blur-sm transition-all duration-300"
         loading="lazy"
       />
-      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/90 to-surface-0/70" />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
     </div>
 
     <div class="relative z-10 flex gap-4 p-2 flex-1">
@@ -64,7 +65,7 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
         <img
           v-if="posterUrl"
           :src="posterUrl"
-          :alt="game.title"
+          :alt="`Poster de ${game.title}`"
           class="w-20 sm:w-24 rounded-lg object-cover aspect-3/4 bg-surface-3"
           :style="{ viewTransitionName: `poster-${game.id}` }"
           loading="lazy"
@@ -73,7 +74,8 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
         />
         <div
           v-else
-          class="w-16 sm:w-24 rounded-lg aspect-3/4 bg-surface-3 flex items-center justify-center text-text-muted text-xs"
+          class="w-16 sm:w-24 rounded-lg aspect-3/4 bg-surface-3 flex items-center justify-center text-text-secondary/50 text-xs"
+          aria-hidden="true"
         >
           ?
         </div>
@@ -87,7 +89,7 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
             {{ game.title }}
           </h3>
           <span
-            :class="estadoColor[game.estado] || 'text-text-muted border-border-default bg-surface-2'"
+            :class="estadoColor[game.estado] || 'text-text-secondary border-border-default bg-surface-2'"
             class="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md border"
           >
             {{ game.estado }}
@@ -95,20 +97,21 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
         </div>
 
         <!-- Meta -->
-        <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-text-muted mb-2">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-text-secondary mb-2">
           <span>{{ game.companie }}</span>
-          <span class="text-border-default">&middot;</span>
+          <span class="text-surface-4" aria-hidden="true">&middot;</span>
           <span>{{ game.console_pc }}</span>
-          <span class="text-border-default">&middot;</span>
+          <span class="text-surface-4" aria-hidden="true">&middot;</span>
           <span>{{ game.horas_total }}h</span>
         </div>
 
         <!-- Genre tags -->
-        <div class="flex flex-wrap gap-1 mb-2">
+        <div class="flex flex-wrap gap-1 mb-2" role="list" aria-label="Géneros">
           <span
             v-for="g in game.genre.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)"
             :key="g"
-            class="text-[10px] text-text-muted bg-surface-3/60 px-1.5 py-0.5 rounded"
+            role="listitem"
+            class="text-[10px] text-text-secondary bg-surface-3/80 px-1.5 py-0.5 rounded"
           >
             {{ g }}
           </span>
@@ -118,12 +121,12 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
         <div class="flex-1" />
 
         <!-- Logros bar -->
-        <div v-if="game.logros_total > 0">
-          <div class="flex justify-between text-[10px] text-text-muted mb-1">
+        <div v-if="game.logros_total > 0" :aria-label="`Logros: ${game.logros_obt} de ${game.logros_total}, ${logrosPercent}%`">
+          <div class="flex justify-between text-[10px] text-text-secondary mb-1">
             <span>Logros</span>
             <span>{{ game.logros_obt }}/{{ game.logros_total }} ({{ logrosPercent }}%)</span>
           </div>
-          <div class="h-1 bg-surface-3 rounded-full overflow-hidden">
+          <div class="h-1 bg-surface-3 rounded-full overflow-hidden" role="progressbar" :aria-valuenow="logrosPercent" aria-valuemin="0" aria-valuemax="100" :aria-label="`${logrosPercent}% de logros completados`">
             <div
               class="h-full bg-neon-blue rounded-full transition-all duration-500"
               :style="{ width: `${logrosPercent}%` }"

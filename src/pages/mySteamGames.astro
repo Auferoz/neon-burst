@@ -1,10 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import SteamLibrary from '../components/Vue/SteamLibrary.vue';
+import SteamLibraryMain from '../components/Vue/SteamLibraryMain.vue';
 
 export const prerender = false;
 ---
 
 <Layout title="Neon Burst | Steam Library">
-	<SteamLibrary client:load />
+	<SteamLibraryMain client:load />
 </Layout>

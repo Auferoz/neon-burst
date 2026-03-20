@@ -69,7 +69,7 @@ const stats = computed(() => {
         <div :class="stat.text" class="text-lg lg:text-xl font-bold leading-none mb-0.5">
           {{ stat.count }}
         </div>
-        <div class="text-[11px] lg:text-xs text-text-muted truncate">
+        <div class="text-[11px] lg:text-xs text-text-secondary truncate">
           {{ stat.label }}
         </div>
       </div>

@@ -85,7 +85,7 @@ const hasActiveFilters = computed(() =>
       </div>
 
       <!-- Counter -->
-      <span class="text-xs text-text-muted ml-auto">
+      <span class="text-xs text-text-secondary ml-auto">
         <template v-if="hasActiveFilters">
           {{ filteredCount }} de {{ totalGames }}
         </template>

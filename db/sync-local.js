@@ -19,7 +19,7 @@ try {
 
   console.log('\n🗑 Limpiando base de datos local...');
   exec(
-    `npx wrangler d1 execute ${DB_NAME} --local --command "DROP TABLE IF EXISTS dates_played; DROP TABLE IF EXISTS games;"`,
+    `npx wrangler d1 execute ${DB_NAME} --local --command "DROP TABLE IF EXISTS dates_played; DROP TABLE IF EXISTS games; DROP TABLE IF EXISTS steam_cache;"`,
     { stdio: 'inherit', cwd: process.cwd() }
   );
 

@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
 import { getGameById } from '../../services/gamesService';
-import GameEditButton from '../../components/Vue/GameEditButton.vue';
+import PlayedGamesEditButton from '../../components/Vue/PlayedGamesEditButton.vue';
 
 export const prerender = false;
 
@@ -53,7 +53,7 @@ const hasMedia = hasTrailer || hasArtwork;
 			</svg>
 			Volver a la lista
 		</a>
-		<GameEditButton client:load game={JSON.parse(JSON.stringify(game))} />
+		<PlayedGamesEditButton client:load game={JSON.parse(JSON.stringify(game))} />
 	</div>
 
 	<!-- Hero section with artwork background -->

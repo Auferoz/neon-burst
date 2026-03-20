@@ -1,12 +1,12 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import GamesList from '../../components/Vue/GamesList.vue';
+import PlayedGamesMain from '../../components/Vue/PlayedGamesMain.vue';
 
 export const prerender = false;
 ---
 
 <Layout title="Neon Burst | Juegos Jugados">
 	<section>
-		<GamesList client:load />
+		<PlayedGamesMain client:load />
 	</section>
 </Layout>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import GameFormModal from './GameFormModal.vue';
+import PlayedGamesFormModal from './PlayedGamesFormModal.vue';
 
 const props = defineProps<{
   game: Record<string, unknown>;
@@ -25,7 +25,7 @@ function onSaved() {
     Editar
   </button>
 
-  <GameFormModal
+  <PlayedGamesFormModal
     :open="showModal"
     :game="game as any"
     @close="showModal = false"
