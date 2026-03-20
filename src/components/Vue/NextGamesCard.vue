@@ -183,7 +183,7 @@ function getPlatformColor(platform: string): string {
         <!-- Genre tags -->
         <div v-if="game.genres" class="flex flex-wrap gap-1 mb-2" role="list" aria-label="Géneros">
           <span
-            v-for="g in game.genres.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)"
+            v-for="g in game.genres.replace(/Hack and slash\/Beat 'em up/gi, 'Hack & Slash').split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)"
             :key="g"
             role="listitem"
             class="text-[10px] text-text-secondary bg-surface-3/80 px-1.5 py-0.5 rounded"

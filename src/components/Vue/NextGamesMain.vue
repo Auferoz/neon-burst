@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from 'vue';
 import NextGamesCard from './NextGamesCard.vue';
 import IconGrid from '../Icons/IconGrid.vue';
 import IconCalendar from '../Icons/IconCalendar.vue';
+import IconGamepad from '../Icons/IconGamepad.vue';
+import IconLibrary from '../Icons/IconLibrary.vue';
 
 interface NextGame {
   id: number;
@@ -175,6 +177,24 @@ onMounted(() => {
         <span class="inline-flex items-center gap-1">
           <span class="text-neon-green font-semibold">{{ releasedCount }}</span> lanzados
         </span>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2 mt-4">
+        <a
+          href="/playedGames"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-neon-blue/10 transition-colors"
+        >
+          <IconGamepad :size="14" />
+          Jugados
+        </a>
+        <a
+          href="/mySteamGames"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-cyan border border-neon-cyan/30 rounded-lg hover:bg-neon-cyan/10 transition-colors"
+        >
+          <IconLibrary :size="14" />
+          Steam
+        </a>
       </div>
     </div>
 

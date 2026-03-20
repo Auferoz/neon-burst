@@ -2,6 +2,8 @@
 import { ref, computed, onMounted } from 'vue';
 import IconGrid from '../Icons/IconGrid.vue';
 import IconClock from '../Icons/IconClock.vue';
+import IconGamepad from '../Icons/IconGamepad.vue';
+import IconRocket from '../Icons/IconRocket.vue';
 
 interface SteamGame {
   appid: number;
@@ -104,6 +106,13 @@ function onPosterError(e: Event) {
   if (placeholder) placeholder.style.display = 'flex';
 }
 
+function onArtworkError(e: Event) {
+  const img = e.target as HTMLImageElement;
+  img.style.display = 'none';
+  const fallback = img.parentElement?.querySelector('.artwork-fallback') as HTMLElement;
+  if (fallback) fallback.style.display = 'flex';
+}
+
 async function fetchGames() {
   loading.value = true;
   error.value = '';
@@ -141,6 +150,24 @@ onMounted(fetchGames);
         </span>
         <span class="text-border-default">&middot;</span>
         <span class="inline-flex items-center gap-1"><span class="text-neon-cyan font-semibold">{{ playedCount }}</span> jugados</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2 mt-4">
+        <a
+          href="/playedGames"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-neon-blue/10 transition-colors"
+        >
+          <IconGamepad :size="14" />
+          Jugados
+        </a>
+        <a
+          href="/nextGames"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-pink border border-neon-pink/30 rounded-lg hover:bg-neon-pink/10 transition-colors"
+        >
+          <IconRocket :size="14" />
+          Próximos
+        </a>
       </div>
     </div>
 
@@ -221,7 +248,11 @@ onMounted(fetchGames);
             alt=""
             class="w-full h-full object-cover object-top scale-105 group-hover:opacity-30 group-hover:blur-sm transition-all duration-300"
             loading="lazy"
+            @error="onArtworkError"
           />
+          <div class="artwork-fallback absolute inset-0 bg-surface-1 items-center justify-center" style="display: none">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary/10"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          </div>
           <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
         </div>
 
@@ -291,7 +322,7 @@ onMounted(fetchGames);
             <!-- Genre tags -->
             <div v-if="game.genres" class="flex flex-wrap gap-1 mb-2" role="list" aria-label="Géneros">
               <span
-                v-for="g in game.genres.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)"
+                v-for="g in game.genres.replace(/Hack and slash\/Beat 'em up/gi, 'Hack & Slash').split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)"
                 :key="g"
                 role="listitem"
                 class="text-[10px] text-text-secondary bg-surface-3/80 px-1.5 py-0.5 rounded"

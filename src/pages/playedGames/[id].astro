@@ -34,7 +34,7 @@ const logrosPercent = game.logros_total > 0
 	? Math.round((game.logros_obt / game.logros_total) * 100)
 	: 0;
 
-const genres = game.genre ? game.genre.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+const genres = game.genre ? game.genre.replace(/Hack and slash\/Beat 'em up/gi, 'Hack & Slash').split(',').map((s: string) => s.trim()).filter(Boolean) : [];
 const totalHoras = game.dates_played.reduce((sum, d) => sum + (d.horas || 0), 0);
 const hasTrailer = !!trailerUrl;
 const hasArtwork = !!artworkUrl;

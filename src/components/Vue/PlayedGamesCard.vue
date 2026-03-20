@@ -58,6 +58,26 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
       />
       <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
     </div>
+    <div
+      v-else-if="posterUrl"
+      class="absolute inset-0 z-0"
+      aria-hidden="true"
+    >
+      <img
+        :src="posterUrl"
+        alt=""
+        class="w-full h-full object-cover scale-150 blur-md opacity-40"
+        loading="lazy"
+      />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+    </div>
+    <div
+      v-else
+      class="absolute inset-0 z-0 bg-surface-1 flex items-center justify-center"
+      aria-hidden="true"
+    >
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary/10"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+    </div>
 
     <div class="relative z-10 flex gap-4 p-2 flex-1">
       <!-- Poster -->
@@ -108,7 +128,7 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
         <!-- Genre tags -->
         <div class="flex flex-wrap gap-1 mb-2" role="list" aria-label="Géneros">
           <span
-            v-for="g in game.genre.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)"
+            v-for="g in game.genre.replace(/Hack and slash\/Beat 'em up/gi, 'Hack & Slash').split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)"
             :key="g"
             role="listitem"
             class="text-[10px] text-text-secondary bg-surface-3/80 px-1.5 py-0.5 rounded"
