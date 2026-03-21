@@ -122,13 +122,19 @@ export async function updateGame(
   id: number,
   data: Partial<Omit<Game, 'id' | 'created_at' | 'updated_at'>> & { dates_played?: Omit<DatePlayed, 'id' | 'game_id'>[] }
 ): Promise<GameWithDates | null> {
-  const { dates_played, ...gameData } = data;
+  const { dates_played, horas_total, years_played, latest_fecha_inicio, ...gameData } = data as Record<string, unknown>;
+
+  const allowedColumns = new Set([
+    'title', 'released', 'companie', 'poster', 'trailer', 'artworks', 'genre',
+    'estado', 'logros_obt', 'logros_total', 'console_pc', 'igdb_id',
+    'first_year_played', 'description', 'rating_metacritic', 'rating_rawg',
+  ]);
 
   const fields: string[] = [];
   const values: unknown[] = [];
 
   for (const [key, value] of Object.entries(gameData)) {
-    if (value !== undefined) {
+    if (value !== undefined && allowedColumns.has(key)) {
       fields.push(`${key} = ?`);
       values.push(value);
     }
