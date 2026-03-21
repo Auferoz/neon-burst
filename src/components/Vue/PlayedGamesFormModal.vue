@@ -26,6 +26,8 @@ interface GameData {
   description: string;
   rating_metacritic: number | '';
   rating_rawg: number | '';
+  is_demo: boolean;
+  is_early_access: boolean;
   dates_played: DateEntry[];
 }
 
@@ -51,7 +53,7 @@ function emptyForm(): GameData {
     artworks: '', genre: '', estado: 'Jugando',
     logros_obt: '', logros_total: '', console_pc: '', igdb_id: '',
     first_year_played: '', description: '', rating_metacritic: '',
-    rating_rawg: '', dates_played: [],
+    rating_rawg: '', is_demo: false, is_early_access: false, dates_played: [],
   };
 }
 
@@ -67,6 +69,8 @@ watch(() => props.open, (val) => {
         first_year_played: props.game.first_year_played || '',
         rating_metacritic: props.game.rating_metacritic || '',
         rating_rawg: props.game.rating_rawg || '',
+        is_demo: !!props.game.is_demo,
+        is_early_access: !!props.game.is_early_access,
         dates_played: props.game.dates_played?.length
           ? props.game.dates_played.map(d => ({ ...d }))
           : [],
@@ -107,6 +111,8 @@ async function save() {
     first_year_played: Number(form.value.first_year_played) || null,
     rating_metacritic: Number(form.value.rating_metacritic) || null,
     rating_rawg: Number(form.value.rating_rawg) || null,
+    is_demo: form.value.is_demo ? 1 : 0,
+    is_early_access: form.value.is_early_access ? 1 : 0,
     dates_played: form.value.dates_played
       .filter(d => d.year)
       .map(d => ({
@@ -212,6 +218,26 @@ function onBackdrop(e: MouseEvent) {
                 <option value="Abandonado">Abandonado</option>
               </select>
             </div>
+          </div>
+
+          <!-- Marcas: Demo / Early Access -->
+          <div class="flex items-center gap-6">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                v-model="form.is_demo"
+                class="w-4 h-4 rounded border-border-default bg-surface-2 text-neon-purple accent-neon-purple cursor-pointer"
+              />
+              <span class="text-xs text-text-secondary">Demo</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                v-model="form.is_early_access"
+                class="w-4 h-4 rounded border-border-default bg-surface-2 text-neon-yellow accent-neon-yellow cursor-pointer"
+              />
+              <span class="text-xs text-text-secondary">Early Access</span>
+            </label>
           </div>
 
           <!-- Company + Released + Platform -->

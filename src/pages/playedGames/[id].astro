@@ -93,12 +93,24 @@ const hasMedia = hasTrailer || hasArtwork;
 				<!-- Title + Estado -->
 				<div class="flex flex-wrap items-start gap-3 mb-3">
 					<h1 class="text-2xl sm:text-3xl font-bold text-text-primary leading-tight">{game.title}</h1>
-					<span class:list={[
-						'shrink-0 text-xs font-medium px-3 py-1 rounded-lg border',
-						estadoColor[game.estado] || 'text-text-muted border-border-default bg-surface-2'
-					]}>
-						{game.estado}
-					</span>
+					<div class="flex items-center gap-2 shrink-0">
+						{game.is_demo === 1 && (
+							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-neon-purple border-neon-purple/30 bg-neon-purple/10">
+								Demo
+							</span>
+						)}
+						{game.is_early_access === 1 && (
+							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10">
+								Early Access
+							</span>
+						)}
+						<span class:list={[
+							'text-xs font-medium px-3 py-1 rounded-lg border',
+							estadoColor[game.estado] || 'text-text-muted border-border-default bg-surface-2'
+						]}>
+							{game.estado}
+						</span>
+					</div>
 				</div>
 
 				<!-- Meta row -->

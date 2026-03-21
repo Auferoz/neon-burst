@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS games (
   description TEXT,
   rating_metacritic INTEGER,
   rating_rawg REAL,
+  is_demo INTEGER DEFAULT 0,
+  is_early_access INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );

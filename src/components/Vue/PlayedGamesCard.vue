@@ -15,6 +15,8 @@ interface Game {
   first_year_played: number | null;
   years_played: number[];
   description: string;
+  is_demo: number;
+  is_early_access: number;
 }
 
 const props = defineProps<{
@@ -108,12 +110,26 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
           <h3 class="text-sm font-semibold text-text-primary leading-snug line-clamp-2">
             {{ game.title }}
           </h3>
-          <span
-            :class="estadoColor[game.estado] || 'text-text-secondary border-border-default bg-surface-2'"
-            class="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md border"
-          >
-            {{ game.estado }}
-          </span>
+          <div class="flex items-center gap-1 shrink-0">
+            <span
+              v-if="game.is_demo"
+              class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-neon-purple border-neon-purple/30 bg-neon-purple/10"
+            >
+              Demo
+            </span>
+            <span
+              v-if="game.is_early_access"
+              class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10"
+            >
+              Early Access
+            </span>
+            <span
+              :class="estadoColor[game.estado] || 'text-text-secondary border-border-default bg-surface-2'"
+              class="text-[10px] font-medium px-2 py-0.5 rounded-md border"
+            >
+              {{ game.estado }}
+            </span>
+          </div>
         </div>
 
         <!-- Meta -->

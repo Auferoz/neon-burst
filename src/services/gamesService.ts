@@ -20,6 +20,8 @@ export interface Game {
   description: string;
   rating_metacritic: number | null;
   rating_rawg: number | null;
+  is_demo: number;
+  is_early_access: number;
   created_at: string;
   updated_at: string;
 }
@@ -95,13 +97,14 @@ export async function createGame(
   data: Partial<Omit<Game, 'id' | 'created_at' | 'updated_at'>> & { title: string; estado: string; dates_played?: Omit<DatePlayed, 'id' | 'game_id'>[] }
 ): Promise<GameWithDates> {
   const result = await db.prepare(`
-    INSERT INTO games (title, released, companie, poster, trailer, artworks, genre, estado, logros_obt, logros_total, console_pc, igdb_id, first_year_played, description, rating_metacritic, rating_rawg)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO games (title, released, companie, poster, trailer, artworks, genre, estado, logros_obt, logros_total, console_pc, igdb_id, first_year_played, description, rating_metacritic, rating_rawg, is_demo, is_early_access)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     data.title, data.released || '', data.companie || '', data.poster || '', data.trailer || '',
     data.artworks || '', data.genre || '', data.estado, data.logros_obt || 0,
     data.logros_total || 0, data.console_pc || '', data.igdb_id || null, data.first_year_played || null,
-    data.description || '', data.rating_metacritic || null, data.rating_rawg || null
+    data.description || '', data.rating_metacritic || null, data.rating_rawg || null,
+    data.is_demo || 0, data.is_early_access || 0
   ).run();
 
   const gameId = result.meta.last_row_id;
@@ -128,6 +131,7 @@ export async function updateGame(
     'title', 'released', 'companie', 'poster', 'trailer', 'artworks', 'genre',
     'estado', 'logros_obt', 'logros_total', 'console_pc', 'igdb_id',
     'first_year_played', 'description', 'rating_metacritic', 'rating_rawg',
+    'is_demo', 'is_early_access',
   ]);
 
   const fields: string[] = [];
