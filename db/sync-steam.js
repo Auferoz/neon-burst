@@ -61,7 +61,7 @@ async function fetchStoreDetails(appid) {
 async function getValidPoster(appid) {
   const posterUrl = `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/library_600x900.jpg`;
   try {
-    const res = await fetch(posterUrl, { method: 'HEAD' });
+    const res = await fetch(posterUrl, { method: 'HEAD', headers: { 'User-Agent': UA } });
     if (res.ok && res.headers.get('content-type')?.includes('image')) {
       return posterUrl;
     }
