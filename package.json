@@ -14,7 +14,9 @@
     "sync-local": "node db/sync-local.js",
     "fetch-ratings": "node db/fetch-ratings.js",
     "sync-steam": "node db/sync-steam.js",
-    "sync-steam:remote": "node db/sync-steam.js --remote"
+    "sync-steam:remote": "node db/sync-steam.js --remote",
+    "sync-movies": "node db/sync-movies.js",
+    "sync-movies:remote": "node db/sync-movies.js --remote"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.2",

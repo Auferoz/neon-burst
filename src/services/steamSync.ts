@@ -121,7 +121,7 @@ async function searchHltb(name: string, token: string) {
 
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
-export async function syncSteamLibrary(db: D1Database): Promise<{ synced: number; errors: number }> {
+export async function syncSteamLibrary(db: D1Database): Promise<{ synced: number; errors: number; newGames: number }> {
   await db.prepare(`
     CREATE TABLE IF NOT EXISTS steam_cache (
       appid INTEGER PRIMARY KEY, name TEXT NOT NULL, developer TEXT, publisher TEXT,
@@ -132,33 +132,31 @@ export async function syncSteamLibrary(db: D1Database): Promise<{ synced: number
   `).run();
 
   const games = await fetchOwnedGames();
-  let hltbToken = await getHltbToken();
-  let synced = 0, errors = 0;
+
+  // Get existing appids to avoid overwriting rich data (store details, poster, HLTB)
+  const { results: existingRows } = await db.prepare('SELECT appid FROM steam_cache').all<{ appid: number }>();
+  const existingIds = new Set(existingRows.map(r => r.appid));
+
+  let synced = 0, errors = 0, newGames = 0;
 
   for (const game of games) {
     try {
-      const store = await fetchStoreDetails(game.appid);
-      await sleep(350);
-      let poster = await getValidPoster(game.appid);
-      if (!poster) {
-        poster = await igdbCover(game.name);
-        await sleep(200);
+      if (existingIds.has(game.appid)) {
+        // Existing game: only update playtime + last_played (safe from Worker)
+        await db.prepare(
+          'UPDATE steam_cache SET name = ?, playtime = ?, last_played = ?, updated_at = datetime(\'now\') WHERE appid = ?'
+        ).bind(game.name, game.playtime_forever || 0, game.rtime_last_played || 0, game.appid).run();
+      } else {
+        // New game: insert with basic data, details will be filled by local sync
+        await db.prepare(`
+          INSERT INTO steam_cache (appid, name, developer, publisher, genres, released, poster, playtime, last_played, updated_at)
+          VALUES (?, ?, '', '', '', '', '', ?, ?, datetime('now'))
+        `).bind(game.appid, game.name, game.playtime_forever || 0, game.rtime_last_played || 0).run();
+        newGames++;
       }
-      const hltb = hltbToken ? await searchHltb(game.name, hltbToken) : null;
-      await sleep(250);
-
-      await db.prepare(`
-        INSERT OR REPLACE INTO steam_cache (appid, name, developer, publisher, genres, released, poster, playtime, last_played, hltb_main, hltb_extra, hltb_completionist, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-      `).bind(
-        game.appid, game.name, store?.developer || '', store?.publisher || '',
-        store?.genres || '', store?.released || '', poster,
-        game.playtime_forever || 0, game.rtime_last_played || 0,
-        hltb?.main ?? null, hltb?.extra ?? null, hltb?.completionist ?? null,
-      ).run();
       synced++;
     } catch { errors++; }
   }
 
-  return { synced, errors };
+  return { synced, errors, newGames };
 }

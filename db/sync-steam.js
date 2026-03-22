@@ -186,10 +186,56 @@ async function searchHltb(gameName) {
   }
 }
 
+// ── Helpers ──
+
+// Parse --appids=11390,43160,202090 flag
+const appidsFlag = process.argv.find(a => a.startsWith('--appids='));
+const targetAppids = appidsFlag
+  ? new Set(appidsFlag.replace('--appids=', '').split(',').map(Number))
+  : null;
+
+async function syncGame(appid, name, playtime, lastPlayed) {
+  // Fetch Steam Store details
+  const store = await fetchStoreDetails(appid);
+  await sleep(300);
+
+  // Validate poster — Steam first, IGDB fallback
+  let poster = await getValidPoster(appid);
+  if (!poster) {
+    poster = await igdbCover(name);
+    await sleep(200);
+  }
+
+  // Fetch HLTB
+  const hltbData = await searchHltb(name);
+  await sleep(250);
+
+  const developer = esc(store?.developer || '');
+  const publisher = esc(store?.publisher || '');
+  const genres = esc(store?.genres || '');
+  const released = esc(store?.released || '');
+  const hMain = hltbData?.main ?? 'NULL';
+  const hExtra = hltbData?.extra ?? 'NULL';
+  const hComp = hltbData?.completionist ?? 'NULL';
+
+  const sql = `INSERT OR REPLACE INTO steam_cache (appid, name, developer, publisher, genres, released, poster, playtime, last_played, hltb_main, hltb_extra, hltb_completionist, updated_at) VALUES (${appid}, '${esc(name)}', '${developer}', '${publisher}', '${genres}', '${released}', '${esc(poster)}', ${playtime}, ${lastPlayed}, ${hMain}, ${hExtra}, ${hComp}, datetime('now'))`;
+
+  d1(sql);
+
+  const parts = [];
+  parts.push(store ? 'Store' : 'No Store');
+  parts.push(poster ? (poster.includes('igdb') ? 'IGDB Poster' : 'Steam Poster') : 'No Poster');
+  parts.push(hltbData ? `HLTB ${hltbData.main}h` : 'No HLTB');
+  return parts;
+}
+
 // ── Main ──
 
 async function main() {
-  console.log(`Syncing Steam library (${TARGET})...\n`);
+  const mode = targetAppids
+    ? `Re-syncing ${targetAppids.size} specific appids (${TARGET})`
+    : `Syncing Steam library (${TARGET})`;
+  console.log(`${mode}...\n`);
 
   // Create table if needed
   d1(`CREATE TABLE IF NOT EXISTS steam_cache (
@@ -216,52 +262,27 @@ async function main() {
 
   // Fetch owned games
   console.log('\nFetching Steam library...');
-  const games = await fetchOwnedGames();
-  console.log(`Found ${games.length} games.\n`);
+  const allGames = await fetchOwnedGames();
+  const games = targetAppids
+    ? allGames.filter(g => targetAppids.has(g.appid))
+    : allGames;
+  console.log(`Found ${games.length} games${targetAppids ? ` (filtered from ${allGames.length})` : ''}.\n`);
+
+  if (targetAppids && games.length < targetAppids.size) {
+    const found = new Set(games.map(g => g.appid));
+    const missing = [...targetAppids].filter(id => !found.has(id));
+    console.log(`⚠ Appids not found in Steam library: ${missing.join(', ')}\n`);
+  }
 
   let synced = 0;
   let errors = 0;
 
   for (const game of games) {
-    const appid = game.appid;
-    const name = game.name;
-    const playtime = game.playtime_forever || 0;
-    const lastPlayed = game.rtime_last_played || 0;
-
-    process.stdout.write(`[${synced + errors + 1}/${games.length}] ${name}... `);
-
-    // Fetch Steam Store details
-    const store = await fetchStoreDetails(appid);
-    await sleep(300);
-
-    // Validate poster — Steam first, IGDB fallback
-    let poster = await getValidPoster(appid);
-    if (!poster) {
-      poster = await igdbCover(name);
-      await sleep(200);
-    }
-
-    // Fetch HLTB
-    const hltbData = await searchHltb(name);
-    await sleep(250);
-
-    const developer = esc(store?.developer || '');
-    const publisher = esc(store?.publisher || '');
-    const genres = esc(store?.genres || '');
-    const released = esc(store?.released || '');
-    const hMain = hltbData?.main ?? 'NULL';
-    const hExtra = hltbData?.extra ?? 'NULL';
-    const hComp = hltbData?.completionist ?? 'NULL';
-
-    const sql = `INSERT OR REPLACE INTO steam_cache (appid, name, developer, publisher, genres, released, poster, playtime, last_played, hltb_main, hltb_extra, hltb_completionist, updated_at) VALUES (${appid}, '${esc(name)}', '${developer}', '${publisher}', '${genres}', '${released}', '${esc(poster)}', ${playtime}, ${lastPlayed}, ${hMain}, ${hExtra}, ${hComp}, datetime('now'))`;
+    process.stdout.write(`[${synced + errors + 1}/${games.length}] ${game.name}... `);
 
     try {
-      d1(sql);
+      const parts = await syncGame(game.appid, game.name, game.playtime_forever || 0, game.rtime_last_played || 0);
       synced++;
-      const parts = [];
-      parts.push(store ? 'Store' : 'No Store');
-      parts.push(poster ? (poster.includes('igdb') ? 'IGDB Poster' : 'Steam Poster') : 'No Poster');
-      parts.push(hltbData ? `HLTB ${hltbData.main}h` : 'No HLTB');
       console.log(`OK (${parts.join(', ')})`);
     } catch (e) {
       errors++;

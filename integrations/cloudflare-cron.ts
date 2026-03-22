@@ -9,6 +9,7 @@ import { join } from 'node:path';
 const CRON_SECRET = process.env.CRON_SECRET || '';
 const STEAM_SYNC_URL = process.env.STEAM_SYNC_URL || '';
 const NEXT_GAMES_SYNC_URL = process.env.NEXT_GAMES_SYNC_URL || '';
+const MOVIES_SYNC_URL = process.env.MOVIES_SYNC_URL || '';
 
 export default function cloudflareCron(): AstroIntegration {
   return {
@@ -44,9 +45,13 @@ const _cronWrapped = {
     const nextGamesReq = new Request('${NEXT_GAMES_SYNC_URL}', {
       headers: { 'x-cron-secret': '${CRON_SECRET}' },
     });
+    const moviesReq = new Request('${MOVIES_SYNC_URL}', {
+      headers: { 'x-cron-secret': '${CRON_SECRET}' },
+    });
     ctx.waitUntil(
       ${varName}.fetch(steamReq, env, ctx)
         .then(() => ${varName}.fetch(nextGamesReq, env, ctx))
+        .then(() => ${varName}.fetch(moviesReq, env, ctx))
     );
   },
 };
