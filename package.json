@@ -16,7 +16,11 @@
     "sync-steam": "node db/sync-steam.js",
     "sync-steam:remote": "node db/sync-steam.js --remote",
     "sync-movies": "node db/sync-movies.js",
-    "sync-movies:remote": "node db/sync-movies.js --remote"
+    "sync-movies:remote": "node db/sync-movies.js --remote",
+    "seed-series": "node db/seed-series.js",
+    "seed-series:remote": "node db/seed-series.js --remote",
+    "sync-series": "node db/sync-series.js",
+    "sync-series:remote": "node db/sync-series.js --remote"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.2",

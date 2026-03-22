@@ -67,6 +67,11 @@ async function fetchTmdbPoster(tmdbId: number): Promise<string> {
   } catch { return ''; }
 }
 
+/**
+ * Cron sync — only syncs the current year list (movies-YYYY).
+ * Does NOT delete other years' data. Uses INSERT OR REPLACE so existing
+ * data for the current year is updated safely.
+ */
 export async function syncMovies(db: D1Database): Promise<{ synced: number; errors: number; lists: number }> {
   // Create tables if needed
   await db.prepare(`
@@ -86,60 +91,63 @@ export async function syncMovies(db: D1Database): Promise<{ synced: number; erro
     )
   `).run();
 
-  // Fetch user lists dynamically (filter movies-*)
-  const movieLists = await fetchUserMovieLists();
-  if (!movieLists.length) return { synced: 0, errors: 0, lists: 0 };
+  const currentYear = new Date().getFullYear();
+  const currentSlug = `movies-${currentYear}`;
 
-  // Clear old cache (full refresh)
-  await db.prepare('DELETE FROM movies_cache').run();
+  // Fetch all user lists to find the current year's list
+  const movieLists = await fetchUserMovieLists();
+  const currentList = movieLists.find(l => l.ids.slug === currentSlug);
+  if (!currentList) return { synced: 0, errors: 0, lists: 0 };
+
+  // Fetch items for current year only
+  const items = await fetchListItems(currentSlug);
+  if (!items.length) return { synced: 0, errors: 0, lists: 1 };
+
+  // Upsert list metadata
+  await db.prepare(
+    `INSERT OR REPLACE INTO movies_lists (slug, description, item_count, updated_at) VALUES (?, ?, ?, datetime('now'))`
+  ).bind(currentSlug, currentList.description || '', items.length).run();
+
+  // Delete only current year's movies, then re-insert
+  await db.prepare('DELETE FROM movies_cache WHERE list_slug = ?').bind(currentSlug).run();
 
   let synced = 0, errors = 0;
 
-  for (const list of movieLists) {
-    const items = await fetchListItems(list.ids.slug);
-    await sleep(300);
+  // Batch insert in chunks of 50
+  for (let i = 0; i < items.length; i += 50) {
+    const batch = items.slice(i, i + 50);
+    const stmt = db.prepare(
+      `INSERT OR REPLACE INTO movies_cache
+        (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview, rating, poster, list_slug, list_order, listed_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+    );
 
-    // Upsert list metadata
-    await db.prepare(
-      `INSERT OR REPLACE INTO movies_lists (slug, description, item_count, updated_at) VALUES (?, ?, ?, datetime('now'))`
-    ).bind(list.ids.slug, list.description || '', items.length).run();
-
-    // Batch insert movies in chunks of 50
-    for (let i = 0; i < items.length; i += 50) {
-      const batch = items.slice(i, i + 50);
-      const stmt = db.prepare(
-        `INSERT OR REPLACE INTO movies_cache
-          (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview, rating, poster, list_slug, list_order, listed_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
-      );
-
-      const ops = [];
-      for (let j = 0; j < batch.length; j++) {
-        const item = batch[j];
-        const m = item.movie;
-        let poster = '';
-        if (m.ids.tmdb) {
-          poster = await fetchTmdbPoster(m.ids.tmdb);
-          await sleep(200);
-        }
-
-        ops.push(stmt.bind(
-          m.ids.trakt, m.ids.tmdb || null, m.ids.imdb || '',
-          m.title, m.year || null, m.released || '',
-          m.runtime || 0, m.genres?.join(', ') || '', m.overview || '',
-          Math.round((m.rating || 0) * 10) / 10, poster, list.ids.slug, i + j,
-          item.listed_at || '',
-        ));
+    const ops = [];
+    for (let j = 0; j < batch.length; j++) {
+      const item = batch[j];
+      const m = item.movie;
+      let poster = '';
+      if (m.ids.tmdb) {
+        poster = await fetchTmdbPoster(m.ids.tmdb);
+        await sleep(200);
       }
 
-      try {
-        await db.batch(ops);
-        synced += batch.length;
-      } catch {
-        errors += batch.length;
-      }
+      ops.push(stmt.bind(
+        m.ids.trakt, m.ids.tmdb || null, m.ids.imdb || '',
+        m.title, m.year || null, m.released || '',
+        m.runtime || 0, m.genres?.join(', ') || '', m.overview || '',
+        Math.round((m.rating || 0) * 10) / 10, poster, currentSlug, i + j,
+        item.listed_at || '',
+      ));
+    }
+
+    try {
+      await db.batch(ops);
+      synced += batch.length;
+    } catch {
+      errors += batch.length;
     }
   }
 
-  return { synced, errors, lists: movieLists.length };
+  return { synced, errors, lists: 1 };
 }
