@@ -140,14 +140,6 @@ function openEdit(entry: SeriesEntry) {
   showModal.value = true;
 }
 
-async function onDelete(id: number) {
-  if (!confirm('¿Eliminar esta entrada?')) return;
-  try {
-    const res = await fetch(`/api/series/${id}`, { method: 'DELETE' });
-    if (res.ok) await fetchSeries();
-  } catch {}
-}
-
 function onSaved() {
   fetchSeries();
 }
@@ -324,7 +316,7 @@ onMounted(fetchSeries);
     <!-- Series grid -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" role="list" aria-label="Lista de series">
       <div v-for="s in filteredSeries" :key="s.id" role="listitem">
-        <SeriesCard :series="s" @edit="openEdit" @delete="onDelete" />
+        <SeriesCard :series="s" @edit="openEdit" />
       </div>
     </div>
 

@@ -70,7 +70,7 @@ export async function syncSingleShow(db: D1Database, slug: string): Promise<bool
       (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
   ).bind(
-    show.ids.slug, show.ids.trakt, show.ids.tmdb || null, show.ids.imdb || '',
+    slug, show.ids.trakt, show.ids.tmdb || null, show.ids.imdb || '',
     show.title, show.year || null, show.overview || '',
     Math.round((show.rating || 0) * 10) / 10,
     show.genres?.join(', ') || '', show.network || '', show.status || '',
@@ -133,7 +133,7 @@ export async function syncSeries(db: D1Database): Promise<{ synced: number; erro
           (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
       ).bind(
-        show.ids.slug, show.ids.trakt, show.ids.tmdb || null, show.ids.imdb || '',
+        row.trakt_slug, show.ids.trakt, show.ids.tmdb || null, show.ids.imdb || '',
         show.title, show.year || null, show.overview || '',
         Math.round((show.rating || 0) * 10) / 10,
         show.genres?.join(', ') || '', show.network || '', show.status || '',
