@@ -13,6 +13,7 @@ interface SeriesEntry {
   network: string;
   runtime: number;
   poster: string;
+  thumb: string;
   imdb_id: string;
 }
 
@@ -43,20 +44,33 @@ function onPosterError(e: Event) {
 </script>
 
 <template>
+  <a :href="`/series/${series.trakt_slug}`" class="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-indigo rounded-xl" :aria-label="`${series.title || series.trakt_slug} T${series.season_number}, ${series.platform}`">
   <article
-    :aria-label="`${series.title || series.trakt_slug} T${series.season_number}, ${series.platform}`"
-    class="group relative border border-border-default rounded-xl overflow-hidden transition-all duration-200 hover:border-border-hover h-full flex flex-col"
+    class="group relative border border-border-default rounded-xl overflow-hidden transition-all duration-200 hover:border-border-hover h-full flex flex-col cursor-pointer"
   >
-    <!-- Poster background (decorative) -->
+    <!-- Thumb/poster background (decorative) -->
     <div
-      v-if="series.poster"
+      v-if="series.thumb"
+      class="absolute inset-0 z-0"
+      aria-hidden="true"
+    >
+      <img
+        :src="series.thumb"
+        alt=""
+        class="w-full h-full object-cover object-top scale-105 group-hover:opacity-30 group-hover:blur-sm transition-all duration-300"
+        loading="lazy"
+      />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+    </div>
+    <div
+      v-else-if="series.poster"
       class="absolute inset-0 z-0"
       aria-hidden="true"
     >
       <img
         :src="series.poster"
         alt=""
-        class="w-full h-full object-cover scale-110 blur-md opacity-30 group-hover:opacity-40 transition-all duration-300"
+        class="w-full h-full object-cover scale-150 blur-md opacity-40"
         loading="lazy"
       />
       <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
@@ -76,6 +90,7 @@ function onPosterError(e: Event) {
           :alt="`Poster de ${series.title || series.trakt_slug}`"
           @error="onPosterError"
           class="w-20 sm:w-24 rounded-lg object-cover aspect-[2/3] bg-surface-3"
+          :style="{ viewTransitionName: `series-poster-${series.trakt_slug}` }"
           loading="lazy"
           width="96"
           height="144"
@@ -181,4 +196,5 @@ function onPosterError(e: Event) {
       </div>
     </div>
   </article>
+  </a>
 </template>

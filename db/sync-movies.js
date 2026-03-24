@@ -33,6 +33,7 @@ async function fetchUserMovieLists() {
       'Content-Type': 'application/json',
       'trakt-api-key': TRAKT_CLIENT_ID,
       'trakt-api-version': '2',
+      'User-Agent': 'neon-burst/1.0',
     },
   });
   if (!res.ok) throw new Error(`Trakt lists API error: ${res.status}`);
@@ -48,6 +49,7 @@ async function fetchListItems(slug) {
         'Content-Type': 'application/json',
         'trakt-api-key': TRAKT_CLIENT_ID,
         'trakt-api-version': '2',
+        'User-Agent': 'neon-burst/1.0',
       },
     }
   );
@@ -118,24 +120,28 @@ async function main() {
       process.stdout.write(`  [${i + 1}/${items.length}] ${title}... `);
 
       try {
-        // Fetch poster
+        // Fetch poster from TMDB
         let poster = '';
         if (m.ids.tmdb) {
           poster = await fetchTmdbPoster(m.ids.tmdb);
           await sleep(200);
         }
 
+        // Extract thumb from Trakt images
+        const thumb = m.images?.thumb?.[0] ? `https://${m.images.thumb[0]}` : '';
+
         const genres = m.genres?.join(', ') || '';
         const rating = Math.round((m.rating || 0) * 10) / 10;
 
         const listedAt = items[i].listed_at || '';
-        const sql = `INSERT OR REPLACE INTO movies_cache (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview, rating, poster, list_slug, list_order, listed_at, updated_at) VALUES (${m.ids.trakt}, ${m.ids.tmdb || 'NULL'}, '${esc(m.ids.imdb || '')}', '${esc(title)}', ${m.year || 'NULL'}, '${esc(m.released || '')}', ${m.runtime || 0}, '${esc(genres)}', '${esc(m.overview || '')}', ${rating}, '${esc(poster)}', '${esc(slug)}', ${i}, '${esc(listedAt)}', datetime('now'))`;
+        const sql = `INSERT OR REPLACE INTO movies_cache (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview, rating, poster, thumb, list_slug, list_order, listed_at, updated_at) VALUES (${m.ids.trakt}, ${m.ids.tmdb || 'NULL'}, '${esc(m.ids.imdb || '')}', '${esc(title)}', ${m.year || 'NULL'}, '${esc(m.released || '')}', ${m.runtime || 0}, '${esc(genres)}', '${esc(m.overview || '')}', ${rating}, '${esc(poster)}', '${esc(thumb)}', '${esc(slug)}', ${i}, '${esc(listedAt)}', datetime('now'))`;
 
         d1(sql);
         totalSynced++;
 
         const parts = [];
         parts.push(poster ? 'Poster' : 'No Poster');
+        parts.push(thumb ? 'Thumb' : 'No Thumb');
         parts.push(`Rating ${rating}`);
         parts.push(m.runtime ? `${m.runtime}m` : 'No Runtime');
         console.log(`OK (${parts.join(', ')})`);

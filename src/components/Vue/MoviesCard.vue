@@ -11,6 +11,7 @@ interface Movie {
   overview: string;
   rating: number;
   poster: string;
+  thumb: string;
   list_slug: string;
 }
 
@@ -45,20 +46,33 @@ function onPosterError(e: Event) {
 </script>
 
 <template>
+  <a :href="`/movies/${movie.trakt_id}`" class="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-emerald rounded-xl" :aria-label="`${movie.title} (${movie.year}), ${formatRuntime(movie.runtime)}, rating ${movie.rating}`">
   <article
-    :aria-label="`${movie.title} (${movie.year}), ${formatRuntime(movie.runtime)}, rating ${movie.rating}`"
-    class="group relative border border-border-default rounded-xl overflow-hidden transition-all duration-200 hover:border-border-hover h-full flex flex-col"
+    class="group relative border border-border-default rounded-xl overflow-hidden transition-all duration-200 hover:border-border-hover h-full flex flex-col cursor-pointer"
   >
-    <!-- Poster background (decorative) -->
+    <!-- Thumb/poster background (decorative) -->
     <div
-      v-if="movie.poster"
+      v-if="movie.thumb"
+      class="absolute inset-0 z-0"
+      aria-hidden="true"
+    >
+      <img
+        :src="movie.thumb"
+        alt=""
+        class="w-full h-full object-cover object-top scale-105 group-hover:opacity-30 group-hover:blur-sm transition-all duration-300"
+        loading="lazy"
+      />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+    </div>
+    <div
+      v-else-if="movie.poster"
       class="absolute inset-0 z-0"
       aria-hidden="true"
     >
       <img
         :src="movie.poster"
         alt=""
-        class="w-full h-full object-cover scale-110 blur-md opacity-30 group-hover:opacity-40 transition-all duration-300"
+        class="w-full h-full object-cover scale-150 blur-md opacity-40"
         loading="lazy"
       />
       <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
@@ -78,6 +92,7 @@ function onPosterError(e: Event) {
           :alt="`Poster de ${movie.title}`"
           @error="onPosterError"
           class="w-20 sm:w-24 rounded-lg object-cover aspect-[2/3] bg-surface-3"
+          :style="{ viewTransitionName: `movie-poster-${movie.trakt_id}` }"
           loading="lazy"
           width="96"
           height="144"
@@ -157,4 +172,5 @@ function onPosterError(e: Event) {
       </div>
     </div>
   </article>
+  </a>
 </template>

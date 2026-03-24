@@ -31,6 +31,7 @@ async function fetchShowInfo(slug) {
         'Content-Type': 'application/json',
         'trakt-api-key': TRAKT_CLIENT_ID,
         'trakt-api-version': '2',
+        'User-Agent': 'neon-burst/1.0',
       },
     });
     if (!res.ok) return null;
@@ -83,16 +84,18 @@ async function main() {
       await sleep(200);
     }
 
+    const thumb = show.images?.thumb?.[0] ? `https://${show.images.thumb[0]}` : '';
     const rating = Math.round((show.rating || 0) * 10) / 10;
     const genres = show.genres?.join(', ') || '';
 
-    const sql = `INSERT OR REPLACE INTO series_cache (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, updated_at) VALUES ('${esc(slug)}', ${show.ids?.trakt || 'NULL'}, ${show.ids?.tmdb || 'NULL'}, '${esc(show.ids?.imdb || '')}', '${esc(show.title)}', ${show.year || 'NULL'}, '${esc(show.overview || '')}', ${rating}, '${esc(genres)}', '${esc(show.network || '')}', '${esc(show.status || '')}', ${show.runtime || 0}, '${esc(poster)}', datetime('now'))`;
+    const sql = `INSERT OR REPLACE INTO series_cache (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, thumb, updated_at) VALUES ('${esc(slug)}', ${show.ids?.trakt || 'NULL'}, ${show.ids?.tmdb || 'NULL'}, '${esc(show.ids?.imdb || '')}', '${esc(show.title)}', ${show.year || 'NULL'}, '${esc(show.overview || '')}', ${rating}, '${esc(genres)}', '${esc(show.network || '')}', '${esc(show.status || '')}', ${show.runtime || 0}, '${esc(poster)}', '${esc(thumb)}', datetime('now'))`;
 
     d1(sql);
     synced++;
 
     const parts = [];
     parts.push(poster ? 'Poster' : 'No Poster');
+    parts.push(thumb ? 'Thumb' : 'No Thumb');
     parts.push(`Rating ${rating}`);
     parts.push(show.network || 'No Network');
     console.log(`OK (${parts.join(', ')})`);

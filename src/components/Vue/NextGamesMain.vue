@@ -27,7 +27,7 @@ const error = ref('');
 
 const searchQuery = ref('');
 const selectedMonth = ref(String(new Date().getMonth()));
-const filterType = ref<'all' | 'upcoming' | 'released' | 'featured'>('all');
+const filterType = ref<'all' | 'upcoming' | 'released' | 'featured'>('upcoming');
 
 // Featured games stored in D1 database
 const featuredIds = ref<Set<number>>(new Set());

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npx wrangler:*)",
-      "Bash(node db/fetch-ratings.js)"
+      "Bash(node db/fetch-ratings.js)",
+      "WebFetch(domain:trakt.docs.apiary.io)"
     ]
   }
 }

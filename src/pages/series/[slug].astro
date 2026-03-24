@@ -1,0 +1,448 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import { getSeriesDetail } from '../../services/seriesService';
+import SeriesSeasons from '../../components/Vue/SeriesSeasons.vue';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const series = await getSeriesDetail(env.DB, slug!);
+
+if (!series) {
+	return Astro.redirect('/ListSeries');
+}
+
+function ratingColor(rating: number): string {
+	if (rating >= 7) return 'text-neon-green border-neon-green/30 bg-neon-green/10';
+	if (rating >= 5) return 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10';
+	return 'text-neon-pink border-neon-pink/30 bg-neon-pink/10';
+}
+
+function statusColor(status: string): string {
+	const s = status.toLowerCase();
+	if (s === 'returning series' || s === 'continuing') return 'text-neon-green border-neon-green/30 bg-neon-green/10';
+	if (s === 'in production' || s === 'planned') return 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10';
+	return 'text-neon-pink border-neon-pink/30 bg-neon-pink/10';
+}
+
+function statusLabel(status: string): string {
+	const map: Record<string, string> = {
+		'returning series': 'En emisión',
+		'continuing': 'En emisión',
+		'in production': 'En producción',
+		'planned': 'Planificada',
+		'ended': 'Finalizada',
+		'canceled': 'Cancelada',
+	};
+	return map[status.toLowerCase()] || status;
+}
+
+const genres = series.genres ? series.genres.split(',').map(s => s.trim()).filter(Boolean) : [];
+const hasTrailer = !!series.trailer;
+const hasFanart = !!series.fanart;
+const hasMedia = hasTrailer || hasFanart || series.videos.length > 0;
+const heroImage = series.fanart || series.thumb || '';
+const watchedSeasons = series.watched_entries.map(w => w.season_number);
+
+function formatDate(iso: string): string {
+	if (!iso) return '';
+	const d = new Date(iso);
+	if (isNaN(d.getTime())) return '';
+	return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+---
+
+<Layout title={`Neon Burst | ${series.title}`}>
+	<!-- Top bar -->
+	<div class="flex items-center justify-between mb-6">
+		<a
+			href="/ListSeries"
+			class="inline-flex items-center gap-2 text-sm text-text-muted hover:text-neon-indigo transition-colors duration-200 group"
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-0.5 transition-transform duration-200">
+				<polyline points="15 18 9 12 15 6" />
+			</svg>
+			Volver a la lista
+		</a>
+	</div>
+
+	<!-- Hero section -->
+	<div class="relative rounded-2xl overflow-hidden mb-8">
+		{heroImage && (
+			<div class="absolute inset-0 z-0">
+				<img src={heroImage} alt="" class="w-full h-full object-cover object-top opacity-40" />
+				<div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/85 to-surface-0/50" />
+			</div>
+		)}
+
+		<div class="relative z-10 flex flex-col sm:flex-row gap-6 p-6 sm:p-8">
+			<!-- Poster -->
+			<div class="shrink-0 self-center sm:self-start">
+				{series.poster ? (
+					<img
+						src={series.poster}
+						alt={series.title}
+						class="w-36 sm:w-44 rounded-xl object-cover aspect-[2/3] bg-surface-3 shadow-lg shadow-black/30"
+						style={`view-transition-name: series-poster-${series.trakt_slug};`}
+						width="176"
+						height="264"
+					/>
+				) : (
+					<div class="w-36 sm:w-44 rounded-xl aspect-[2/3] bg-surface-3 flex items-center justify-center text-text-muted text-sm">
+						?
+					</div>
+				)}
+			</div>
+
+			<!-- Info -->
+			<div class="flex-1 min-w-0 flex flex-col justify-center">
+				<!-- Title + Badges -->
+				<div class="flex flex-wrap items-start gap-3 mb-3">
+					<h1 class="text-2xl sm:text-3xl font-bold text-text-primary leading-tight">{series.title}</h1>
+					<div class="flex items-center gap-2 shrink-0">
+						{series.year && (
+							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-neon-indigo border-neon-indigo/30 bg-neon-indigo/10">
+								{series.year}
+							</span>
+						)}
+						{series.status && (
+							<span class:list={['text-xs font-medium px-3 py-1 rounded-lg border', statusColor(series.status)]}>
+								{statusLabel(series.status)}
+							</span>
+						)}
+						{series.certification && (
+							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-text-secondary border-border-default bg-surface-2">
+								{series.certification}
+							</span>
+						)}
+					</div>
+				</div>
+
+				<!-- Tagline -->
+				{series.tagline && (
+					<p class="text-sm text-text-secondary italic mb-3">{series.tagline}</p>
+				)}
+
+				<!-- Meta row -->
+				<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary mb-4">
+					{series.network && <span>{series.network}</span>}
+					{series.network && series.runtime > 0 && <span class="text-border-hover">&middot;</span>}
+					{series.runtime > 0 && <span>{series.runtime}m por episodio</span>}
+					{series.aired_episodes > 0 && <span class="text-border-hover">&middot;</span>}
+					{series.aired_episodes > 0 && <span>{series.aired_episodes} episodios</span>}
+					{series.country && <span class="text-border-hover">&middot;</span>}
+					{series.country && <span class="uppercase">{series.country}</span>}
+				</div>
+
+				<!-- Genre tags -->
+				{genres.length > 0 && (
+					<div class="flex flex-wrap gap-1.5 mb-4">
+						{genres.map((g: string) => (
+							<span class="text-xs text-text-muted bg-surface-3/80 border border-border-default px-2.5 py-1 rounded-md capitalize">
+								{g}
+							</span>
+						))}
+					</div>
+				)}
+
+				<!-- Rating -->
+				{series.rating > 0 && (
+					<div class="flex flex-wrap gap-3">
+						<div class="flex items-center gap-2">
+							<span class:list={[
+								'inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4',
+								ratingColor(series.rating)
+							]}>
+								{series.rating.toFixed(1)}
+							</span>
+							<span class="text-xs text-text-muted">Trakt ({series.votes.toLocaleString()} votos)</span>
+						</div>
+					</div>
+				)}
+			</div>
+		</div>
+	</div>
+
+	<!-- Content grid -->
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+		<!-- Left column (2/3) -->
+		<div class="lg:col-span-2 space-y-6">
+			<!-- Sinopsis -->
+			{series.overview && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Sinopsis</h2>
+					<div class="h-px bg-linear-to-r from-neon-indigo/30 via-neon-indigo/15 to-transparent mb-4"></div>
+					<p class="text-sm text-text-secondary leading-relaxed whitespace-pre-line">{series.overview}</p>
+				</div>
+			)}
+
+			<!-- Media -->
+			{hasMedia && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6" id="media-card">
+					<div class="flex gap-1 mb-4" role="tablist" aria-label="Media">
+						{hasTrailer && (
+							<button role="tab" aria-selected="true" aria-controls="panel-trailer" id="tab-trailer"
+								class="media-tab active px-4 py-2 text-xs font-medium rounded-lg border transition-colors duration-200 cursor-pointer" data-tab="trailer">
+								<span class="flex items-center gap-1.5">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+										<polygon points="6 3 20 12 6 21 6 3" />
+									</svg>
+									Trailer
+								</span>
+							</button>
+						)}
+						{hasFanart && (
+							<button role="tab" aria-selected={!hasTrailer ? 'true' : 'false'} aria-controls="panel-fanart" id="tab-fanart"
+								class:list={['media-tab px-4 py-2 text-xs font-medium rounded-lg border transition-colors duration-200 cursor-pointer', !hasTrailer && 'active']} data-tab="fanart">
+								<span class="flex items-center gap-1.5">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+										<rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" />
+										<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+									</svg>
+									Fanart
+								</span>
+							</button>
+						)}
+					</div>
+
+					{hasTrailer && (
+						<div id="panel-trailer" role="tabpanel" aria-labelledby="tab-trailer" class="media-panel">
+							<div class="relative aspect-video rounded-lg overflow-hidden bg-surface-3">
+								<iframe
+									src={`https://www.youtube.com/embed/${series.trailer}`}
+									title={`Trailer de ${series.title}`}
+									class="absolute inset-0 w-full h-full"
+									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+									allowfullscreen loading="lazy"
+								/>
+							</div>
+						</div>
+					)}
+
+					{hasFanart && (
+						<div id="panel-fanart" role="tabpanel" aria-labelledby="tab-fanart" class:list={['media-panel', hasTrailer && 'hidden']}>
+							<img src={series.fanart} alt={`Fanart de ${series.title}`} class="w-full rounded-lg object-cover" loading="lazy" />
+						</div>
+					)}
+				</div>
+			)}
+
+			<!-- Cast -->
+			{series.cast.length > 0 && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Reparto</h2>
+					<div class="h-px bg-linear-to-r from-neon-indigo/30 via-neon-indigo/15 to-transparent mb-4"></div>
+					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
+						{series.cast.map((c) => (
+							<div class="shrink-0 w-24 text-center">
+								{c.headshot ? (
+									<img src={c.headshot} alt={c.name}
+										class="w-20 h-20 rounded-full object-cover mx-auto mb-2 bg-surface-3 border border-border-default" loading="lazy" />
+								) : (
+									<div class="w-20 h-20 rounded-full bg-surface-3 border border-border-default mx-auto mb-2 flex items-center justify-center text-text-muted text-xl">?</div>
+								)}
+								<p class="text-xs font-medium text-text-primary leading-tight line-clamp-2">{c.name}</p>
+								<p class="text-[10px] text-text-muted leading-tight line-clamp-1 mt-0.5">{c.character}</p>
+								{c.episode_count > 0 && (
+									<p class="text-[9px] text-text-muted mt-0.5">{c.episode_count} eps</p>
+								)}
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			<!-- Temporadas -->
+			{series.seasons.length > 0 && (
+				<SeriesSeasons
+					client:load
+					seasons={series.seasons}
+					watchedSeasons={watchedSeasons}
+				/>
+			)}
+		</div>
+
+		<!-- Right column (1/3) -->
+		<div class="space-y-6">
+			<!-- Detalles -->
+			<div class="border border-border-default rounded-xl p-5">
+				<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Detalles</h2>
+				<div class="h-px bg-linear-to-r from-neon-indigo/30 via-neon-indigo/15 to-transparent mb-4"></div>
+				<dl class="space-y-3 text-sm">
+					{series.network && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Cadena</dt>
+							<dd class="text-text-primary font-medium">{series.network}</dd>
+						</div>
+					)}
+					{series.status && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Estado</dt>
+							<dd class:list={['font-medium', statusColor(series.status).split(' ')[0]]}>
+								{statusLabel(series.status)}
+							</dd>
+						</div>
+					)}
+					{series.airs_day && series.airs_time && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Horario</dt>
+							<dd class="text-text-primary font-medium text-right text-xs">{series.airs_day} {series.airs_time} {series.airs_timezone}</dd>
+						</div>
+					)}
+					{series.runtime > 0 && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Duración</dt>
+							<dd class="text-text-primary font-medium">{series.runtime}m</dd>
+						</div>
+					)}
+					{series.aired_episodes > 0 && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Episodios</dt>
+							<dd class="text-text-primary font-medium">{series.aired_episodes}</dd>
+						</div>
+					)}
+					{series.seasons.length > 0 && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Temporadas</dt>
+							<dd class="text-text-primary font-medium">{series.seasons.length}</dd>
+						</div>
+					)}
+					{series.certification && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Clasificación</dt>
+							<dd class="text-text-primary font-medium">{series.certification}</dd>
+						</div>
+					)}
+					{series.first_aired && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Primer episodio</dt>
+							<dd class="text-text-primary font-medium">{formatDate(series.first_aired)}</dd>
+						</div>
+					)}
+					{series.country && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">País</dt>
+							<dd class="text-text-primary font-medium uppercase">{series.country}</dd>
+						</div>
+					)}
+					{series.language && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Idioma</dt>
+							<dd class="text-text-primary font-medium uppercase">{series.language}</dd>
+						</div>
+					)}
+				</dl>
+			</div>
+
+			<!-- Mi Progreso -->
+			{series.watched_entries.length > 0 && (
+				<div class="border border-border-default rounded-xl p-5">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Mi Progreso</h2>
+					<div class="h-px bg-linear-to-r from-neon-indigo/30 via-neon-indigo/15 to-transparent mb-4"></div>
+					<div class="space-y-3">
+						{series.watched_entries.map((w) => (
+							<div class="flex items-center justify-between py-2 border-b border-border-default last:border-0">
+								<div>
+									<div class="text-sm font-semibold text-text-primary">Temporada {w.season_number}</div>
+									<div class="text-[11px] text-text-muted">
+										{w.year_watched} {w.platform && `· ${w.platform}`}
+									</div>
+								</div>
+								<span class:list={[
+									'text-[10px] font-medium px-2 py-0.5 rounded-md border capitalize',
+									w.status_viewed === 'completed'
+										? 'text-neon-green border-neon-green/30 bg-neon-green/10'
+										: 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10'
+								]}>
+									{w.status_viewed}
+								</span>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			<!-- Enlaces -->
+			<div class="border border-border-default rounded-xl p-5">
+				<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Enlaces</h2>
+				<div class="h-px bg-linear-to-r from-neon-indigo/30 via-neon-indigo/15 to-transparent mb-4"></div>
+				<div class="space-y-2">
+					{series.imdb_id && (
+						<a href={`https://www.imdb.com/title/${series.imdb_id}`} target="_blank" rel="noopener noreferrer"
+							class="flex items-center gap-2 text-sm text-text-secondary hover:text-neon-yellow transition-colors">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+							</svg>
+							IMDB
+						</a>
+					)}
+					{series.tmdb_id && (
+						<a href={`https://www.themoviedb.org/tv/${series.tmdb_id}`} target="_blank" rel="noopener noreferrer"
+							class="flex items-center gap-2 text-sm text-text-secondary hover:text-neon-cyan transition-colors">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+							</svg>
+							TMDB
+						</a>
+					)}
+					<a href={`https://trakt.tv/shows/${series.trakt_slug}`} target="_blank" rel="noopener noreferrer"
+						class="flex items-center gap-2 text-sm text-text-secondary hover:text-neon-pink transition-colors">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+						</svg>
+						Trakt
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.media-tab {
+		color: var(--color-text-muted);
+		border-color: var(--color-border-default);
+		background: transparent;
+	}
+	.media-tab:hover {
+		color: var(--color-text-secondary);
+		border-color: var(--color-border-hover);
+	}
+	.media-tab.active {
+		color: var(--color-neon-indigo);
+		border-color: rgba(129, 140, 248, 0.3);
+		background: rgba(129, 140, 248, 0.1);
+	}
+	.scrollbar-thin::-webkit-scrollbar {
+		height: 4px;
+	}
+	.scrollbar-thin::-webkit-scrollbar-track {
+		background: var(--color-surface-2);
+		border-radius: 2px;
+	}
+	.scrollbar-thin::-webkit-scrollbar-thumb {
+		background: var(--color-surface-4);
+		border-radius: 2px;
+	}
+</style>
+
+<script>
+	document.addEventListener('astro:page-load', () => {
+		const tabs = document.querySelectorAll<HTMLButtonElement>('.media-tab');
+		const panels = document.querySelectorAll<HTMLElement>('.media-panel');
+
+		tabs.forEach(tab => {
+			tab.addEventListener('click', () => {
+				const target = tab.dataset.tab;
+				tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+				tab.classList.add('active');
+				tab.setAttribute('aria-selected', 'true');
+				panels.forEach(p => {
+					if (p.id === `panel-${target}`) { p.classList.remove('hidden'); }
+					else { p.classList.add('hidden'); }
+				});
+			});
+		});
+	});
+</script>

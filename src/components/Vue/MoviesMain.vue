@@ -139,7 +139,7 @@ onMounted(fetchMovies);
         <p class="text-text-secondary text-sm leading-relaxed mt-1">Lista de películas vistas por año</p>
 
         <!-- Global stats -->
-        <div v-if="!loading && movies.length > 0" class="flex items-center gap-2 lg:gap-4 mt-2 text-xs text-text-secondary">
+        <div v-if="!loading && movies.length > 0" class="flex flex-wrap items-center gap-2 lg:gap-4 mt-2 text-xs text-text-secondary">
           <span class="inline-flex items-center gap-1">
             <IconGrid :size="14" class="text-neon-emerald" />
             <span class="text-neon-emerald font-semibold">{{ totalMovies }}</span> películas

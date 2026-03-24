@@ -167,7 +167,7 @@ onMounted(fetchSeries);
         <p class="text-text-secondary text-sm leading-relaxed mt-1">Lista de series vistas por año</p>
 
         <!-- Global stats -->
-        <div v-if="!loading && series.length > 0" class="flex items-center gap-2 lg:gap-4 mt-2 text-xs text-text-secondary">
+        <div v-if="!loading && series.length > 0" class="flex flex-wrap items-center gap-2 lg:gap-4 mt-2 text-xs text-text-secondary">
           <span class="inline-flex items-center gap-1">
             <IconGrid :size="14" class="text-neon-indigo" />
             <span class="text-neon-indigo font-semibold">{{ totalSeasons }}</span> temporadas
