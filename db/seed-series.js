@@ -1,5 +1,5 @@
 /**
- * Seed series_watched with initial data + sync series_cache from Trakt/TMDB.
+ * Seed series_watched with initial data + sync series_cache from Trakt.
  *
  * Usage: node --env-file=.env db/seed-series.js [--local | --remote]
  * Default: --local
@@ -7,7 +7,6 @@
 import { execSync } from 'node:child_process';
 
 const TRAKT_CLIENT_ID = process.env.TRAKT_CLIENT_ID;
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TRAKT_API_URL = 'https://api.trakt.tv';
 const TARGET = process.argv.includes('--remote') ? '--remote' : '--local';
 
@@ -113,6 +112,7 @@ async function fetchShowInfo(slug) {
         'Content-Type': 'application/json',
         'trakt-api-key': TRAKT_CLIENT_ID,
         'trakt-api-version': '2',
+        'User-Agent': 'neon-burst/1.0',
       },
     });
     if (!res.ok) {
@@ -126,16 +126,9 @@ async function fetchShowInfo(slug) {
   }
 }
 
-async function fetchTmdbPoster(tmdbId) {
-  if (!tmdbId || !TMDB_API_KEY) return '';
-  try {
-    const res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY}`);
-    if (!res.ok) return '';
-    const data = await res.json();
-    return data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : '';
-  } catch {
-    return '';
-  }
+function traktImage(url) {
+  if (!url) return '';
+  return url.startsWith('http') ? url : `https://${url}`;
 }
 
 // ── Main ──
@@ -208,16 +201,13 @@ async function main() {
       continue;
     }
 
-    let poster = '';
-    if (show.ids?.tmdb) {
-      poster = await fetchTmdbPoster(show.ids.tmdb);
-      await sleep(200);
-    }
+    const poster = traktImage(show.images?.poster?.[0]);
+    const thumb = traktImage(show.images?.fanart?.[0] || show.images?.thumb?.[0]);
 
     const rating = Math.round((show.rating || 0) * 10) / 10;
     const genres = show.genres?.join(', ') || '';
 
-    const sql = `INSERT OR REPLACE INTO series_cache (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, updated_at) VALUES ('${esc(slug)}', ${show.ids?.trakt || 'NULL'}, ${show.ids?.tmdb || 'NULL'}, '${esc(show.ids?.imdb || '')}', '${esc(show.title)}', ${show.year || 'NULL'}, '${esc(show.overview || '')}', ${rating}, '${esc(genres)}', '${esc(show.network || '')}', '${esc(show.status || '')}', ${show.runtime || 0}, '${esc(poster)}', datetime('now'))`;
+    const sql = `INSERT OR REPLACE INTO series_cache (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, thumb, updated_at) VALUES ('${esc(slug)}', ${show.ids?.trakt || 'NULL'}, ${show.ids?.tmdb || 'NULL'}, '${esc(show.ids?.imdb || '')}', '${esc(show.title)}', ${show.year || 'NULL'}, '${esc(show.overview || '')}', ${rating}, '${esc(genres)}', '${esc(show.network || '')}', '${esc(show.status || '')}', ${show.runtime || 0}, '${esc(poster)}', '${esc(thumb)}', datetime('now'))`;
 
     const result = d1(sql);
     if (result !== '') {
@@ -233,7 +223,7 @@ async function main() {
     }
   }
 
-  console.log(`\nDone! Entries: ${totalEntries}, Shows synced: ${synced}, Errors: ${errors}`);
+  console.log(`\nDone! Entries: ${allInserts.length}, Shows synced: ${synced}, Errors: ${errors}`);
 }
 
 main().catch(console.error);

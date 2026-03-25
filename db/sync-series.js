@@ -1,5 +1,5 @@
 /**
- * Sync series_cache from Trakt API — refreshes show metadata + TMDB posters
+ * Sync series_cache from Trakt API — refreshes show metadata
  * for all shows in series_watched.
  *
  * Usage: node --env-file=.env db/sync-series.js [--local | --remote]
@@ -8,7 +8,6 @@
 import { execSync } from 'node:child_process';
 
 const TRAKT_CLIENT_ID = process.env.TRAKT_CLIENT_ID;
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TRAKT_API_URL = 'https://api.trakt.tv';
 const TARGET = process.argv.includes('--remote') ? '--remote' : '--local';
 
@@ -25,6 +24,11 @@ function d1(sql, dbTarget = TARGET) {
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const esc = (str) => str ? str.replace(/'/g, "''") : '';
 
+function traktImage(url) {
+  if (!url) return '';
+  return url.startsWith('http') ? url : `https://${url}`;
+}
+
 async function fetchShowInfo(slug) {
   try {
     const res = await fetch(`${TRAKT_API_URL}/shows/${slug}?extended=full`, {
@@ -38,16 +42,6 @@ async function fetchShowInfo(slug) {
     if (!res.ok) return null;
     return await res.json();
   } catch { return null; }
-}
-
-async function fetchTmdbPoster(tmdbId) {
-  if (!tmdbId || !TMDB_API_KEY) return '';
-  try {
-    const res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY}`);
-    if (!res.ok) return '';
-    const data = await res.json();
-    return data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : '';
-  } catch { return ''; }
 }
 
 async function main() {
@@ -79,13 +73,8 @@ async function main() {
       continue;
     }
 
-    let poster = '';
-    if (show.ids?.tmdb) {
-      poster = await fetchTmdbPoster(show.ids.tmdb);
-      await sleep(200);
-    }
-
-    const thumb = show.images?.thumb?.[0] ? `https://${show.images.thumb[0]}` : '';
+    const poster = traktImage(show.images?.poster?.[0]);
+    const thumb = traktImage(show.images?.fanart?.[0] || show.images?.thumb?.[0]);
     const rating = Math.round((show.rating || 0) * 10) / 10;
     const genres = show.genres?.join(', ') || '';
 

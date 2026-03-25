@@ -1,0 +1,24 @@
+== SERIES ==
+
+-- 1. Recrear series_cache con schema completo (cast, seasons, episodes, detail)
+npx wrangler d1 execute neon-burst-db --remote --command="DROP TABLE IF EXISTS series_cache"
+
+npx wrangler d1 execute neon-burst-db --remote --command="CREATE TABLE series_cache (trakt_slug TEXT PRIMARY KEY, trakt_id INTEGER, tmdb_id INTEGER, imdb_id TEXT, title TEXT NOT NULL, year INTEGER, overview TEXT, rating REAL DEFAULT 0, genres TEXT, network TEXT, status TEXT, runtime INTEGER DEFAULT 0, poster TEXT, thumb TEXT, tagline TEXT, certification TEXT, country TEXT, language TEXT, trailer TEXT, fanart TEXT, logo TEXT, airs_day TEXT, airs_time TEXT, airs_timezone TEXT, first_aired TEXT, aired_episodes INTEGER DEFAULT 0, cast_json TEXT, videos_json TEXT, images_json TEXT, seasons_json TEXT, votes INTEGER DEFAULT 0, detail_fetched_at TEXT, updated_at TEXT)"
+
+-- 2. Crear series_watched si no existe
+npx wrangler d1 execute neon-burst-db --remote --command="CREATE TABLE IF NOT EXISTS series_watched (id INTEGER PRIMARY KEY AUTOINCREMENT, trakt_slug TEXT NOT NULL, season_number INTEGER NOT NULL, year_watched INTEGER NOT NULL, platform TEXT, status_viewed TEXT DEFAULT 'completed', created_at TEXT, updated_at TEXT, UNIQUE(trakt_slug, season_number))"
+
+-- 3. Luego correr: npm run seed-series:remote
+
+
+== MOVIES ==
+
+-- 1. Recrear movies_cache con schema completo (cast, videos, detail)
+npx wrangler d1 execute neon-burst-db --remote --command="DROP TABLE IF EXISTS movies_cache"
+
+npx wrangler d1 execute neon-burst-db --remote --command="CREATE TABLE movies_cache (trakt_id INTEGER PRIMARY KEY, tmdb_id INTEGER, imdb_id TEXT, title TEXT NOT NULL, year INTEGER, released TEXT, runtime INTEGER DEFAULT 0, genres TEXT, overview TEXT, rating REAL DEFAULT 0, poster TEXT, thumb TEXT, list_slug TEXT, list_order INTEGER DEFAULT 0, listed_at TEXT, tagline TEXT, certification TEXT, country TEXT, language TEXT, trailer TEXT, homepage TEXT, fanart TEXT, logo TEXT, cast_json TEXT, videos_json TEXT, images_json TEXT, after_credits INTEGER DEFAULT 0, during_credits INTEGER DEFAULT 0, votes INTEGER DEFAULT 0, detail_fetched_at TEXT, updated_at TEXT)"
+
+-- 2. Crear movies_lists si no existe
+npx wrangler d1 execute neon-burst-db --remote --command="CREATE TABLE IF NOT EXISTS movies_lists (slug TEXT PRIMARY KEY, description TEXT, item_count INTEGER DEFAULT 0, updated_at TEXT)"
+
+-- 3. Luego correr: npm run sync-movies:remote

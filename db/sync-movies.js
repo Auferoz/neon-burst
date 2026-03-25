@@ -8,7 +8,6 @@
 import { execSync } from 'node:child_process';
 
 const TRAKT_CLIENT_ID = process.env.TRAKT_CLIENT_ID;
-const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const TRAKT_USERNAME = 'Auferoz';
 const TRAKT_API_URL = 'https://api.trakt.tv';
 const TARGET = process.argv.includes('--remote') ? '--remote' : '--local';
@@ -58,18 +57,9 @@ async function fetchListItems(slug) {
   return await res.json();
 }
 
-// ── TMDB Poster ──
-
-async function fetchTmdbPoster(tmdbId) {
-  if (!tmdbId || !TMDB_API_KEY) return '';
-  try {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}`);
-    if (!res.ok) return '';
-    const data = await res.json();
-    return data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : '';
-  } catch {
-    return '';
-  }
+function traktImage(url) {
+  if (!url) return '';
+  return url.startsWith('http') ? url : `https://${url}`;
 }
 
 // ── Main ──
@@ -122,15 +112,8 @@ async function main() {
       process.stdout.write(`  [${i + 1}/${items.length}] ${title}... `);
 
       try {
-        // Fetch poster from TMDB
-        let poster = '';
-        if (m.ids.tmdb) {
-          poster = await fetchTmdbPoster(m.ids.tmdb);
-          await sleep(200);
-        }
-
-        // Extract thumb from Trakt images
-        const thumb = m.images?.thumb?.[0] ? `https://${m.images.thumb[0]}` : '';
+        const poster = traktImage(m.images?.poster?.[0]);
+        const thumb = traktImage(m.images?.fanart?.[0] || m.images?.thumb?.[0]);
 
         const genres = m.genres?.join(', ') || '';
         const rating = Math.round((m.rating || 0) * 10) / 10;

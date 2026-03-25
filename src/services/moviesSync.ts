@@ -1,12 +1,11 @@
 /**
- * Movies sync — fetches movie lists from Trakt API + posters from TMDB
+ * Movies sync — fetches movie lists from Trakt API
  * and caches them in D1 (movies_cache + movies_lists tables).
  */
 
 import { env } from 'cloudflare:workers';
 
 const TRAKT_CLIENT_ID = env.TRAKT_CLIENT_ID;
-const TMDB_API_KEY = env.TMDB_API_KEY;
 const TRAKT_USERNAME = 'Auferoz';
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -28,7 +27,7 @@ interface TraktListItem {
     overview: string;
     rating: number;
     released: string;
-    images?: { thumb?: string[] };
+    images?: { poster?: string[]; fanart?: string[]; thumb?: string[] };
   };
 }
 
@@ -39,7 +38,10 @@ interface TraktList {
   item_count: number;
 }
 
-function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+function traktImage(url?: string): string {
+  if (!url) return '';
+  return url.startsWith('http') ? url : `https://${url}`;
+}
 
 async function fetchUserMovieLists(): Promise<TraktList[]> {
   const res = await fetch(`${TRAKT_API_URL}/users/${TRAKT_USERNAME}/lists`, {
@@ -57,19 +59,6 @@ async function fetchListItems(slug: string): Promise<TraktListItem[]> {
   );
   if (!res.ok) return [];
   return await res.json() as TraktListItem[];
-}
-
-async function fetchTmdbImages(tmdbId: number): Promise<{ poster: string; thumb: string }> {
-  if (!tmdbId || !TMDB_API_KEY) return { poster: '', thumb: '' };
-  try {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}`);
-    if (!res.ok) return { poster: '', thumb: '' };
-    const data = await res.json() as { poster_path?: string; backdrop_path?: string };
-    return {
-      poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : '',
-      thumb: data.backdrop_path ? `https://image.tmdb.org/t/p/w780${data.backdrop_path}` : '',
-    };
-  } catch { return { poster: '', thumb: '' }; }
 }
 
 /**
@@ -131,13 +120,8 @@ export async function syncMovies(db: D1Database): Promise<{ synced: number; erro
     for (let j = 0; j < batch.length; j++) {
       const item = batch[j];
       const m = item.movie;
-      let poster = '';
-      if (m.ids.tmdb) {
-        const images = await fetchTmdbImages(m.ids.tmdb);
-        poster = images.poster;
-        await sleep(200);
-      }
-      const thumb = m.images?.thumb?.[0] ? `https://${m.images.thumb[0]}` : '';
+      const poster = traktImage(m.images?.poster?.[0]);
+      const thumb = traktImage(m.images?.fanart?.[0] || m.images?.thumb?.[0]);
 
       ops.push(stmt.bind(
         m.ids.trakt, m.ids.tmdb || null, m.ids.imdb || '',

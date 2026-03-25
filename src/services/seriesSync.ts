@@ -1,5 +1,5 @@
 /**
- * Series sync — fetches show metadata from Trakt API + posters from TMDB
+ * Series sync — fetches show metadata from Trakt API
  * and caches them in D1 (series_cache table).
  *
  * Unlike movies, the watched list is managed manually by the user.
@@ -9,7 +9,6 @@
 import { env } from 'cloudflare:workers';
 
 const TRAKT_CLIENT_ID = env.TRAKT_CLIENT_ID;
-const TMDB_API_KEY = env.TMDB_API_KEY;
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
 const traktHeaders = {
@@ -29,10 +28,15 @@ interface TraktShow {
   genres: string[];
   network: string;
   status: string;
-  images?: { thumb?: string[] };
+  images?: { poster?: string[]; fanart?: string[]; thumb?: string[] };
 }
 
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
+
+function traktImage(url?: string): string {
+  if (!url) return '';
+  return url.startsWith('http') ? url : `https://${url}`;
+}
 
 async function fetchShowInfo(slug: string): Promise<TraktShow | null> {
   try {
@@ -44,19 +48,6 @@ async function fetchShowInfo(slug: string): Promise<TraktShow | null> {
   } catch { return null; }
 }
 
-async function fetchTmdbImages(tmdbId: number): Promise<{ poster: string; thumb: string }> {
-  if (!tmdbId || !TMDB_API_KEY) return { poster: '', thumb: '' };
-  try {
-    const res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY}`);
-    if (!res.ok) return { poster: '', thumb: '' };
-    const data = await res.json() as { poster_path?: string; backdrop_path?: string };
-    return {
-      poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : '',
-      thumb: data.backdrop_path ? `https://image.tmdb.org/t/p/w780${data.backdrop_path}` : '',
-    };
-  } catch { return { poster: '', thumb: '' }; }
-}
-
 /**
  * Fetch and cache a single show by slug.
  * Called when user adds a new series entry and it's not cached yet.
@@ -65,12 +56,8 @@ export async function syncSingleShow(db: D1Database, slug: string): Promise<bool
   const show = await fetchShowInfo(slug);
   if (!show) return false;
 
-  let poster = '';
-  if (show.ids.tmdb) {
-    const images = await fetchTmdbImages(show.ids.tmdb);
-    poster = images.poster;
-  }
-  const thumb = show.images?.thumb?.[0] ? `https://${show.images.thumb[0]}` : '';
+  const poster = traktImage(show.images?.poster?.[0]);
+  const thumb = traktImage(show.images?.fanart?.[0] || show.images?.thumb?.[0]);
 
   await db.prepare(
     `INSERT OR REPLACE INTO series_cache
@@ -128,13 +115,8 @@ export async function syncSeries(db: D1Database): Promise<{ synced: number; erro
 
     if (!show) { errors++; continue; }
 
-    let poster = '';
-    if (show.ids.tmdb) {
-      const images = await fetchTmdbImages(show.ids.tmdb);
-      poster = images.poster;
-      await sleep(200);
-    }
-    const thumb = show.images?.thumb?.[0] ? `https://${show.images.thumb[0]}` : '';
+    const poster = traktImage(show.images?.poster?.[0]);
+    const thumb = traktImage(show.images?.fanart?.[0] || show.images?.thumb?.[0]);
 
     try {
       await db.prepare(
