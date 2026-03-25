@@ -148,7 +148,7 @@ async function main() {
     trakt_slug TEXT PRIMARY KEY, trakt_id INTEGER, tmdb_id INTEGER, imdb_id TEXT,
     title TEXT NOT NULL, year INTEGER, overview TEXT, rating REAL DEFAULT 0,
     genres TEXT, network TEXT, status TEXT, runtime INTEGER DEFAULT 0,
-    poster TEXT, updated_at TEXT DEFAULT (datetime('now'))
+    poster TEXT, thumb TEXT, updated_at TEXT
   )`);
   d1(`CREATE TABLE IF NOT EXISTS series_watched (
     id INTEGER PRIMARY KEY AUTOINCREMENT, trakt_slug TEXT NOT NULL,
@@ -164,17 +164,23 @@ async function main() {
   d1('DELETE FROM series_watched');
   d1('DELETE FROM series_cache');
 
-  // Insert watched entries
+  // Insert watched entries (batched — one wrangler call per chunk of 20)
   console.log('Inserting watched entries...');
-  let totalEntries = 0;
-
+  const allInserts = [];
   for (const yearGroup of ListSeriesByYear) {
     for (const s of yearGroup.series) {
-      d1(`INSERT OR IGNORE INTO series_watched (trakt_slug, season_number, year_watched, platform, status_viewed) VALUES ('${esc(s.idTrakt)}', ${s.numberSeason}, ${yearGroup.year}, '${esc(s.platformViewed)}', '${esc(s.statusViewed)}')`);
-      totalEntries++;
+      allInserts.push(`INSERT OR IGNORE INTO series_watched (trakt_slug, season_number, year_watched, platform, status_viewed) VALUES ('${esc(s.idTrakt)}', ${s.numberSeason}, ${yearGroup.year}, '${esc(s.platformViewed)}', '${esc(s.statusViewed)}')`);
     }
   }
-  console.log(`  ${totalEntries} entries inserted\n`);
+
+  const BATCH_SIZE = 20;
+  for (let i = 0; i < allInserts.length; i += BATCH_SIZE) {
+    const batch = allInserts.slice(i, i + BATCH_SIZE);
+    const batchSql = batch.join('; ');
+    d1(batchSql);
+    console.log(`  Batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(allInserts.length / BATCH_SIZE)} — ${Math.min(i + BATCH_SIZE, allInserts.length)}/${allInserts.length} entries`);
+  }
+  console.log(`  ${allInserts.length} entries inserted\n`);
 
   // Get unique slugs
   const allSlugs = new Set();

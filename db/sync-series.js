@@ -16,7 +16,8 @@ function d1(sql, dbTarget = TARGET) {
   const cmd = `npx wrangler d1 execute neon-burst-db ${dbTarget} --command="${sql.replace(/"/g, '\\"')}"`;
   try {
     return execSync(cmd, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
-  } catch {
+  } catch (e) {
+    console.error(`D1 error: ${e.stderr || e.message}`);
     return '';
   }
 }

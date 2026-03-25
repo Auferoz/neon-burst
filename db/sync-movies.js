@@ -17,7 +17,8 @@ function d1(sql, dbTarget = TARGET) {
   const cmd = `npx wrangler d1 execute neon-burst-db ${dbTarget} --command="${sql.replace(/"/g, '\\"')}"`;
   try {
     return execSync(cmd, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
-  } catch {
+  } catch (e) {
+    console.error(`D1 error: ${e.stderr || e.message}`);
     return '';
   }
 }
@@ -84,8 +85,9 @@ async function main() {
   d1(`CREATE TABLE IF NOT EXISTS movies_cache (
     trakt_id INTEGER PRIMARY KEY, tmdb_id INTEGER, imdb_id TEXT,
     title TEXT NOT NULL, year INTEGER, released TEXT, runtime INTEGER DEFAULT 0,
-    genres TEXT, overview TEXT, rating REAL DEFAULT 0, poster TEXT,
-    list_slug TEXT, list_order INTEGER DEFAULT 0, updated_at TEXT DEFAULT (datetime('now'))
+    genres TEXT, overview TEXT, rating REAL DEFAULT 0, poster TEXT, thumb TEXT,
+    list_slug TEXT, list_order INTEGER DEFAULT 0, listed_at TEXT,
+    updated_at TEXT DEFAULT (datetime('now'))
   )`);
   d1(`CREATE INDEX IF NOT EXISTS idx_movies_cache_year ON movies_cache(year)`);
   d1(`CREATE INDEX IF NOT EXISTS idx_movies_cache_list ON movies_cache(list_slug)`);
