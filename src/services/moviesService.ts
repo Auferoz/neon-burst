@@ -130,7 +130,7 @@ async function fetchTraktMovie(slugOrId: string | number): Promise<TraktMovieFul
 
 async function fetchTraktMoviePeople(slugOrId: string | number): Promise<CastMember[]> {
   try {
-    const res = await fetch(`${TRAKT_API_URL}/movies/${slugOrId}/people`, {
+    const res = await fetch(`${TRAKT_API_URL}/movies/${slugOrId}/people?extended=full`, {
       headers: traktHeaders,
     });
     if (!res.ok) return [];

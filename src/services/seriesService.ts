@@ -284,7 +284,7 @@ async function fetchTraktShow(slug: string): Promise<TraktShowFull | null> {
 
 async function fetchTraktShowPeople(slug: string): Promise<CastMember[]> {
   try {
-    const res = await fetch(`${TRAKT_API_URL}/shows/${slug}/people`, {
+    const res = await fetch(`${TRAKT_API_URL}/shows/${slug}/people?extended=full`, {
       headers: traktHeaders,
     });
     if (!res.ok) return [];
