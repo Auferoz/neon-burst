@@ -102,18 +102,21 @@ export async function syncMovies(db: D1Database): Promise<{ synced: number; erro
     `INSERT OR REPLACE INTO movies_lists (slug, description, item_count, updated_at) VALUES (?, ?, ?, datetime('now'))`
   ).bind(currentSlug, currentList.description || '', items.length).run();
 
-  // Delete only current year's movies, then re-insert
-  await db.prepare('DELETE FROM movies_cache WHERE list_slug = ?').bind(currentSlug).run();
-
   let synced = 0, errors = 0;
 
-  // Batch insert in chunks of 50
+  // Batch upsert in chunks of 50 — preserves detail columns (cast_json, videos_json, etc.)
   for (let i = 0; i < items.length; i += 50) {
     const batch = items.slice(i, i + 50);
     const stmt = db.prepare(
-      `INSERT OR REPLACE INTO movies_cache
+      `INSERT INTO movies_cache
         (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview, rating, poster, thumb, list_slug, list_order, listed_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+       ON CONFLICT(trakt_id) DO UPDATE SET
+        tmdb_id=excluded.tmdb_id, imdb_id=excluded.imdb_id, title=excluded.title,
+        year=excluded.year, released=excluded.released, runtime=excluded.runtime,
+        genres=excluded.genres, overview=excluded.overview, rating=excluded.rating,
+        poster=excluded.poster, thumb=excluded.thumb, list_slug=excluded.list_slug,
+        list_order=excluded.list_order, listed_at=excluded.listed_at, updated_at=excluded.updated_at`
     );
 
     const ops = [];

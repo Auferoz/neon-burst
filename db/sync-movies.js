@@ -88,9 +88,6 @@ async function main() {
   const movieLists = await fetchUserMovieLists();
   console.log(`Found ${movieLists.length} movie lists: ${movieLists.map(l => l.ids.slug).join(', ')}\n`);
 
-  // Clear old cache
-  d1('DELETE FROM movies_cache');
-
   let totalSynced = 0;
   let totalErrors = 0;
 
@@ -119,7 +116,7 @@ async function main() {
         const rating = Math.round((m.rating || 0) * 10) / 10;
 
         const listedAt = items[i].listed_at || '';
-        const sql = `INSERT OR REPLACE INTO movies_cache (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview, rating, poster, thumb, list_slug, list_order, listed_at, updated_at) VALUES (${m.ids.trakt}, ${m.ids.tmdb || 'NULL'}, '${esc(m.ids.imdb || '')}', '${esc(title)}', ${m.year || 'NULL'}, '${esc(m.released || '')}', ${m.runtime || 0}, '${esc(genres)}', '${esc(m.overview || '')}', ${rating}, '${esc(poster)}', '${esc(thumb)}', '${esc(slug)}', ${i}, '${esc(listedAt)}', datetime('now'))`;
+        const sql = `INSERT INTO movies_cache (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview, rating, poster, thumb, list_slug, list_order, listed_at, updated_at) VALUES (${m.ids.trakt}, ${m.ids.tmdb || 'NULL'}, '${esc(m.ids.imdb || '')}', '${esc(title)}', ${m.year || 'NULL'}, '${esc(m.released || '')}', ${m.runtime || 0}, '${esc(genres)}', '${esc(m.overview || '')}', ${rating}, '${esc(poster)}', '${esc(thumb)}', '${esc(slug)}', ${i}, '${esc(listedAt)}', datetime('now')) ON CONFLICT(trakt_id) DO UPDATE SET tmdb_id=excluded.tmdb_id, imdb_id=excluded.imdb_id, title=excluded.title, year=excluded.year, released=excluded.released, runtime=excluded.runtime, genres=excluded.genres, overview=excluded.overview, rating=excluded.rating, poster=excluded.poster, thumb=excluded.thumb, list_slug=excluded.list_slug, list_order=excluded.list_order, listed_at=excluded.listed_at, updated_at=excluded.updated_at`;
 
         d1(sql);
         totalSynced++;

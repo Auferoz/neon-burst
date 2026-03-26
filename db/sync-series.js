@@ -78,7 +78,7 @@ async function main() {
     const rating = Math.round((show.rating || 0) * 10) / 10;
     const genres = show.genres?.join(', ') || '';
 
-    const sql = `INSERT OR REPLACE INTO series_cache (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, thumb, updated_at) VALUES ('${esc(slug)}', ${show.ids?.trakt || 'NULL'}, ${show.ids?.tmdb || 'NULL'}, '${esc(show.ids?.imdb || '')}', '${esc(show.title)}', ${show.year || 'NULL'}, '${esc(show.overview || '')}', ${rating}, '${esc(genres)}', '${esc(show.network || '')}', '${esc(show.status || '')}', ${show.runtime || 0}, '${esc(poster)}', '${esc(thumb)}', datetime('now'))`;
+    const sql = `INSERT INTO series_cache (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, thumb, updated_at) VALUES ('${esc(slug)}', ${show.ids?.trakt || 'NULL'}, ${show.ids?.tmdb || 'NULL'}, '${esc(show.ids?.imdb || '')}', '${esc(show.title)}', ${show.year || 'NULL'}, '${esc(show.overview || '')}', ${rating}, '${esc(genres)}', '${esc(show.network || '')}', '${esc(show.status || '')}', ${show.runtime || 0}, '${esc(poster)}', '${esc(thumb)}', datetime('now')) ON CONFLICT(trakt_slug) DO UPDATE SET trakt_id=excluded.trakt_id, tmdb_id=excluded.tmdb_id, imdb_id=excluded.imdb_id, title=excluded.title, year=excluded.year, overview=excluded.overview, rating=excluded.rating, genres=excluded.genres, network=excluded.network, status=excluded.status, runtime=excluded.runtime, poster=excluded.poster, thumb=excluded.thumb, updated_at=excluded.updated_at`;
 
     d1(sql);
     synced++;

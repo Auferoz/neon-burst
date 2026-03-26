@@ -60,9 +60,15 @@ export async function syncSingleShow(db: D1Database, slug: string): Promise<bool
   const thumb = traktImage(show.images?.fanart?.[0] || show.images?.thumb?.[0]);
 
   await db.prepare(
-    `INSERT OR REPLACE INTO series_cache
+    `INSERT INTO series_cache
       (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, thumb, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+     ON CONFLICT(trakt_slug) DO UPDATE SET
+      trakt_id=excluded.trakt_id, tmdb_id=excluded.tmdb_id, imdb_id=excluded.imdb_id,
+      title=excluded.title, year=excluded.year, overview=excluded.overview,
+      rating=excluded.rating, genres=excluded.genres, network=excluded.network,
+      status=excluded.status, runtime=excluded.runtime, poster=excluded.poster,
+      thumb=excluded.thumb, updated_at=excluded.updated_at`
   ).bind(
     slug, show.ids.trakt, show.ids.tmdb || null, show.ids.imdb || '',
     show.title, show.year || null, show.overview || '',
@@ -120,9 +126,15 @@ export async function syncSeries(db: D1Database): Promise<{ synced: number; erro
 
     try {
       await db.prepare(
-        `INSERT OR REPLACE INTO series_cache
+        `INSERT INTO series_cache
           (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, thumb, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+         ON CONFLICT(trakt_slug) DO UPDATE SET
+          trakt_id=excluded.trakt_id, tmdb_id=excluded.tmdb_id, imdb_id=excluded.imdb_id,
+          title=excluded.title, year=excluded.year, overview=excluded.overview,
+          rating=excluded.rating, genres=excluded.genres, network=excluded.network,
+          status=excluded.status, runtime=excluded.runtime, poster=excluded.poster,
+          thumb=excluded.thumb, updated_at=excluded.updated_at`
       ).bind(
         row.trakt_slug, show.ids.trakt, show.ids.tmdb || null, show.ids.imdb || '',
         show.title, show.year || null, show.overview || '',
