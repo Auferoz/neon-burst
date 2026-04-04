@@ -15,6 +15,7 @@ interface SeriesEntry {
   poster: string;
   thumb: string;
   imdb_id: string;
+  season_poster: string;
 }
 
 const props = defineProps<{
@@ -30,6 +31,8 @@ function ratingColor(rating: number): string {
   if (rating >= 5) return 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10';
   return 'text-neon-pink border-neon-pink/30 bg-neon-pink/10';
 }
+
+const displayPoster = props.series.season_poster || props.series.poster;
 
 const genres = props.series.genres
   ? props.series.genres.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)
@@ -63,12 +66,12 @@ function onPosterError(e: Event) {
       <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
     </div>
     <div
-      v-else-if="series.poster"
+      v-else-if="displayPoster"
       class="absolute inset-0 z-0"
       aria-hidden="true"
     >
       <img
-        :src="series.poster"
+        :src="displayPoster"
         alt=""
         class="w-full h-full object-cover scale-150 blur-md opacity-40"
         loading="lazy"
@@ -85,9 +88,9 @@ function onPosterError(e: Event) {
       <!-- Poster -->
       <div class="shrink-0">
         <img
-          v-if="series.poster"
-          :src="series.poster"
-          :alt="`Poster de ${series.title || series.trakt_slug}`"
+          v-if="displayPoster"
+          :src="displayPoster"
+          :alt="`Poster de ${series.title || series.trakt_slug} T${series.season_number}`"
           @error="onPosterError"
           class="w-20 sm:w-24 rounded-lg object-cover aspect-[2/3] bg-surface-3"
           :style="{ viewTransitionName: `series-poster-${series.trakt_slug}` }"
@@ -96,7 +99,7 @@ function onPosterError(e: Event) {
           height="144"
         />
         <div
-          :style="series.poster ? 'display:none' : ''"
+          :style="displayPoster ? 'display:none' : ''"
           class="w-20 sm:w-24 rounded-lg aspect-[2/3] bg-surface-3 flex items-center justify-center text-text-secondary/50"
           aria-hidden="true"
         >

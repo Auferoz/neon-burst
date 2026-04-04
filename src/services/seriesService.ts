@@ -64,18 +64,31 @@ export interface SeriesEntry extends SeriesWatchedRow {
   thumb: string;
   tmdb_id: number;
   imdb_id: string;
+  season_poster: string;
 }
 
 export async function getAllSeries(db: D1Database): Promise<SeriesEntry[]> {
   const { results } = await db.prepare(`
     SELECT w.*, c.title, c.year, c.overview, c.rating, c.genres, c.network,
-           c.status, c.runtime, c.poster, c.thumb, c.tmdb_id, c.imdb_id
+           c.status, c.runtime, c.poster, c.thumb, c.tmdb_id, c.imdb_id,
+           c.season_posters_json
     FROM series_watched w
     LEFT JOIN series_cache c ON w.trakt_slug = c.trakt_slug
     ORDER BY w.year_watched DESC, w.created_at DESC
-  `).all<SeriesEntry>();
+  `).all<SeriesEntry & { season_posters_json?: string }>();
 
-  return results;
+  // Resolve season-specific poster for each entry
+  return results.map(r => {
+    let seasonPoster = '';
+    if (r.season_posters_json) {
+      try {
+        const posters = JSON.parse(r.season_posters_json) as Record<string, string>;
+        seasonPoster = posters[String(r.season_number)] || '';
+      } catch { /* */ }
+    }
+    const { season_posters_json, ...entry } = r;
+    return { ...entry, season_poster: seasonPoster };
+  });
 }
 
 export async function createSeriesEntry(
@@ -162,6 +175,7 @@ export interface Season {
   aired_episodes: number;
   rating: number;
   overview: string;
+  poster: string;
   episodes: SeasonEpisode[];
 }
 
@@ -258,6 +272,7 @@ interface TraktSeason {
   aired_episodes: number;
   rating: number;
   overview: string;
+  images?: { poster?: string[]; thumb?: string[] };
   episodes?: Array<{
     number: number;
     title: string;
@@ -330,6 +345,7 @@ async function fetchTraktSeasons(slug: string): Promise<Season[]> {
         aired_episodes: s.aired_episodes || 0,
         rating: Math.round((s.rating || 0) * 10) / 10,
         overview: s.overview || '',
+        poster: traktImage(s.images?.poster?.[0]),
         episodes: (s.episodes || []).map(e => ({
           number: e.number,
           title: e.title || '',
@@ -480,6 +496,12 @@ async function fetchSeriesDetail(db: D1Database, slug: string, tmdbId: number): 
     trailer = match?.[1] || '';
   }
 
+  // Build season posters map: { "1": "url", "2": "url", ... }
+  const seasonPosters: Record<string, string> = {};
+  for (const s of seasons) {
+    if (s.poster) seasonPosters[String(s.number)] = s.poster;
+  }
+
   try {
     await db.prepare(`
       UPDATE series_cache SET
@@ -488,7 +510,7 @@ async function fetchSeriesDetail(db: D1Database, slug: string, tmdbId: number): 
         airs_day = ?, airs_time = ?, airs_timezone = ?,
         first_aired = ?, aired_episodes = ?,
         cast_json = ?, videos_json = ?, images_json = ?, seasons_json = ?,
-        votes = ?, detail_fetched_at = datetime('now')
+        season_posters_json = ?, votes = ?, detail_fetched_at = datetime('now')
       WHERE trakt_slug = ?
     `).bind(
       show.tagline || '', show.certification || '', show.country || '', show.language || '',
@@ -496,7 +518,7 @@ async function fetchSeriesDetail(db: D1Database, slug: string, tmdbId: number): 
       show.airs?.day || '', show.airs?.time || '', show.airs?.timezone || '',
       show.first_aired || '', show.aired_episodes || 0,
       JSON.stringify(cast), JSON.stringify(videos), JSON.stringify(images), JSON.stringify(seasons),
-      show.votes || 0, slug,
+      JSON.stringify(seasonPosters), show.votes || 0, slug,
     ).run();
   } catch (e) {
     console.error(`[series] fetchSeriesDetail DB update for ${slug} failed:`, e);

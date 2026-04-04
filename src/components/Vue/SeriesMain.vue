@@ -23,6 +23,7 @@ interface SeriesEntry {
   poster: string;
   tmdb_id: number;
   imdb_id: string;
+  season_poster: string;
 }
 
 const series = ref<SeriesEntry[]>([]);
