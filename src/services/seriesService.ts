@@ -480,21 +480,25 @@ async function fetchSeriesDetail(db: D1Database, slug: string, tmdbId: number): 
     trailer = match?.[1] || '';
   }
 
-  await db.prepare(`
-    UPDATE series_cache SET
-      tagline = ?, certification = ?, country = ?, language = ?,
-      trailer = ?, fanart = ?, logo = ?,
-      airs_day = ?, airs_time = ?, airs_timezone = ?,
-      first_aired = ?, aired_episodes = ?,
-      cast_json = ?, videos_json = ?, images_json = ?, seasons_json = ?,
-      votes = ?, detail_fetched_at = datetime('now')
-    WHERE trakt_slug = ?
-  `).bind(
-    show.tagline || '', show.certification || '', show.country || '', show.language || '',
-    trailer, fanart, logo,
-    show.airs?.day || '', show.airs?.time || '', show.airs?.timezone || '',
-    show.first_aired || '', show.aired_episodes || 0,
-    JSON.stringify(cast), JSON.stringify(videos), JSON.stringify(images), JSON.stringify(seasons),
-    show.votes || 0, slug,
-  ).run();
+  try {
+    await db.prepare(`
+      UPDATE series_cache SET
+        tagline = ?, certification = ?, country = ?, language = ?,
+        trailer = ?, fanart = ?, logo = ?,
+        airs_day = ?, airs_time = ?, airs_timezone = ?,
+        first_aired = ?, aired_episodes = ?,
+        cast_json = ?, videos_json = ?, images_json = ?, seasons_json = ?,
+        votes = ?, detail_fetched_at = datetime('now')
+      WHERE trakt_slug = ?
+    `).bind(
+      show.tagline || '', show.certification || '', show.country || '', show.language || '',
+      trailer, fanart, logo,
+      show.airs?.day || '', show.airs?.time || '', show.airs?.timezone || '',
+      show.first_aired || '', show.aired_episodes || 0,
+      JSON.stringify(cast), JSON.stringify(videos), JSON.stringify(images), JSON.stringify(seasons),
+      show.votes || 0, slug,
+    ).run();
+  } catch (e) {
+    console.error(`[series] fetchSeriesDetail DB update for ${slug} failed:`, e);
+  }
 }

@@ -268,19 +268,23 @@ async function fetchMovieDetail(db: D1Database, traktId: number, tmdbId: number)
     trailer = match?.[1] || '';
   }
 
-  await db.prepare(`
-    UPDATE movies_cache SET
-      tagline = ?, certification = ?, country = ?, language = ?,
-      trailer = ?, homepage = ?, fanart = ?, logo = ?,
-      cast_json = ?, videos_json = ?, images_json = ?,
-      after_credits = ?, during_credits = ?, votes = ?,
-      detail_fetched_at = datetime('now')
-    WHERE trakt_id = ?
-  `).bind(
-    movie.tagline || '', movie.certification || '', movie.country || '', movie.language || '',
-    trailer, movie.homepage || '', fanart, logo,
-    JSON.stringify(cast), JSON.stringify(videos), JSON.stringify(images),
-    movie.after_credits ? 1 : 0, movie.during_credits ? 1 : 0, movie.votes || 0,
-    traktId,
-  ).run();
+  try {
+    await db.prepare(`
+      UPDATE movies_cache SET
+        tagline = ?, certification = ?, country = ?, language = ?,
+        trailer = ?, homepage = ?, fanart = ?, logo = ?,
+        cast_json = ?, videos_json = ?, images_json = ?,
+        after_credits = ?, during_credits = ?, votes = ?,
+        detail_fetched_at = datetime('now')
+      WHERE trakt_id = ?
+    `).bind(
+      movie.tagline || '', movie.certification || '', movie.country || '', movie.language || '',
+      trailer, movie.homepage || '', fanart, logo,
+      JSON.stringify(cast), JSON.stringify(videos), JSON.stringify(images),
+      movie.after_credits ? 1 : 0, movie.during_credits ? 1 : 0, movie.votes || 0,
+      traktId,
+    ).run();
+  } catch (e) {
+    console.error(`[movies] fetchMovieDetail DB update for ${traktId} failed:`, e);
+  }
 }

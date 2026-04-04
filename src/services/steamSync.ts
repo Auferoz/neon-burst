@@ -13,6 +13,7 @@ function getSteamId() { return env.STEAM_ID; }
 function getTwitchClientId() { return env.TWITCH_CLIENT_ID; }
 function getTwitchClientSecret() { return env.TWITCH_CLIENT_SECRET; }
 let igdbAccessToken: string | null = null;
+let igdbTokenPromise: Promise<string | null> | null = null;
 
 interface SteamOwnedGame {
   appid: number;
@@ -62,7 +63,10 @@ async function getIgdbToken(): Promise<string | null> {
 
 async function igdbCover(name: string): Promise<string> {
   if (!igdbAccessToken) {
-    igdbAccessToken = await getIgdbToken();
+    if (!igdbTokenPromise) {
+      igdbTokenPromise = getIgdbToken();
+    }
+    igdbAccessToken = await igdbTokenPromise;
     if (!igdbAccessToken) return '';
   }
   const clean = name.replace(/[™®©]/g, '').replace(/\s*\(\d{4}\)$/, '').trim();

@@ -19,12 +19,22 @@ export const GET: APIRoute = async ({ request }) => {
     });
   }
 
-  const result = await syncSteamLibrary(env.DB);
-
-  return new Response(JSON.stringify({
-    message: 'Steam library synced',
-    ...result,
-  }), {
-    headers: { 'Content-Type': 'application/json' },
-  });
+  try {
+    const result = await syncSteamLibrary(env.DB);
+    return new Response(JSON.stringify({
+      message: 'Steam library synced',
+      ...result,
+    }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (e) {
+    console.error('[api/steam/sync] error:', e);
+    return new Response(JSON.stringify({
+      error: 'Sync failed',
+      detail: e instanceof Error ? e.message : String(e),
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 };
