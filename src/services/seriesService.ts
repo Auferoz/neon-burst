@@ -5,16 +5,16 @@
 
 import { env } from 'cloudflare:workers';
 
-const TRAKT_CLIENT_ID = env.TRAKT_CLIENT_ID;
-const TMDB_API_KEY = env.TMDB_API_KEY;
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
-const traktHeaders: Record<string, string> = {
-  'Content-Type': 'application/json',
-  'trakt-api-key': TRAKT_CLIENT_ID,
-  'trakt-api-version': '2',
-  'User-Agent': 'neon-burst/1.0',
-};
+function getTraktHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'trakt-api-key': env.TRAKT_CLIENT_ID,
+    'trakt-api-version': '2',
+    'User-Agent': 'neon-burst/1.0',
+  };
+}
 
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -275,19 +275,28 @@ interface TraktSeason {
 async function fetchTraktShow(slug: string): Promise<TraktShowFull | null> {
   try {
     const res = await fetch(`${TRAKT_API_URL}/shows/${slug}?extended=full`, {
-      headers: traktHeaders,
+      headers: getTraktHeaders(),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`[series] fetchTraktShow ${slug} failed: ${res.status} ${res.statusText}`);
+      return null;
+    }
     return await res.json() as TraktShowFull;
-  } catch { return null; }
+  } catch (e) {
+    console.error(`[series] fetchTraktShow ${slug} error:`, e);
+    return null;
+  }
 }
 
 async function fetchTraktShowPeople(slug: string): Promise<CastMember[]> {
   try {
     const res = await fetch(`${TRAKT_API_URL}/shows/${slug}/people?extended=full`, {
-      headers: traktHeaders,
+      headers: getTraktHeaders(),
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(`[series] fetchTraktShowPeople ${slug} failed: ${res.status} ${res.statusText}`);
+      return [];
+    }
     const data = await res.json() as { cast?: TraktPerson[] };
     return (data.cast || []).slice(0, 20).map(p => ({
       name: p.person.name,
@@ -296,15 +305,21 @@ async function fetchTraktShowPeople(slug: string): Promise<CastMember[]> {
       episode_count: p.episode_count || 0,
       tmdb_id: p.person.ids?.tmdb || null,
     }));
-  } catch { return []; }
+  } catch (e) {
+    console.error(`[series] fetchTraktShowPeople ${slug} error:`, e);
+    return [];
+  }
 }
 
 async function fetchTraktSeasons(slug: string): Promise<Season[]> {
   try {
     const res = await fetch(`${TRAKT_API_URL}/shows/${slug}/seasons?extended=full,episodes`, {
-      headers: traktHeaders,
+      headers: getTraktHeaders(),
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(`[series] fetchTraktSeasons ${slug} failed: ${res.status} ${res.statusText}`);
+      return [];
+    }
     const data = await res.json() as TraktSeason[];
     return data
       .filter(s => s.number > 0) // Exclude specials (season 0)
@@ -326,20 +341,29 @@ async function fetchTraktSeasons(slug: string): Promise<Season[]> {
           episode_type: e.episode_type || 'standard',
         })),
       }));
-  } catch { return []; }
+  } catch (e) {
+    console.error(`[series] fetchTraktSeasons ${slug} error:`, e);
+    return [];
+  }
 }
 
 async function fetchTmdbTvVideos(tmdbId: number): Promise<Video[]> {
-  if (!tmdbId || !TMDB_API_KEY) return [];
+  if (!tmdbId || !env.TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/videos?api_key=${TMDB_API_KEY}`);
-    if (!res.ok) return [];
+    const res = await fetch(`https://api.themoviedb.org/3/tv/${tmdbId}/videos?api_key=${env.TMDB_API_KEY}`);
+    if (!res.ok) {
+      console.error(`[series] fetchTmdbTvVideos ${tmdbId} failed: ${res.status} ${res.statusText}`);
+      return [];
+    }
     const data = await res.json() as { results: Array<{ name: string; key: string; type: string; site: string }> };
     return (data.results || [])
       .filter(v => v.site === 'YouTube')
       .slice(0, 10)
       .map(v => ({ name: v.name, key: v.key, type: v.type, site: v.site }));
-  } catch { return []; }
+  } catch (e) {
+    console.error(`[series] fetchTmdbTvVideos ${tmdbId} error:`, e);
+    return [];
+  }
 }
 
 // ── Main detail function ──
@@ -348,8 +372,11 @@ export async function getSeriesDetail(db: D1Database, slug: string): Promise<Ser
   const row = await db.prepare('SELECT * FROM series_cache WHERE trakt_slug = ?').bind(slug).first<Record<string, unknown>>();
   if (!row) return null;
 
-  // On-demand detail fetch
-  if (!row.detail_fetched_at) {
+  // On-demand detail fetch (or re-fetch if stale/empty)
+  const needsFetch = !row.detail_fetched_at || (
+    row.cast_json === '[]' && row.seasons_json === '[]' && row.detail_fetched_at
+  );
+  if (needsFetch) {
     await fetchSeriesDetail(db, slug, row.tmdb_id as number);
     const updated = await db.prepare('SELECT * FROM series_cache WHERE trakt_slug = ?').bind(slug).first<Record<string, unknown>>();
     if (updated) return rowToSeriesDetail(db, updated);

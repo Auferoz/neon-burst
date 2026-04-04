@@ -5,16 +5,17 @@
 
 import { env } from 'cloudflare:workers';
 
-const TRAKT_CLIENT_ID = env.TRAKT_CLIENT_ID;
 const TRAKT_USERNAME = 'Auferoz';
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
-const traktHeaders = {
-  'Content-Type': 'application/json',
-  'trakt-api-key': TRAKT_CLIENT_ID,
-  'trakt-api-version': '2',
-  'User-Agent': 'neon-burst/1.0',
-};
+function getTraktHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'trakt-api-key': env.TRAKT_CLIENT_ID,
+    'trakt-api-version': '2',
+    'User-Agent': 'neon-burst/1.0',
+  };
+}
 
 interface TraktListItem {
   listed_at: string;
@@ -45,7 +46,7 @@ function traktImage(url?: string): string {
 
 async function fetchUserMovieLists(): Promise<TraktList[]> {
   const res = await fetch(`${TRAKT_API_URL}/users/${TRAKT_USERNAME}/lists`, {
-    headers: traktHeaders,
+    headers: getTraktHeaders(),
   });
   if (!res.ok) return [];
   const lists = await res.json() as TraktList[];
@@ -55,7 +56,7 @@ async function fetchUserMovieLists(): Promise<TraktList[]> {
 async function fetchListItems(slug: string): Promise<TraktListItem[]> {
   const res = await fetch(
     `${TRAKT_API_URL}/users/${TRAKT_USERNAME}/lists/${slug}/items/movies?extended=full`,
-    { headers: traktHeaders }
+    { headers: getTraktHeaders() }
   );
   if (!res.ok) return [];
   return await res.json() as TraktListItem[];

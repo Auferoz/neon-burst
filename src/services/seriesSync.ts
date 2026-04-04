@@ -8,15 +8,16 @@
 
 import { env } from 'cloudflare:workers';
 
-const TRAKT_CLIENT_ID = env.TRAKT_CLIENT_ID;
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
-const traktHeaders = {
-  'Content-Type': 'application/json',
-  'trakt-api-key': TRAKT_CLIENT_ID,
-  'trakt-api-version': '2',
-  'User-Agent': 'neon-burst/1.0',
-};
+function getTraktHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'trakt-api-key': env.TRAKT_CLIENT_ID,
+    'trakt-api-version': '2',
+    'User-Agent': 'neon-burst/1.0',
+  };
+}
 
 interface TraktShow {
   title: string;
@@ -41,7 +42,7 @@ function traktImage(url?: string): string {
 async function fetchShowInfo(slug: string): Promise<TraktShow | null> {
   try {
     const res = await fetch(`${TRAKT_API_URL}/shows/${slug}?extended=full`, {
-      headers: traktHeaders,
+      headers: getTraktHeaders(),
     });
     if (!res.ok) return null;
     return await res.json() as TraktShow;

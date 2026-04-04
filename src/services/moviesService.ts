@@ -4,16 +4,16 @@
 
 import { env } from 'cloudflare:workers';
 
-const TRAKT_CLIENT_ID = env.TRAKT_CLIENT_ID;
-const TMDB_API_KEY = env.TMDB_API_KEY;
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
-const traktHeaders: Record<string, string> = {
-  'Content-Type': 'application/json',
-  'trakt-api-key': TRAKT_CLIENT_ID,
-  'trakt-api-version': '2',
-  'User-Agent': 'neon-burst/1.0',
-};
+function getTraktHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'trakt-api-key': env.TRAKT_CLIENT_ID,
+    'trakt-api-version': '2',
+    'User-Agent': 'neon-burst/1.0',
+  };
+}
 
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -121,19 +121,28 @@ interface TraktPerson {
 async function fetchTraktMovie(slugOrId: string | number): Promise<TraktMovieFull | null> {
   try {
     const res = await fetch(`${TRAKT_API_URL}/movies/${slugOrId}?extended=full`, {
-      headers: traktHeaders,
+      headers: getTraktHeaders(),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`[movies] fetchTraktMovie ${slugOrId} failed: ${res.status} ${res.statusText}`);
+      return null;
+    }
     return await res.json() as TraktMovieFull;
-  } catch { return null; }
+  } catch (e) {
+    console.error(`[movies] fetchTraktMovie ${slugOrId} error:`, e);
+    return null;
+  }
 }
 
 async function fetchTraktMoviePeople(slugOrId: string | number): Promise<CastMember[]> {
   try {
     const res = await fetch(`${TRAKT_API_URL}/movies/${slugOrId}/people?extended=full`, {
-      headers: traktHeaders,
+      headers: getTraktHeaders(),
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(`[movies] fetchTraktMoviePeople ${slugOrId} failed: ${res.status} ${res.statusText}`);
+      return [];
+    }
     const data = await res.json() as { cast?: TraktPerson[] };
     return (data.cast || []).slice(0, 20).map(p => ({
       name: p.person.name,
@@ -141,20 +150,29 @@ async function fetchTraktMoviePeople(slugOrId: string | number): Promise<CastMem
       headshot: traktImage(p.person.images?.headshot?.[0]),
       tmdb_id: p.person.ids?.tmdb || null,
     }));
-  } catch { return []; }
+  } catch (e) {
+    console.error(`[movies] fetchTraktMoviePeople ${slugOrId} error:`, e);
+    return [];
+  }
 }
 
 async function fetchTmdbVideos(tmdbId: number): Promise<Video[]> {
-  if (!tmdbId || !TMDB_API_KEY) return [];
+  if (!tmdbId || !env.TMDB_API_KEY) return [];
   try {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/videos?api_key=${TMDB_API_KEY}`);
-    if (!res.ok) return [];
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/videos?api_key=${env.TMDB_API_KEY}`);
+    if (!res.ok) {
+      console.error(`[movies] fetchTmdbVideos ${tmdbId} failed: ${res.status} ${res.statusText}`);
+      return [];
+    }
     const data = await res.json() as { results: Array<{ name: string; key: string; type: string; site: string }> };
     return (data.results || [])
       .filter(v => v.site === 'YouTube')
       .slice(0, 10)
       .map(v => ({ name: v.name, key: v.key, type: v.type, site: v.site }));
-  } catch { return []; }
+  } catch (e) {
+    console.error(`[movies] fetchTmdbVideos ${tmdbId} error:`, e);
+    return [];
+  }
 }
 
 // ── Main service functions ──
@@ -163,8 +181,11 @@ export async function getMovieById(db: D1Database, traktId: number): Promise<Mov
   const row = await db.prepare('SELECT * FROM movies_cache WHERE trakt_id = ?').bind(traktId).first<Record<string, unknown>>();
   if (!row) return null;
 
-  // On-demand detail fetch
-  if (!row.detail_fetched_at) {
+  // On-demand detail fetch (or re-fetch if stale/empty)
+  const needsFetch = !row.detail_fetched_at || (
+    row.cast_json === '[]' && row.detail_fetched_at
+  );
+  if (needsFetch) {
     await fetchMovieDetail(db, traktId, row.tmdb_id as number);
     const updated = await db.prepare('SELECT * FROM movies_cache WHERE trakt_id = ?').bind(traktId).first<Record<string, unknown>>();
     if (updated) return rowToMovieDetail(updated);

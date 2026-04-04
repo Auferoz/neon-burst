@@ -5,12 +5,13 @@
 
 import { env } from 'cloudflare:workers';
 
-const STEAM_API_KEY = env.STEAM_API_KEY;
-const STEAM_ID = env.STEAM_ID;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
-const TWITCH_CLIENT_ID = env.TWITCH_CLIENT_ID;
-const TWITCH_CLIENT_SECRET = env.TWITCH_CLIENT_SECRET;
+// Access env lazily to ensure availability in Workers runtime
+function getSteamApiKey() { return env.STEAM_API_KEY; }
+function getSteamId() { return env.STEAM_ID; }
+function getTwitchClientId() { return env.TWITCH_CLIENT_ID; }
+function getTwitchClientSecret() { return env.TWITCH_CLIENT_SECRET; }
 let igdbAccessToken: string | null = null;
 
 interface SteamOwnedGame {
@@ -21,7 +22,7 @@ interface SteamOwnedGame {
 }
 
 async function fetchOwnedGames(): Promise<SteamOwnedGame[]> {
-  const url = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${STEAM_API_KEY}&steamid=${STEAM_ID}&include_appinfo=1&include_played_free_games=1&format=json`;
+  const url = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${getSteamApiKey()}&steamid=${getSteamId()}&include_appinfo=1&include_played_free_games=1&format=json`;
   const res = await fetch(url);
   const data = await res.json() as { response: { games: SteamOwnedGame[] } };
   return data.response.games || [];
@@ -53,7 +54,7 @@ async function getValidPoster(appid: number): Promise<string> {
 
 async function getIgdbToken(): Promise<string | null> {
   try {
-    const res = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${TWITCH_CLIENT_ID}&client_secret=${TWITCH_CLIENT_SECRET}&grant_type=client_credentials`, { method: 'POST' });
+    const res = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${getTwitchClientId()}&client_secret=${getTwitchClientSecret()}&grant_type=client_credentials`, { method: 'POST' });
     const data = await res.json() as { access_token?: string };
     return data.access_token || null;
   } catch { return null; }
@@ -68,7 +69,7 @@ async function igdbCover(name: string): Promise<string> {
   try {
     const res = await fetch('https://api.igdb.com/v4/games', {
       method: 'POST',
-      headers: { 'Client-ID': TWITCH_CLIENT_ID, 'Authorization': `Bearer ${igdbAccessToken}` },
+      headers: { 'Client-ID': getTwitchClientId(), 'Authorization': `Bearer ${igdbAccessToken}` },
       body: `fields name,cover.image_id; search "${clean}"; limit 5;`,
     });
     const games = await res.json() as { name?: string; cover?: { image_id: string } }[];
