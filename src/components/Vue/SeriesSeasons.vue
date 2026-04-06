@@ -58,7 +58,7 @@ function ratingColor(r: number): string {
     <div class="h-px bg-linear-to-r from-neon-indigo/30 via-neon-indigo/15 to-transparent mb-4"></div>
 
     <div class="space-y-2">
-      <div v-for="season in seasons" :key="season.number">
+      <div v-for="season in seasons" :key="season.number" :id="`season-header-${season.number}`">
         <!-- Season header -->
         <button
           @click="toggle(season.number)"

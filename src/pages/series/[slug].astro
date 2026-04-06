@@ -45,6 +45,19 @@ const hasMedia = hasTrailer || hasFanart || series.videos.length > 0;
 const heroImage = series.fanart || series.thumb || '';
 const watchedSeasons = series.watched_entries.map(w => w.season_number);
 
+// Build explicit watched map (season_number → entry) for tracked seasons
+const explicitWatchedMap = new Map(series.watched_entries.map(w => [w.season_number, w]));
+
+// Infer implicitly watched seasons: if you watched season N, you watched 1..N-1
+const maxWatched = watchedSeasons.length > 0 ? Math.max(...watchedSeasons) : 0;
+const availableSeasonNumbers = series.seasons.map(s => s.number);
+const impliedSeasons = availableSeasonNumbers.filter(
+	n => n < maxWatched && !explicitWatchedMap.has(n)
+);
+
+// All watched seasons (explicit + implied) for the SeasonSeasons badge
+const allWatchedSeasons = [...new Set([...watchedSeasons, ...impliedSeasons])].sort((a, b) => a - b);
+
 function formatDate(iso: string): string {
 	if (!iso) return '';
 	const d = new Date(iso);
@@ -258,7 +271,7 @@ function formatDate(iso: string): string {
 				<SeriesSeasons
 					client:load
 					seasons={series.seasons}
-					watchedSeasons={watchedSeasons}
+					watchedSeasons={allWatchedSeasons}
 				/>
 			)}
 		</div>
@@ -336,19 +349,39 @@ function formatDate(iso: string): string {
 			</div>
 
 			<!-- Mi Progreso -->
-			{series.watched_entries.length > 0 && (
+			{(series.watched_entries.length > 0 || impliedSeasons.length > 0) && (
 				<div class="border border-border-default rounded-xl p-5">
 					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Mi Progreso</h2>
 					<div class="h-px bg-linear-to-r from-neon-indigo/30 via-neon-indigo/15 to-transparent mb-4"></div>
 					<div class="space-y-3">
+						{/* Implied previous seasons */}
+						{impliedSeasons.map((n) => (
+							<div class="flex items-center justify-between py-2 border-b border-border-default last:border-0">
+								<a href={`#season-header-${n}`} class="group flex items-center gap-1.5 hover:text-neon-indigo transition-colors">
+									<div class="text-sm font-semibold text-text-primary group-hover:text-neon-indigo transition-colors">Temporada {n}</div>
+									<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-neon-indigo transition-colors shrink-0">
+										<path d="m6 9 6 6 6-6" />
+									</svg>
+								</a>
+								<span class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-text-muted border-border-default bg-surface-2 italic">
+									vista previamente
+								</span>
+							</div>
+						))}
+						{/* Explicit watched entries */}
 						{series.watched_entries.map((w) => (
 							<div class="flex items-center justify-between py-2 border-b border-border-default last:border-0">
-								<div>
-									<div class="text-sm font-semibold text-text-primary">Temporada {w.season_number}</div>
+								<a href={`#season-header-${w.season_number}`} class="group">
+									<div class="flex items-center gap-1.5">
+										<div class="text-sm font-semibold text-text-primary group-hover:text-neon-indigo transition-colors">Temporada {w.season_number}</div>
+										<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted group-hover:text-neon-indigo transition-colors shrink-0">
+											<path d="m6 9 6 6 6-6" />
+										</svg>
+									</div>
 									<div class="text-[11px] text-text-muted">
 										{w.year_watched} {w.platform && `· ${w.platform}`}
 									</div>
-								</div>
+								</a>
 								<span class:list={[
 									'text-[10px] font-medium px-2 py-0.5 rounded-md border capitalize',
 									w.status_viewed === 'completed'
