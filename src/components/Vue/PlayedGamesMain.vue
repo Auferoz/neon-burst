@@ -116,6 +116,44 @@ async function fetchGames() {
 }
 
 const showCreateModal = ref(false);
+const showReplayPicker = ref(false);
+const showReplayModal = ref(false);
+const replayGame = ref<Record<string, unknown> | null>(null);
+const replaySearch = ref('');
+const replayLoading = ref(false);
+
+const replayFilteredGames = computed(() => {
+  if (!replaySearch.value) return games.value;
+  const q = replaySearch.value.toLowerCase();
+  return games.value.filter(g => g.title.toLowerCase().includes(q));
+});
+
+async function selectReplay(game: Game) {
+  replayLoading.value = true;
+  try {
+    const res = await fetch(`/api/games/${game.id}`);
+    if (!res.ok) throw new Error();
+    const full = await res.json();
+    // Add empty date entry for the new replay session
+    full.dates_played = full.dates_played || [];
+    full.dates_played.push({ year: currentYear, fecha_inicio: '', fecha_final: '', horas: '' });
+    full.estado = 'Jugando';
+    replayGame.value = full;
+    showReplayPicker.value = false;
+    replaySearch.value = '';
+    showReplayModal.value = true;
+  } catch {
+    // fallback: just close
+    showReplayPicker.value = false;
+  } finally {
+    replayLoading.value = false;
+  }
+}
+
+function onReplaySaved() {
+  replayGame.value = null;
+  fetchGames();
+}
 
 function onGameCreated() {
   fetchGames();
@@ -161,6 +199,15 @@ onMounted(fetchGames);
           >
             <IconPlusCircle :size="14" />
             Agregar juego
+          </button>
+          <button
+            @click="showReplayPicker = true"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-green border border-neon-green/30 rounded-lg hover:bg-neon-green/10 transition-colors cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" />
+            </svg>
+            Rejugar
           </button>
           <a
             href="/mySteamGames"
@@ -244,6 +291,82 @@ onMounted(fetchGames);
       :open="showCreateModal"
       @close="showCreateModal = false"
       @saved="onGameCreated"
+    />
+
+    <!-- Replay picker modal -->
+    <Teleport to="body">
+      <div
+        v-if="showReplayPicker"
+        id="replay-backdrop"
+        class="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm overflow-y-auto p-4 sm:p-8"
+        @mousedown.self="showReplayPicker = false; replaySearch = ''"
+      >
+        <div
+          class="relative w-full max-w-md bg-surface-1 border border-border-default rounded-2xl shadow-2xl my-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Seleccionar juego para rejugar"
+        >
+          <div class="flex items-center justify-between p-5 border-b border-border-default">
+            <h2 class="text-lg font-bold text-text-primary">Rejugar juego</h2>
+            <button
+              @click="showReplayPicker = false; replaySearch = ''"
+              class="w-8 h-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-3 transition-colors cursor-pointer"
+              aria-label="Cerrar"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="p-5">
+            <input
+              v-model="replaySearch"
+              type="text"
+              placeholder="Buscar juego..."
+              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-green/50 focus:ring-1 focus:ring-neon-green/20 transition-colors mb-3"
+              autofocus
+            />
+
+            <div class="max-h-80 overflow-y-auto space-y-1">
+              <button
+                v-for="g in replayFilteredGames"
+                :key="g.id"
+                @click="selectReplay(g)"
+                :disabled="replayLoading"
+                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left hover:bg-surface-2 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <img
+                  v-if="g.poster"
+                  :src="`https://images.igdb.com/igdb/image/upload/t_cover_small/${g.poster}.webp`"
+                  :alt="g.title"
+                  class="w-8 h-10 rounded object-cover bg-surface-3 shrink-0"
+                />
+                <div v-else class="w-8 h-10 rounded bg-surface-3 shrink-0" />
+                <div class="min-w-0">
+                  <div class="text-sm font-medium text-text-primary truncate">{{ g.title }}</div>
+                  <div class="text-[11px] text-text-muted">
+                    {{ g.console_pc }} · {{ g.estado }}
+                    <span v-if="g.years_played.length" class="text-text-muted"> · {{ g.years_played.join(', ') }}</span>
+                  </div>
+                </div>
+              </button>
+              <div v-if="replayFilteredGames.length === 0" class="text-xs text-text-muted text-center py-4">
+                Sin resultados
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Replay edit modal -->
+    <PlayedGamesFormModal
+      :open="showReplayModal"
+      :game="replayGame as any"
+      @close="showReplayModal = false; replayGame = null"
+      @saved="onReplaySaved"
     />
   </div>
 </template>
