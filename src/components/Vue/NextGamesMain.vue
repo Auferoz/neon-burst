@@ -27,6 +27,7 @@ const error = ref('');
 
 const searchQuery = ref('');
 const selectedMonth = ref(String(new Date().getMonth()));
+const selectedPlatform = ref('');
 const filterType = ref<'all' | 'upcoming' | 'released' | 'featured'>('upcoming');
 
 // Featured games stored in D1 database
@@ -99,6 +100,26 @@ const gamesPerMonth = computed(() => {
   return counts;
 });
 
+// Unique platforms across all games, sorted alphabetically
+const availablePlatforms = computed(() => {
+  const set = new Set<string>();
+  for (const g of games.value) {
+    for (const p of g.platforms) set.add(p);
+  }
+  return [...set].sort();
+});
+
+// Count games per platform for the badge
+const gamesPerPlatform = computed(() => {
+  const counts: Record<string, number> = {};
+  for (const g of games.value) {
+    for (const p of g.platforms) {
+      counts[p] = (counts[p] || 0) + 1;
+    }
+  }
+  return counts;
+});
+
 const filteredGames = computed(() => {
   let result = games.value;
 
@@ -117,6 +138,10 @@ const filteredGames = computed(() => {
       if (!g.releaseDate) return false;
       return new Date(g.releaseDate * 1000).getMonth() === month;
     });
+  }
+
+  if (selectedPlatform.value) {
+    result = result.filter(g => g.platforms.includes(selectedPlatform.value));
   }
 
   if (filterType.value === 'upcoming') {
@@ -220,6 +245,16 @@ onMounted(() => {
           <option value="">Todos los meses</option>
           <option v-for="m in allMonths" :key="m.value" :value="String(m.value)">
             {{ m.label }} ({{ gamesPerMonth[m.value] || 0 }})
+          </option>
+        </select>
+        <select
+          v-model="selectedPlatform"
+          aria-label="Filtrar por plataforma"
+          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+        >
+          <option value="">Todas las plataformas</option>
+          <option v-for="p in availablePlatforms" :key="p" :value="p">
+            {{ p }} ({{ gamesPerPlatform[p] || 0 }})
           </option>
         </select>
         <select
