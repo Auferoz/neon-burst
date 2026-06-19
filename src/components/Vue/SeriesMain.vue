@@ -111,11 +111,11 @@ const hasActiveFilters = computed(() =>
   searchQuery.value !== '' || filterYear.value !== defaultYear || filterPlatform.value !== '' || filterStatus.value !== ''
 );
 
-async function fetchSeries() {
+async function fetchSeries(force = false) {
   loading.value = true;
   error.value = '';
   try {
-    const res = await fetch('/api/series');
+    const res = await fetch('/api/series', force ? { cache: 'no-store' } : {});
     if (!res.ok) throw new Error('Error al cargar series');
     series.value = await res.json();
   } catch (e) {
@@ -165,7 +165,7 @@ onMounted(fetchSeries);
             </svg>
             Agregar
           </button>
-          <SyncButton endpoint="/api/series/sync" accent="indigo" label="Sync" @synced="fetchSeries" />
+          <SyncButton endpoint="/api/series/sync" accent="indigo" label="Sync" @synced="fetchSeries(true)" />
         </div>
         <p class="text-text-secondary text-sm leading-relaxed mt-1">Lista de series vistas por año</p>
 

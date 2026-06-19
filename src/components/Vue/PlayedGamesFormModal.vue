@@ -224,7 +224,7 @@ function onBackdrop(e: MouseEvent) {
             </div>
           </div>
 
-          <!-- Marcas: Demo / Early Access / Probando -->
+          <!-- Marcas: Demo / Early Access / Review -->
           <div class="flex items-center gap-6">
             <label class="flex items-center gap-2 cursor-pointer select-none">
               <input
@@ -248,7 +248,7 @@ function onBackdrop(e: MouseEvent) {
                 v-model="form.is_testing"
                 class="w-4 h-4 rounded border-border-default bg-surface-2 text-neon-cyan accent-neon-cyan cursor-pointer"
               />
-              <span class="text-xs text-text-secondary">Probando</span>
+              <span class="text-xs text-text-secondary">Review</span>
             </label>
           </div>
 

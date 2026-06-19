@@ -160,11 +160,11 @@ const upcomingCount = computed(() => games.value.filter(g => g.releaseDate > now
 const releasedCount = computed(() => games.value.filter(g => g.releaseDate <= now).length);
 const featuredCount = computed(() => games.value.filter(g => featuredIds.value.has(g.id)).length);
 
-async function fetchGames() {
+async function fetchGames(force = false) {
   loading.value = true;
   error.value = '';
   try {
-    const res = await fetch('/api/next-games');
+    const res = await fetch('/api/next-games', force ? { cache: 'no-store' } : {});
     if (!res.ok) throw new Error('Error al cargar los próximos juegos');
     games.value = await res.json();
   } catch (e) {
@@ -221,7 +221,7 @@ onMounted(() => {
           <IconLibrary :size="14" />
           Steam
         </a>
-        <SyncButton endpoint="/api/next-games/sync" accent="pink" label="Sync" @synced="fetchGames" />
+        <SyncButton endpoint="/api/next-games/sync" accent="pink" label="Sync" @synced="fetchGames(true)" />
       </div>
     </div>
 

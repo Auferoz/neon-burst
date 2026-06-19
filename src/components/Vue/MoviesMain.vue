@@ -114,11 +114,11 @@ const hasActiveFilters = computed(() =>
   searchQuery.value !== '' || filterYear.value !== defaultYear || filterGenre.value !== ''
 );
 
-async function fetchMovies() {
+async function fetchMovies(force = false) {
   loading.value = true;
   error.value = '';
   try {
-    const res = await fetch('/api/movies');
+    const res = await fetch('/api/movies', force ? { cache: 'no-store' } : {});
     if (!res.ok) throw new Error('Error al cargar películas');
     movies.value = await res.json();
   } catch (e) {
@@ -138,7 +138,7 @@ onMounted(fetchMovies);
       <div>
         <div class="flex items-center gap-3">
           <h1 class="text-xl sm:text-2xl font-bold text-neon-emerald neon-glow-emerald leading-tight">movies</h1>
-          <SyncButton endpoint="/api/movies/sync" accent="emerald" label="Sync" @synced="fetchMovies" />
+          <SyncButton endpoint="/api/movies/sync" accent="emerald" label="Sync" @synced="fetchMovies(true)" />
         </div>
         <p class="text-text-secondary text-sm leading-relaxed mt-1">Lista de películas vistas por año</p>
 

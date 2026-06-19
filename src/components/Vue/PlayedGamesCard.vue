@@ -130,7 +130,7 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
               v-if="game.is_testing"
               class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-neon-cyan border-neon-cyan/30 bg-neon-cyan/10"
             >
-              Probando
+              Review
             </span>
             <span
               :class="estadoColor[game.estado] || 'text-text-secondary border-border-default bg-surface-2'"
