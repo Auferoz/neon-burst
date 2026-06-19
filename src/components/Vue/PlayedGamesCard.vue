@@ -17,6 +17,7 @@ interface Game {
   description: string;
   is_demo: number;
   is_early_access: number;
+  is_testing: number;
 }
 
 const props = defineProps<{
@@ -27,6 +28,8 @@ const estadoColor: Record<string, string> = {
   Completado: 'text-neon-green border-neon-green/30 bg-neon-green/10',
   Abandonado: 'text-neon-pink border-neon-pink/30 bg-neon-pink/10',
   Jugando: 'text-neon-blue border-neon-blue/30 bg-neon-blue/10',
+  Recurrente: 'text-neon-purple border-neon-purple/30 bg-neon-purple/10',
+  Pausado: 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10',
 };
 
 const logrosPercent = props.game.logros_total > 0
@@ -122,6 +125,12 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
               class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10"
             >
               Early Access
+            </span>
+            <span
+              v-if="game.is_testing"
+              class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-neon-cyan border-neon-cyan/30 bg-neon-cyan/10"
+            >
+              Probando
             </span>
             <span
               :class="estadoColor[game.estado] || 'text-text-secondary border-border-default bg-surface-2'"

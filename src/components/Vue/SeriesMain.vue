@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import SeriesCard from './SeriesCard.vue';
 import SeriesFormModal from './SeriesFormModal.vue';
+import SyncButton from './SyncButton.vue';
 import IconGrid from '../Icons/IconGrid.vue';
 import IconClock from '../Icons/IconClock.vue';
 import IconStar from '../Icons/IconStar.vue';
@@ -164,6 +165,7 @@ onMounted(fetchSeries);
             </svg>
             Agregar
           </button>
+          <SyncButton endpoint="/api/series/sync" accent="indigo" label="Sync" @synced="fetchSeries" />
         </div>
         <p class="text-text-secondary text-sm leading-relaxed mt-1">Lista de series vistas por año</p>
 

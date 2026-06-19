@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import MoviesCard from './MoviesCard.vue';
+import SyncButton from './SyncButton.vue';
 import IconGrid from '../Icons/IconGrid.vue';
 import IconClock from '../Icons/IconClock.vue';
 import IconStar from '../Icons/IconStar.vue';
@@ -135,7 +136,10 @@ onMounted(fetchMovies);
     <!-- Header -->
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-neon-emerald neon-glow-emerald leading-tight">movies</h1>
+        <div class="flex items-center gap-3">
+          <h1 class="text-xl sm:text-2xl font-bold text-neon-emerald neon-glow-emerald leading-tight">movies</h1>
+          <SyncButton endpoint="/api/movies/sync" accent="emerald" label="Sync" @synced="fetchMovies" />
+        </div>
         <p class="text-text-secondary text-sm leading-relaxed mt-1">Lista de películas vistas por año</p>
 
         <!-- Global stats -->

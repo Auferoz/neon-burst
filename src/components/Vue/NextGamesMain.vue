@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import NextGamesCard from './NextGamesCard.vue';
+import SyncButton from './SyncButton.vue';
 import IconGrid from '../Icons/IconGrid.vue';
 import IconCalendar from '../Icons/IconCalendar.vue';
 import IconGamepad from '../Icons/IconGamepad.vue';
@@ -220,6 +221,7 @@ onMounted(() => {
           <IconLibrary :size="14" />
           Steam
         </a>
+        <SyncButton endpoint="/api/next-games/sync" accent="pink" label="Sync" @synced="fetchGames" />
       </div>
     </div>
 

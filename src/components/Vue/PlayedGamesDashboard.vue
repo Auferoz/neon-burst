@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import IconGamepad from '../Icons/IconGamepad.vue';
+import IconRepeat from '../Icons/IconRepeat.vue';
 import IconPauseCircle from '../Icons/IconPauseCircle.vue';
 import IconCheckCircle from '../Icons/IconCheckCircle.vue';
 import IconXCircle from '../Icons/IconXCircle.vue';
@@ -23,6 +24,14 @@ const stats = computed(() => {
       bg: 'bg-neon-blue/10',
       border: 'border-neon-blue/25',
       text: 'text-neon-blue',
+    },
+    {
+      label: 'Recurrente',
+      count: counts['Recurrente'] || 0,
+      icon: IconRepeat as Component,
+      bg: 'bg-neon-purple/10',
+      border: 'border-neon-purple/25',
+      text: 'text-neon-purple',
     },
     {
       label: 'Pausado',
@@ -53,7 +62,7 @@ const stats = computed(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-2" role="list" aria-label="Resumen de estados">
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2" role="list" aria-label="Resumen de estados">
     <div
       v-for="stat in stats"
       :key="stat.label"

@@ -28,6 +28,7 @@ interface GameData {
   rating_rawg: number | '';
   is_demo: boolean;
   is_early_access: boolean;
+  is_testing: boolean;
   dates_played: DateEntry[];
 }
 
@@ -53,7 +54,7 @@ function emptyForm(): GameData {
     artworks: '', genre: '', estado: 'Jugando',
     logros_obt: '', logros_total: '', console_pc: '', igdb_id: '',
     first_year_played: '', description: '', rating_metacritic: '',
-    rating_rawg: '', is_demo: false, is_early_access: false, dates_played: [],
+    rating_rawg: '', is_demo: false, is_early_access: false, is_testing: false, dates_played: [],
   };
 }
 
@@ -71,6 +72,7 @@ watch(() => props.open, (val) => {
         rating_rawg: props.game.rating_rawg || '',
         is_demo: !!props.game.is_demo,
         is_early_access: !!props.game.is_early_access,
+        is_testing: !!props.game.is_testing,
         dates_played: props.game.dates_played?.length
           ? props.game.dates_played.map(d => ({ ...d }))
           : [],
@@ -113,6 +115,7 @@ async function save() {
     rating_rawg: Number(form.value.rating_rawg) || null,
     is_demo: form.value.is_demo ? 1 : 0,
     is_early_access: form.value.is_early_access ? 1 : 0,
+    is_testing: form.value.is_testing ? 1 : 0,
     dates_played: form.value.dates_played
       .filter(d => d.year)
       .map(d => ({
@@ -213,6 +216,7 @@ function onBackdrop(e: MouseEvent) {
                 class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors cursor-pointer"
               >
                 <option value="Jugando">Jugando</option>
+                <option value="Recurrente">Recurrente</option>
                 <option value="Pausado">Pausado</option>
                 <option value="Completado">Completado</option>
                 <option value="Abandonado">Abandonado</option>
@@ -220,7 +224,7 @@ function onBackdrop(e: MouseEvent) {
             </div>
           </div>
 
-          <!-- Marcas: Demo / Early Access -->
+          <!-- Marcas: Demo / Early Access / Probando -->
           <div class="flex items-center gap-6">
             <label class="flex items-center gap-2 cursor-pointer select-none">
               <input
@@ -237,6 +241,14 @@ function onBackdrop(e: MouseEvent) {
                 class="w-4 h-4 rounded border-border-default bg-surface-2 text-neon-yellow accent-neon-yellow cursor-pointer"
               />
               <span class="text-xs text-text-secondary">Early Access</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                v-model="form.is_testing"
+                class="w-4 h-4 rounded border-border-default bg-surface-2 text-neon-cyan accent-neon-cyan cursor-pointer"
+              />
+              <span class="text-xs text-text-secondary">Probando</span>
             </label>
           </div>
 
