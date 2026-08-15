@@ -48,6 +48,59 @@ const error = ref('');
 
 const form = ref<GameData>(emptyForm());
 
+// --- Autocompletar desde IGDB ---
+const igdbQuery = ref('');
+const importing = ref(false);
+const importError = ref('');
+const importedFields = ref<string[]>([]);
+
+/** Campos que rellena IGDB; el resto los completa el usuario a mano. */
+const IGDB_FIELDS = [
+  'title', 'released', 'companie', 'console_pc', 'genre',
+  'poster', 'artworks', 'trailer', 'description',
+] as const;
+
+const FIELD_LABELS: Record<string, string> = {
+  title: 'Título', released: 'Lanzamiento', companie: 'Compañía',
+  console_pc: 'Plataforma', genre: 'Géneros', poster: 'Poster',
+  artworks: 'Artwork', trailer: 'Trailer', description: 'Descripción',
+};
+
+async function importFromIgdb() {
+  const q = igdbQuery.value.trim();
+  if (!q || importing.value) return;
+
+  importing.value = true;
+  importError.value = '';
+  importedFields.value = [];
+
+  try {
+    const res = await fetch(`/api/igdb/lookup?q=${encodeURIComponent(q)}`);
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error((data as any).error || `Error ${res.status}`);
+    }
+
+    const filled: string[] = [];
+    for (const field of IGDB_FIELDS) {
+      const value = (data as any)[field];
+      if (value) {
+        (form.value as any)[field] = value;
+        filled.push(FIELD_LABELS[field]!);
+      }
+    }
+    form.value.igdb_id = (data as any).igdb_id || '';
+
+    importedFields.value = filled;
+    error.value = '';
+  } catch (e) {
+    importError.value = (e as Error).message;
+  } finally {
+    importing.value = false;
+  }
+}
+
 function emptyForm(): GameData {
   return {
     title: '', released: '', companie: '', poster: '', trailer: '',
@@ -82,8 +135,12 @@ watch(() => props.open, (val) => {
       form.value = emptyForm();
     }
     error.value = '';
+    igdbQuery.value = '';
+    importError.value = '';
+    importedFields.value = [];
     nextTick(() => {
-      document.getElementById('game-title')?.focus();
+      // Al crear, el flujo natural empieza por el importador de IGDB
+      document.getElementById(isEdit.value ? 'game-title' : 'game-igdb-query')?.focus();
     });
   }
 });
@@ -193,6 +250,44 @@ function onBackdrop(e: MouseEvent) {
           <!-- Error -->
           <div v-if="error" class="text-xs text-neon-pink bg-neon-pink/10 border border-neon-pink/20 rounded-lg px-3 py-2">
             {{ error }}
+          </div>
+
+          <!-- Autocompletar desde IGDB -->
+          <div class="border border-neon-cyan/20 bg-neon-cyan/5 rounded-lg p-3 space-y-2">
+            <label for="game-igdb-query" class="flex items-center gap-2 text-xs text-neon-cyan">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+              </svg>
+              Autocompletar desde IGDB
+            </label>
+
+            <div class="flex flex-col sm:flex-row gap-2">
+              <input
+                id="game-igdb-query"
+                v-model="igdbQuery"
+                type="text"
+                :disabled="importing"
+                @keydown.enter.prevent="importFromIgdb"
+                class="flex-1 bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-cyan/50 focus:ring-1 focus:ring-neon-cyan/20 disabled:opacity-50 transition-colors"
+                placeholder="https://www.igdb.com/games/bright-memory  ·  bright-memory  ·  103298"
+              />
+              <button
+                type="button"
+                @click="importFromIgdb"
+                :disabled="importing || !igdbQuery.trim()"
+                class="px-4 py-2 text-xs font-medium text-neon-cyan border border-neon-cyan/30 rounded-lg hover:bg-neon-cyan/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer whitespace-nowrap"
+              >
+                {{ importing ? 'Buscando...' : 'Traer datos' }}
+              </button>
+            </div>
+
+            <p v-if="importError" class="text-xs text-neon-pink">{{ importError }}</p>
+            <p v-else-if="importedFields.length" class="text-xs text-neon-green">
+              Datos cargados: {{ importedFields.join(', ') }}. Revisa y completa el resto.
+            </p>
+            <p v-else class="text-[11px] text-text-muted">
+              Pega la URL del juego en IGDB, su slug o su ID. Sobrescribe los campos que IGDB tenga.
+            </p>
           </div>
 
           <!-- Title + Estado -->

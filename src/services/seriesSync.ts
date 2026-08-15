@@ -7,6 +7,7 @@
  */
 
 import { env } from 'cloudflare:workers';
+import { fetchTmdbShowBySlug, TMDB_SOURCE } from './tmdbSeries';
 
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -44,41 +45,123 @@ async function fetchShowInfo(slug: string): Promise<TraktShow | null> {
     const res = await fetch(`${TRAKT_API_URL}/shows/${slug}?extended=full`, {
       headers: getTraktHeaders(),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(`[series] fetchShowInfo ${slug} failed: ${res.status} ${res.statusText}`);
+      return null;
+    }
     return await res.json() as TraktShow;
-  } catch { return null; }
+  } catch (e) {
+    console.error(`[series] fetchShowInfo ${slug} error:`, e);
+    return null;
+  }
 }
 
-/**
- * Fetch and cache a single show by slug.
- * Called when user adds a new series entry and it's not cached yet.
- */
-export async function syncSingleShow(db: D1Database, slug: string): Promise<boolean> {
-  const show = await fetchShowInfo(slug);
-  if (!show) return false;
+export class TraktRequestError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+    this.name = 'TraktRequestError';
+  }
+}
 
-  const poster = traktImage(show.images?.poster?.[0]);
-  const thumb = traktImage(show.images?.fanart?.[0] || show.images?.thumb?.[0]);
-
+/** Upsert de los datos básicos en series_cache (misma forma venga de Trakt o de TMDB). */
+async function upsertShowBasic(db: D1Database, slug: string, row: {
+  trakt_id: number | null; tmdb_id: number | null; imdb_id: string;
+  title: string; year: number | null; overview: string; rating: number;
+  genres: string; network: string; status: string; runtime: number;
+  poster: string; thumb: string; data_source: string;
+}): Promise<void> {
   await db.prepare(
     `INSERT INTO series_cache
-      (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, thumb, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      (trakt_slug, trakt_id, tmdb_id, imdb_id, title, year, overview, rating, genres, network, status, runtime, poster, thumb, data_source, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
      ON CONFLICT(trakt_slug) DO UPDATE SET
       trakt_id=excluded.trakt_id, tmdb_id=excluded.tmdb_id, imdb_id=excluded.imdb_id,
       title=excluded.title, year=excluded.year, overview=excluded.overview,
       rating=excluded.rating, genres=excluded.genres, network=excluded.network,
       status=excluded.status, runtime=excluded.runtime, poster=excluded.poster,
-      thumb=excluded.thumb, updated_at=excluded.updated_at`
+      thumb=excluded.thumb, data_source=excluded.data_source, updated_at=excluded.updated_at`
   ).bind(
-    slug, show.ids.trakt, show.ids.tmdb || null, show.ids.imdb || '',
-    show.title, show.year || null, show.overview || '',
-    Math.round((show.rating || 0) * 10) / 10,
-    show.genres?.join(', ') || '', show.network || '', show.status || '',
-    show.runtime || 0, poster, thumb,
+    slug, row.trakt_id, row.tmdb_id, row.imdb_id,
+    row.title, row.year, row.overview, row.rating,
+    row.genres, row.network, row.status, row.runtime,
+    row.poster, row.thumb, row.data_source,
   ).run();
+}
 
-  return true;
+/**
+ * Fetch and cache a single show by slug.
+ * Called when user adds a new series entry and it's not cached yet.
+ *
+ * Trakt es la fuente primaria. Si Trakt falla (403 por API de pago, 429, red),
+ * cae a TMDB como fallback temporal y marca la fila con data_source='tmdb'.
+ * Solo lanza TraktRequestError si además TMDB falla, para poder reportar la causa real.
+ */
+export async function syncSingleShow(db: D1Database, slug: string): Promise<boolean> {
+  const res = await fetch(`${TRAKT_API_URL}/shows/${slug}?extended=full`, {
+    headers: getTraktHeaders(),
+  }).catch(() => null);
+
+  // Trakt OK → fuente primaria
+  if (res?.ok) {
+    const show = await res.json() as TraktShow;
+    await upsertShowBasic(db, slug, {
+      trakt_id: show.ids.trakt,
+      tmdb_id: show.ids.tmdb || null,
+      imdb_id: show.ids.imdb || '',
+      title: show.title,
+      year: show.year || null,
+      overview: show.overview || '',
+      rating: Math.round((show.rating || 0) * 10) / 10,
+      genres: show.genres?.join(', ') || '',
+      network: show.network || '',
+      status: show.status || '',
+      runtime: show.runtime || 0,
+      poster: traktImage(show.images?.poster?.[0]),
+      thumb: traktImage(show.images?.fanart?.[0] || show.images?.thumb?.[0]),
+      data_source: 'trakt',
+    });
+    return true;
+  }
+
+  // Trakt no disponible (o serie inexistente) → fallback a TMDB
+  const status = res?.status ?? 0;
+  console.warn(`[series] Trakt no disponible para ${slug} (${status || 'sin respuesta'}), usando fallback TMDB`);
+
+  const tmdb = await fetchTmdbShowBySlug(slug);
+
+  if (tmdb.show) {
+    await upsertShowBasic(db, slug, {
+      trakt_id: null,
+      tmdb_id: tmdb.show.tmdb_id,
+      imdb_id: tmdb.show.imdb_id,
+      title: tmdb.show.title,
+      year: tmdb.show.year,
+      overview: tmdb.show.overview,
+      rating: tmdb.show.rating,
+      genres: tmdb.show.genres,
+      network: tmdb.show.network,
+      status: tmdb.show.status,
+      runtime: tmdb.show.runtime,
+      poster: tmdb.show.poster,
+      thumb: tmdb.show.thumb,
+      data_source: TMDB_SOURCE,
+    });
+    return true;
+  }
+
+  // TMDB respondió y no existe la serie → slug inválido (404 para el cliente)
+  if (tmdb.available && !tmdb.found) return false;
+  if (status === 404) return false;
+
+  // Ninguna de las dos APIs se pudo consultar
+  const detail = status === 403
+    ? 'Trakt no está disponible (403) y tampoco se pudo consultar TMDB. Revisa TMDB_API_KEY.'
+    : status === 429
+      ? 'Trakt está limitando las peticiones (429) y tampoco se pudo consultar TMDB.'
+      : status
+        ? `Error de la API de Trakt (${status}) y tampoco se pudo consultar TMDB.`
+        : 'No se pudo conectar con Trakt ni con TMDB';
+  throw new TraktRequestError(status, detail);
 }
 
 /**

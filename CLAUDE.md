@@ -69,7 +69,7 @@ integrations/        — cloudflare-cron.ts (injects scheduled handler post-buil
 | `PlayedGamesCard.vue` | Individual game card |
 | `PlayedGamesFilter.vue` | Filter controls |
 | `PlayedGamesEditButton.vue` | Edit button |
-| `PlayedGamesFormModal.vue` | Create/edit game modal |
+| `PlayedGamesFormModal.vue` | Create/edit game modal (con autocompletado desde IGDB) |
 | `SteamLibraryMain.vue` | Steam games display |
 | `NextGamesMain.vue` | Upcoming games container |
 | `NextGamesCard.vue` | Individual upcoming game card |
@@ -79,6 +79,37 @@ integrations/        — cloudflare-cron.ts (injects scheduled handler post-buil
 | `SeriesCard.vue` | Individual series card |
 | `SeriesFormModal.vue` | Create/edit series entry modal |
 | `SeriesSeasons.vue` | Expandable seasons/episodes accordion |
+| `SyncButton.vue` | Botón de sync manual reutilizable (Movies/Series/Next Games) |
+
+**`SyncButton.vue`** — llama a un endpoint `/api/*/sync` con `?secret=`. Pide el
+`CRON_SECRET` por `window.prompt` y lo guarda en `localStorage` (clave `nb_sync_secret`);
+si el endpoint devuelve 401 lo borra y vuelve a pedirlo. Props: `endpoint`, `accent`
+(`indigo | emerald | pink | cyan | blue`), `label`; emite `synced` para que el contenedor
+recargue con `cache: 'no-store'`. Las clases de acento están escritas completas en un
+mapa estático para que Tailwind no las purgue.
+
+### Autocompletado IGDB (modal de juegos)
+
+`PlayedGamesFormModal.vue` tiene un bloque arriba del formulario donde se pega la URL de
+IGDB, el slug o el ID del juego. El botón llama a `/api/igdb/lookup?q=` y rellena
+**título, lanzamiento, compañía, plataforma, géneros, poster, artwork, trailer,
+descripción e `igdb_id`**; el resto (estado, logros, horas, ratings, fechas) lo completa
+el usuario. Solo sobrescribe los campos que IGDB devuelve con valor.
+
+Formatos que produce el lookup, iguales a los que ya guarda la tabla `games`:
+
+- `poster` / `artworks` → **image_id** de IGDB sin extensión (`co26z5`, `ar11k3`); las vistas
+  arman la URL con `igdbImage()` (`t_cover_big`, `t_screenshot_big`, …)
+- `trailer` → **ID de video de YouTube** (`s73I1DaHnqM`), se prefiere el video cuyo nombre
+  contenga "trailer"
+- `released` → `DD/MM/YYYY` desde `first_release_date` (unix UTC)
+- `companie` → developer, y si no hay, publisher
+- `console_pc` → abreviaturas de plataformas de IGDB (`PC, PS5, Series X|S`). Ojo: los datos
+  existentes usan la tienda (`Steam`), así que este campo casi siempre se ajusta a mano
+
+Resolución de la query: ID numérico → `where id =`; URL/slug → `where slug =`; si el slug no
+existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL no-IGDB,
+404 no encontrado, 502 IGDB inaccesible.
 
 ### API Endpoints
 
@@ -99,11 +130,12 @@ integrations/        — cloudflare-cron.ts (injects scheduled handler post-buil
 | `/api/series/[id]` | GET, PUT, DELETE | Series entry CRUD by ID |
 | `/api/series/sync` | GET | Trigger Trakt series sync (requires auth) |
 | `/api/series/detail/[slug]` | GET | Series full detail (on-demand fetch) |
+| `/api/igdb/lookup` | GET | `?q=<url\|slug\|id>` → datos de un juego de IGDB para autocompletar el modal |
 
 ### Database Schema (Cloudflare D1)
 
 **Games tables** (defined in `db/schema.sql`):
-- **games** — Main game tracking (title, estado, poster, trailer, artworks, genre, ratings, achievements, etc.)
+- **games** — Main game tracking (title, estado, poster, trailer, artworks, genre, ratings, achievements, etc.) + flags booleanos `is_demo`, `is_early_access`, `is_testing` (0/1), que se muestran como badges en `PlayedGamesCard.vue` y el detalle
 - **dates_played** — Play sessions per year (game_id FK, year, fecha_inicio, fecha_final, horas)
 
 **Steam/IGDB cache tables**:
@@ -116,18 +148,26 @@ integrations/        — cloudflare-cron.ts (injects scheduled handler post-buil
 - **movies_lists** — Movie list metadata (slug PK, description, item_count)
 
 **Series tables**:
-- **series_cache** — Cached series data from Trakt (trakt_slug PK, poster, thumb, genres, rating, plus detail columns: tagline, certification, cast_json, videos_json, images_json, seasons_json, detail_fetched_at)
+- **series_cache** — Cached series data (trakt_slug PK, poster, thumb, genres, rating, plus detail columns: tagline, certification, cast_json, videos_json, images_json, seasons_json, `season_posters_json` (mapa `{"1":"url"}`), `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at)
 - **series_watched** — User's watched entries (trakt_slug + season_number UNIQUE, year_watched, platform, status_viewed)
+
+**Migraciones** (`db/migrate-*.sql`, se aplican con `wrangler d1 execute`): `add-movies-tables`,
+`add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
+`add-demo-early-access`, `add-data-source`. Ojo: `db/schema.sql` **no** incluye todavía
+`season_posters_json` ni `data_source` — una base creada solo desde `schema.sql` necesita
+correr esas dos migraciones aparte.
 
 ### Services
 
 - `src/services/gamesService.ts` — D1 CRUD for games + dates_played (uses prepared statements)
 - `src/services/steamSync.ts` — Fetches Steam API → store details → HLTB times → upserts steam_cache
 - `src/services/nextGamesSync.ts` — Queries IGDB for upcoming games with community interest → batch upserts
+- `src/services/igdbGame.ts` — Lookup de **un** juego en IGDB por URL / slug / ID, mapeado a los campos de `games`. Exporta `getIgdbToken()` (compartido con `nextGamesSync.ts`), `parseIgdbQuery()` y `lookupIgdbGame()`. Usado por `/api/igdb/lookup` para el autocompletado del modal
 - `src/services/moviesService.ts` — D1 CRUD for movies_cache + on-demand detail fetch from Trakt (cast, videos, images)
 - `src/services/moviesSync.ts` — Fetches Trakt user movie lists → upserts movies_cache (cron syncs current year only)
 - `src/services/seriesService.ts` — D1 CRUD for series_watched + series_cache + on-demand detail fetch from Trakt (cast, seasons, episodes, videos)
-- `src/services/seriesSync.ts` — Refreshes series_cache metadata from Trakt for current year / ongoing shows
+- `src/services/seriesSync.ts` — Refreshes series_cache metadata from Trakt for current year / ongoing shows; `syncSingleShow` cae a TMDB y lanza `TraktRequestError` (→ HTTP 502) si ambas APIs fallan
+- `src/services/tmdbSeries.ts` — Proveedor TMDB de series (fallback temporal, ver abajo): resuelve el slug de Trakt a un id de TMDB por búsqueda y devuelve los datos con la misma forma que las funciones de Trakt
 
 ### On-Demand Detail Fetch Pattern
 
@@ -144,12 +184,30 @@ Movies and series use a lazy-loading pattern for detailed data:
 - **Steam API** — Steam library and game details
 - **IGDB (via Twitch OAuth)** — Upcoming games with community interest metrics
 - **RAWG API** — Game ratings
-- **TMDB API** — Only used for YouTube video trailers (not for images)
+- **TMDB API** — YouTube video trailers, y **fallback temporal de series** (ver abajo)
+
+### Fallback temporal a TMDB (series)
+
+La API de Trakt pasó a ser de pago y actualmente responde `403 Forbidden` a todas las
+peticiones. Trakt sigue siendo la fuente primaria en el código; cuando falla, las series
+caen a TMDB vía `src/services/tmdbSeries.ts`:
+
+- **Alta de serie nueva** (`syncSingleShow` en `seriesSync.ts`) → datos básicos desde TMDB
+- **Página de detalle** (`fetchSeriesDetail` en `seriesService.ts`) → cast (`/aggregate_credits`),
+  temporadas + episodios, videos e imágenes desde TMDB
+- El **cron diario sigue siendo solo Trakt** a propósito: si falla, deja el caché intacto
+  en lugar de sobrescribir datos buenos de Trakt con datos de TMDB
+- `series_cache.data_source` marca el origen (`'trakt'` | `'tmdb'`). Al recuperar Trakt:
+  `UPDATE series_cache SET detail_fetched_at = NULL WHERE data_source = 'tmdb';` fuerza
+  el re-fetch desde Trakt en la siguiente visita al detalle
+- Las películas **no** tienen fallback todavía: su sync devuelve 0 mientras Trakt esté caído
 
 ### Design System
 
-- **Accent colors**: neon-blue `#1e90ff` (primary), neon-cyan `#00e5ff`, neon-pink `#ff2d95`, plus purple, yellow, green, emerald, indigo
+- **Accent colors**: neon-blue `#1e90ff` (primary), neon-cyan `#00e5ff`, neon-pink `#ff2d95`, neon-purple `#b026ff`, neon-yellow `#e5ff00`, neon-green `#39ff14`, neon-emerald `#34d399`, neon-indigo `#818cf8` (blue/cyan/pink también tienen variante `-dim` con alpha `66`)
 - **Surfaces**: surface-0 `#06060a` through surface-4 `#222236`
+- **Texto**: text-primary `#e8e8f0`, text-secondary `#9898b0`, text-muted `#5c5c78`
+- **Bordes**: border-default `#1e1e30`, border-hover `#2a2a42`
 - **Font**: Fira Code (monospace, Google Fonts) — terminal aesthetic
 - **Neon glow classes**: `neon-glow-blue`, `neon-glow-cyan`, `neon-glow-pink` (defined in global.css)
 - **Neon border classes**: `neon-border-blue`, `neon-border-cyan`, etc.
@@ -177,9 +235,9 @@ Required in `.env` locally and as Cloudflare secrets for the worker:
 - `TWITCH_CLIENT_ID` / `TWITCH_CLIENT_SECRET` — For IGDB API access (via Twitch OAuth)
 - `RAWG_API_KEY` — RAWG API key (for ratings)
 - `TRAKT_CLIENT_ID` — Trakt API key (for movies and series)
-- `TMDB_API_KEY` — TMDB API key (for video trailers only)
+- `TMDB_API_KEY` — TMDB API key (trailers + fallback temporal de series)
 - `CRON_SECRET` — Authenticates cron/sync requests
-- `STEAM_SYNC_URL` / `NEXT_GAMES_SYNC_URL` — Remote worker sync endpoint URLs
+- `STEAM_SYNC_URL` / `NEXT_GAMES_SYNC_URL` / `MOVIES_SYNC_URL` / `SERIES_SYNC_URL` — Remote worker sync endpoint URLs (las cuatro se leen en build time por `integrations/cloudflare-cron.ts` y quedan inlineadas en el handler `scheduled`; si faltan al buildear, el cron apunta a URLs vacías)
 
 ### DB Sync Scripts (Windows Shell Notes)
 
@@ -197,7 +255,7 @@ The `db/sync-*.js` and `db/seed-*.js` scripts use `wrangler d1 execute` via `exe
 - **Vue components** use `client:load` directive for hydration
 - **Date format**: DD/MM/YYYY (Spanish convention)
 - **SQL**: Prepared statements with `.bind()` for all D1 queries (SQL injection prevention)
-- **Caching**: 5-minute `Cache-Control` on read-only sync endpoints; no cache on CRUD endpoints
-- **Images**: All images (posters, fanart, thumbs, headshots) come from Trakt API. TMDB is only used for YouTube video data.
+- **Caching**: 5-minute `Cache-Control` en endpoints de lectura (`/api/steam`, `/api/next-games`, `/api/movies`, `/api/movies/lists`, `/api/series`); sin caché en endpoints CRUD. Tras un sync manual, los contenedores Vue refetchean con `cache: 'no-store'` para saltarse ese caché de 5 min
+- **Images**: Posters, fanart, thumbs y headshots vienen de Trakt cuando está disponible. En series, si Trakt falla, las imágenes vienen de TMDB (`https://image.tmdb.org/t/p/...`) vía `tmdbSeries.ts`. TMDB también aporta los videos de YouTube.
 - **Astro Transitions**: Uses `ClientRouter` and `view-transition-name` for smooth navigation
 - **Accessibility**: Skip link, semantic HTML, ARIA labels, focus outlines, reduced motion support

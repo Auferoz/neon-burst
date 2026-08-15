@@ -4,10 +4,10 @@
  */
 
 import { env } from 'cloudflare:workers';
+import { getIgdbToken } from './igdbGame';
 
 // Access env lazily to ensure availability in Workers runtime
 function getTwitchClientId() { return env.TWITCH_CLIENT_ID; }
-function getTwitchClientSecret() { return env.TWITCH_CLIENT_SECRET; }
 
 interface IgdbGame {
   id: number;
@@ -22,16 +22,6 @@ interface IgdbGame {
   websites?: { url: string; category: number }[];
   hypes?: number;
   follows?: number;
-}
-
-async function getIgdbToken(): Promise<string> {
-  const res = await fetch('https://id.twitch.tv/oauth2/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `client_id=${getTwitchClientId()}&client_secret=${getTwitchClientSecret()}&grant_type=client_credentials`,
-  });
-  const data = await res.json() as { access_token: string };
-  return data.access_token;
 }
 
 export async function syncNextGames(db: D1Database): Promise<{ synced: number; errors: number }> {

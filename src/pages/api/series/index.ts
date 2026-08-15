@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { getAllSeries, createSeriesEntry } from '../../../services/seriesService';
-import { syncSingleShow } from '../../../services/seriesSync';
+import { syncSingleShow, type TraktRequestError } from '../../../services/seriesSync';
 
 export const prerender = false;
 
@@ -30,10 +30,18 @@ export const POST: APIRoute = async ({ request }) => {
     .bind(data.trakt_slug).first();
 
   if (!cached) {
-    const synced = await syncSingleShow(env.DB, data.trakt_slug);
-    if (!synced) {
-      return new Response(JSON.stringify({ error: `No se encontró la serie "${data.trakt_slug}" en Trakt` }), {
-        status: 404,
+    try {
+      const synced = await syncSingleShow(env.DB, data.trakt_slug);
+      if (!synced) {
+        return new Response(JSON.stringify({ error: `No se encontró la serie "${data.trakt_slug}" (ni en Trakt ni en TMDB). Revisa el slug.` }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+    } catch (e) {
+      const err = e as TraktRequestError;
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 502,
         headers: { 'Content-Type': 'application/json' },
       });
     }

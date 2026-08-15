@@ -4,6 +4,7 @@
  */
 
 import { env } from 'cloudflare:workers';
+import { fetchTmdbShowDetail, resolveTmdbTvId, TMDB_SOURCE } from './tmdbSeries';
 
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -460,10 +461,58 @@ async function rowToSeriesDetail(db: D1Database, row: Record<string, unknown>): 
   };
 }
 
+/**
+ * Fallback temporal: arma el detalle desde TMDB cuando Trakt no está disponible.
+ * Escribe en las mismas columnas y marca data_source='tmdb' para poder
+ * re-fetchear desde Trakt cuando la API vuelva a estar accesible.
+ */
+async function fetchSeriesDetailFromTmdb(db: D1Database, slug: string, tmdbId: number): Promise<void> {
+  const resolvedId = tmdbId || await resolveTmdbTvId(slug);
+  if (!resolvedId) {
+    console.error(`[series] fallback TMDB: no se pudo resolver el id para ${slug}`);
+    return;
+  }
+
+  const detail = await fetchTmdbShowDetail(resolvedId);
+  if (!detail) return;
+
+  const seasonPosters: Record<string, string> = {};
+  for (const s of detail.seasons) {
+    if (s.poster) seasonPosters[String(s.number)] = s.poster;
+  }
+
+  try {
+    await db.prepare(`
+      UPDATE series_cache SET
+        tmdb_id = ?, tagline = ?, certification = ?, country = ?, language = ?,
+        trailer = ?, fanart = ?, logo = ?,
+        first_aired = ?, aired_episodes = ?,
+        cast_json = ?, videos_json = ?, images_json = ?, seasons_json = ?,
+        season_posters_json = ?, votes = ?,
+        data_source = ?, detail_fetched_at = datetime('now')
+      WHERE trakt_slug = ?
+    `).bind(
+      resolvedId, detail.tagline, detail.certification, detail.country, detail.language,
+      detail.trailer, detail.fanart, detail.logo,
+      detail.first_aired, detail.aired_episodes,
+      JSON.stringify(detail.cast), JSON.stringify(detail.videos),
+      JSON.stringify(detail.images), JSON.stringify(detail.seasons),
+      JSON.stringify(seasonPosters), detail.votes,
+      TMDB_SOURCE, slug,
+    ).run();
+  } catch (e) {
+    console.error(`[series] fallback TMDB: DB update for ${slug} failed:`, e);
+  }
+}
+
 async function fetchSeriesDetail(db: D1Database, slug: string, tmdbId: number): Promise<void> {
   // 1. Fetch full Trakt show data
   const show = await fetchTraktShow(slug);
-  if (!show) return;
+  // Trakt caído (API de pago / 403) → fallback temporal a TMDB
+  if (!show) {
+    await fetchSeriesDetailFromTmdb(db, slug, tmdbId);
+    return;
+  }
   await sleep(300);
 
   // 2. Fetch cast
@@ -510,7 +559,8 @@ async function fetchSeriesDetail(db: D1Database, slug: string, tmdbId: number): 
         airs_day = ?, airs_time = ?, airs_timezone = ?,
         first_aired = ?, aired_episodes = ?,
         cast_json = ?, videos_json = ?, images_json = ?, seasons_json = ?,
-        season_posters_json = ?, votes = ?, detail_fetched_at = datetime('now')
+        season_posters_json = ?, votes = ?,
+        data_source = 'trakt', detail_fetched_at = datetime('now')
       WHERE trakt_slug = ?
     `).bind(
       show.tagline || '', show.certification || '', show.country || '', show.language || '',
