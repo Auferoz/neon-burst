@@ -173,7 +173,7 @@ function onPosterError(e: Event) {
           <div class="flex items-center gap-1">
             <!-- Edit button -->
             <button
-              @click.stop="emit('edit', series)"
+              @click.stop.prevent="emit('edit', series)"
               class="w-6 h-6 flex items-center justify-center rounded-md text-text-secondary hover:text-neon-indigo hover:bg-neon-indigo/10 transition-colors cursor-pointer"
               aria-label="Editar"
             >
