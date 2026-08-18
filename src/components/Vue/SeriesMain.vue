@@ -56,6 +56,35 @@ const allPlatforms = computed(() => {
   return [...platforms].sort();
 });
 
+/**
+ * Sugerencias para el campo Plataforma del formulario.
+ * A diferencia de `allPlatforms` (que normaliza para el filtro y rompe nombres
+ * como "HBO Max"), aquí se conserva la escritura real guardada en la DB: lo que
+ * se sugiere es lo que se va a guardar.
+ * Agrupa variantes equivalentes ("Disney+" / "Disney +" / "netflix") ignorando
+ * mayúsculas y espacios, y de cada grupo propone la que empieza con mayúscula;
+ * a igualdad, la más usada. Así se sugiere "Crunchyroll" y no "crunchyroll".
+ */
+const platformSuggestions = computed(() => {
+  const groups = new Map<string, Map<string, number>>();
+
+  for (const s of series.value) {
+    const value = s.platform?.trim();
+    if (!value) continue;
+    const key = value.toLowerCase().replace(/\s+/g, '');
+    const variants = groups.get(key) || new Map<string, number>();
+    variants.set(value, (variants.get(value) || 0) + 1);
+    groups.set(key, variants);
+  }
+
+  const capitalized = (v: string) => (/^\p{Lu}/u.test(v) ? 1 : 0);
+
+  return [...groups.values()]
+    .map(variants => [...variants.entries()]
+      .sort((a, b) => capitalized(b[0]) - capitalized(a[0]) || b[1] - a[1])[0]![0])
+    .sort((a, b) => a.localeCompare(b, 'es'));
+});
+
 const filteredSeries = computed(() => {
   let result = series.value;
 
@@ -327,6 +356,7 @@ onMounted(fetchSeries);
     <SeriesFormModal
       :open="showModal"
       :entry="editEntry"
+      :platforms="platformSuggestions"
       @close="showModal = false"
       @saved="onSaved"
     />

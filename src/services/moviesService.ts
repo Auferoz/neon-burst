@@ -3,6 +3,7 @@
  */
 
 import { env } from 'cloudflare:workers';
+import { fetchTmdbMovieDetail, resolveTmdbMovieIdByImdb, TMDB_SOURCE } from './tmdbMovies';
 
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -186,7 +187,7 @@ export async function getMovieById(db: D1Database, traktId: number): Promise<Mov
     row.cast_json === '[]' && row.detail_fetched_at
   );
   if (needsFetch) {
-    await fetchMovieDetail(db, traktId, row.tmdb_id as number);
+    await fetchMovieDetail(db, traktId, row.tmdb_id as number, (row.imdb_id as string) || '');
     const updated = await db.prepare('SELECT * FROM movies_cache WHERE trakt_id = ?').bind(traktId).first<Record<string, unknown>>();
     if (updated) return rowToMovieDetail(updated);
   }
@@ -235,10 +236,63 @@ function rowToMovieDetail(row: Record<string, unknown>): MovieDetail {
   };
 }
 
-async function fetchMovieDetail(db: D1Database, traktId: number, tmdbId: number): Promise<void> {
+/**
+ * Fallback temporal: arma el detalle desde TMDB cuando Trakt no está disponible.
+ * Escribe en las mismas columnas y marca data_source='tmdb' para poder
+ * re-fetchear desde Trakt cuando la API vuelva a estar accesible.
+ *
+ * Los campos básicos (poster, thumb, overview, géneros, runtime, rating, released)
+ * solo se rellenan si están vacíos: los que ya vinieron de Trakt se respetan.
+ */
+async function fetchMovieDetailFromTmdb(db: D1Database, traktId: number, tmdbId: number, imdbId: string): Promise<void> {
+  const resolvedId = tmdbId || await resolveTmdbMovieIdByImdb(imdbId);
+  if (!resolvedId) {
+    console.error(`[movies] fallback TMDB: no se pudo resolver el id para trakt_id=${traktId}`);
+    return;
+  }
+
+  const detail = await fetchTmdbMovieDetail(resolvedId);
+  if (!detail) return;
+
+  try {
+    await db.prepare(`
+      UPDATE movies_cache SET
+        tmdb_id = ?, imdb_id = CASE WHEN imdb_id IS NULL OR imdb_id = '' THEN ? ELSE imdb_id END,
+        tagline = ?, certification = ?, country = ?, language = ?,
+        trailer = ?, homepage = ?, fanart = ?, logo = ?,
+        cast_json = ?, videos_json = ?, images_json = ?, votes = ?,
+        overview = CASE WHEN overview IS NULL OR overview = '' THEN ? ELSE overview END,
+        genres  = CASE WHEN genres  IS NULL OR genres  = '' THEN ? ELSE genres  END,
+        poster  = CASE WHEN poster  IS NULL OR poster  = '' THEN ? ELSE poster  END,
+        thumb   = CASE WHEN thumb   IS NULL OR thumb   = '' THEN ? ELSE thumb   END,
+        released = CASE WHEN released IS NULL OR released = '' THEN ? ELSE released END,
+        runtime = CASE WHEN runtime IS NULL OR runtime = 0 THEN ? ELSE runtime END,
+        rating  = CASE WHEN rating  IS NULL OR rating  = 0 THEN ? ELSE rating  END,
+        data_source = ?, detail_fetched_at = datetime('now')
+      WHERE trakt_id = ?
+    `).bind(
+      resolvedId, detail.imdb_id,
+      detail.tagline, detail.certification, detail.country, detail.language,
+      detail.trailer, detail.homepage, detail.fanart, detail.logo,
+      JSON.stringify(detail.cast), JSON.stringify(detail.videos),
+      JSON.stringify(detail.images), detail.votes,
+      detail.overview, detail.genres, detail.poster, detail.thumb,
+      detail.released, detail.runtime, detail.rating,
+      TMDB_SOURCE, traktId,
+    ).run();
+  } catch (e) {
+    console.error(`[movies] fallback TMDB: DB update for ${traktId} failed:`, e);
+  }
+}
+
+async function fetchMovieDetail(db: D1Database, traktId: number, tmdbId: number, imdbId = ''): Promise<void> {
   // 1. Fetch full Trakt movie data
   const movie = await fetchTraktMovie(traktId);
-  if (!movie) return;
+  // Trakt caído (API de pago / 403) → fallback temporal a TMDB
+  if (!movie) {
+    await fetchMovieDetailFromTmdb(db, traktId, tmdbId, imdbId);
+    return;
+  }
   await sleep(300);
 
   // 2. Fetch cast
@@ -275,7 +329,7 @@ async function fetchMovieDetail(db: D1Database, traktId: number, tmdbId: number)
         trailer = ?, homepage = ?, fanart = ?, logo = ?,
         cast_json = ?, videos_json = ?, images_json = ?,
         after_credits = ?, during_credits = ?, votes = ?,
-        detail_fetched_at = datetime('now')
+        data_source = 'trakt', detail_fetched_at = datetime('now')
       WHERE trakt_id = ?
     `).bind(
       movie.tagline || '', movie.certification || '', movie.country || '', movie.language || '',

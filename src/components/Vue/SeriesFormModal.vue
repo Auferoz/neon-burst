@@ -10,10 +10,14 @@ interface SeriesFormData {
   status_viewed: string;
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   open: boolean;
   entry?: SeriesFormData | null;
-}>();
+  /** Plataformas ya usadas en otras entradas, para sugerir en el campo Plataforma */
+  platforms?: string[];
+}>(), {
+  platforms: () => [],
+});
 
 const emit = defineEmits<{
   close: [];
@@ -196,9 +200,15 @@ function onBackdrop(e: MouseEvent) {
                 id="series-platform"
                 v-model="form.platform"
                 type="text"
+                list="series-platform-options"
+                autocomplete="off"
                 class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-indigo/50 focus:ring-1 focus:ring-neon-indigo/20 transition-colors"
                 placeholder="Netflix, Crunchyroll..."
               />
+              <!-- Sugerencias con las plataformas ya usadas; sigue admitiendo texto libre -->
+              <datalist id="series-platform-options">
+                <option v-for="p in platforms" :key="p" :value="p" />
+              </datalist>
             </div>
             <div>
               <label for="series-status" class="block text-xs text-text-muted mb-1">Estado</label>

@@ -144,7 +144,7 @@ existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL n
 - **next_games_featured** — Featured game toggles (igdb_id PK)
 
 **Movies tables**:
-- **movies_cache** — Cached movie data from Trakt (trakt_id PK, poster, thumb, genres, rating, plus detail columns: tagline, certification, cast_json, videos_json, images_json, detail_fetched_at)
+- **movies_cache** — Cached movie data (trakt_id PK, poster, thumb, genres, rating, plus detail columns: tagline, certification, cast_json, videos_json, images_json, `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at)
 - **movies_lists** — Movie list metadata (slug PK, description, item_count)
 
 **Series tables**:
@@ -153,9 +153,16 @@ existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL n
 
 **Migraciones** (`db/migrate-*.sql`, se aplican con `wrangler d1 execute`): `add-movies-tables`,
 `add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
-`add-demo-early-access`, `add-data-source`. Ojo: `db/schema.sql` **no** incluye todavía
-`season_posters_json` ni `data_source` — una base creada solo desde `schema.sql` necesita
-correr esas dos migraciones aparte.
+`add-demo-early-access`, `add-data-source`, `add-movies-data-source`. Ojo: `db/schema.sql`
+**no** incluye todavía `season_posters_json` ni las columnas `data_source` — una base creada
+solo desde `schema.sql` necesita correr esas migraciones aparte.
+
+**Aplícalas siempre en local Y en remoto.** Un `ALTER TABLE` que solo se corrió en local
+provoca en producción `D1_ERROR: table X has no column named Y`:
+```
+npx wrangler d1 execute neon-burst-db --local  --file db/<migracion>.sql
+npx wrangler d1 execute neon-burst-db --remote --file db/<migracion>.sql
+```
 
 ### Services
 
@@ -164,7 +171,8 @@ correr esas dos migraciones aparte.
 - `src/services/nextGamesSync.ts` — Queries IGDB for upcoming games with community interest → batch upserts
 - `src/services/igdbGame.ts` — Lookup de **un** juego en IGDB por URL / slug / ID, mapeado a los campos de `games`. Exporta `getIgdbToken()` (compartido con `nextGamesSync.ts`), `parseIgdbQuery()` y `lookupIgdbGame()`. Usado por `/api/igdb/lookup` para el autocompletado del modal
 - `src/services/moviesService.ts` — D1 CRUD for movies_cache + on-demand detail fetch from Trakt (cast, videos, images)
-- `src/services/moviesSync.ts` — Fetches Trakt user movie lists → upserts movies_cache (cron syncs current year only)
+- `src/services/tmdbMovies.ts` — Proveedor TMDB de películas (fallback temporal, ver abajo): detalle completo desde `/movie/{id}` con `credits`, `images`, `release_dates`, `videos` y `external_ids`
+- `src/services/moviesSync.ts` — Fetches Trakt user movie lists → upserts movies_cache (cron syncs current year only). **Devuelve 0 mientras Trakt esté caído**: las listas no tienen equivalente en TMDB
 - `src/services/seriesService.ts` — D1 CRUD for series_watched + series_cache + on-demand detail fetch from Trakt (cast, seasons, episodes, videos)
 - `src/services/seriesSync.ts` — Refreshes series_cache metadata from Trakt for current year / ongoing shows; `syncSingleShow` cae a TMDB y lanza `TraktRequestError` (→ HTTP 502) si ambas APIs fallan
 - `src/services/tmdbSeries.ts` — Proveedor TMDB de series (fallback temporal, ver abajo): resuelve el slug de Trakt a un id de TMDB por búsqueda y devuelve los datos con la misma forma que las funciones de Trakt
@@ -184,23 +192,42 @@ Movies and series use a lazy-loading pattern for detailed data:
 - **Steam API** — Steam library and game details
 - **IGDB (via Twitch OAuth)** — Upcoming games with community interest metrics
 - **RAWG API** — Game ratings
-- **TMDB API** — YouTube video trailers, y **fallback temporal de series** (ver abajo)
+- **TMDB API** — YouTube video trailers, y **fallback temporal de series y películas** (ver abajo)
 
-### Fallback temporal a TMDB (series)
+### Fallback temporal a TMDB (series y películas)
 
-La API de Trakt pasó a ser de pago y actualmente responde `403 Forbidden` a todas las
-peticiones. Trakt sigue siendo la fuente primaria en el código; cuando falla, las series
-caen a TMDB vía `src/services/tmdbSeries.ts`:
+La API de Trakt pasó a ser de pago y actualmente responde `403 Forbidden` a **todas** las
+peticiones (verificado con la key del `.env`, incluso en endpoints públicos como
+`/movies/popular`). Trakt sigue siendo la fuente primaria en el código; cuando falla, se
+cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 
+**Series:**
 - **Alta de serie nueva** (`syncSingleShow` en `seriesSync.ts`) → datos básicos desde TMDB
 - **Página de detalle** (`fetchSeriesDetail` en `seriesService.ts`) → cast (`/aggregate_credits`),
   temporadas + episodios, videos e imágenes desde TMDB
+
+**Películas:**
+- **Página de detalle** (`fetchMovieDetail` en `moviesService.ts`) → cast (`/credits`),
+  videos, imágenes, tagline, certificación y homepage desde TMDB
+- Los campos básicos (poster, thumb, overview, géneros, runtime, rating, released) solo se
+  rellenan **si están vacíos**: lo que ya vino de Trakt se respeta (`CASE WHEN ... = '' THEN`)
+- `after_credits` / `during_credits` se quedan como estén: TMDB no expone ese dato
+- Los textos (`tagline`, `overview`) se piden en `es-ES` y, si TMDB no los tiene traducidos,
+  se completan desde `en-US`
+- **La pertenencia a listas no se puede recuperar**: qué películas están en `movies-2026` solo
+  lo sabe Trakt, así que el sync sigue devolviendo 0 y no se añaden películas nuevas solas.
+  Scrapear `app.trakt.tv` no es viable: es una SPA que sirve el `<body>` vacío y no expone
+  ningún endpoint JSON público (`.json` devuelve el shell HTML)
+
+**Común a ambos:**
 - El **cron diario sigue siendo solo Trakt** a propósito: si falla, deja el caché intacto
   en lugar de sobrescribir datos buenos de Trakt con datos de TMDB
-- `series_cache.data_source` marca el origen (`'trakt'` | `'tmdb'`). Al recuperar Trakt:
-  `UPDATE series_cache SET detail_fetched_at = NULL WHERE data_source = 'tmdb';` fuerza
-  el re-fetch desde Trakt en la siguiente visita al detalle
-- Las películas **no** tienen fallback todavía: su sync devuelve 0 mientras Trakt esté caído
+- `series_cache.data_source` / `movies_cache.data_source` marcan el origen (`'trakt'` | `'tmdb'`).
+  Al recuperar Trakt, esto fuerza el re-fetch desde Trakt en la siguiente visita al detalle:
+  ```sql
+  UPDATE series_cache SET detail_fetched_at = NULL WHERE data_source = 'tmdb';
+  UPDATE movies_cache SET detail_fetched_at = NULL WHERE data_source = 'tmdb';
+  ```
 
 ### Design System
 
