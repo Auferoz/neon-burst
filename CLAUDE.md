@@ -204,6 +204,14 @@ renderizar según la cookie de sesión, **antes** de tocar D1.
    copiar son cosméticos (evitar miradas ajenas), no un candado
 6. El botón "Bloquear" llama a `POST /api/streaming/lock`, que borra la cookie
 
+**Logos: sprite único.** `public/Logos_Streaming.png` lleva los 7 logos en una fila sobre
+fondo negro. `src/data/streamingLogos.ts` guarda la caja en píxeles de cada uno (medidas
+sobre los píxeles del PNG, no a ojo) y `getLogoSprite()` calcula el `background-size` y
+`background-position` en tiempo de render. El elemento se dimensiona **exactamente** al
+recorte escalado: si ocupara toda la caja disponible, el background dejaría ver los logos
+contiguos. El contenedor va en `bg-black` para que el recorte no marque bordes. Un servicio
+que no esté en el mapa cae a la URL de `streaming_accounts.logo`.
+
 **El rate limiting es la defensa real**, no la longitud del PIN: `streaming_attempts` cuenta
 fallos por IP (`CF-Connecting-IP`) y bloquea 15 min tras 8 fallos consecutivos. Con la IP
 bloqueada, ni siquiera un PIN correcto pasa. Un acierto borra la fila.

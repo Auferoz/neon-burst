@@ -107,7 +107,12 @@ export function isValidPinFormat(pin: unknown): pin is string {
 
 export function verifyPin(pin: string): boolean {
   const expected = secrets.STREAMING_PIN;
-  if (!expected) throw new Error('Falta el secret STREAMING_PIN');
+  // Un `wrangler secret put` interactivo al que no se le teclea nada sube una
+  // cadena vacía: el binding existe y parece configurado, pero no vale.
+  if (!expected) throw new Error('STREAMING_PIN vacío o no configurado');
+  if (!isValidPinFormat(expected)) {
+    throw new Error(`STREAMING_PIN mal formado: se esperan ${PIN_LENGTH} dígitos`);
+  }
   return timingSafeEqual(pin, expected);
 }
 

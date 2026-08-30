@@ -8,6 +8,12 @@ import IconExternalLink from '../components/Icons/IconExternalLink.astro';
 import IconLock from '../components/Icons/IconLock.astro';
 import { getStreamingAccounts } from '../services/streamingService';
 import { PIN_LENGTH, SESSION_COOKIE, isValidSessionToken } from '../services/streamingAuth';
+import { getLogoSprite } from '../data/streamingLogos';
+
+// Hueco disponible para el logo dentro de la tarjeta. Rectangular porque estos
+// logos son anchos: en un cuadrado, Apple TV+ o Disney+ quedarían diminutos.
+const LOGO_BOX_W = 60;
+const LOGO_BOX_H = 40;
 
 // SSR obligatorio: la página decide qué renderizar según la cookie, así que
 // no puede prerenderizarse a HTML estático.
@@ -66,19 +72,25 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 							data-service={service.name}
 						>
 							<div class="flex items-center gap-4 mb-5">
-								<div class="shrink-0 w-12 h-12 rounded-lg bg-surface-1 border border-border-hover flex items-center justify-center p-2 overflow-hidden">
-									<img
-										src={service.logo}
-										alt={`Logo de ${service.name}`}
-										width="48"
-										height="48"
-										class:list={[
-											'w-full h-full object-contain',
-											service.name === 'Apple TV+' && 'brightness-0 invert',
-										]}
-										loading="lazy"
-										decoding="async"
-									/>
+								{/* Fondo negro a juego con el del sprite, para que el recorte no marque bordes */}
+								<div class="shrink-0 w-19 h-13 rounded-lg bg-black border border-border-hover flex items-center justify-center overflow-hidden">
+									{(() => {
+										const sprite = getLogoSprite(service.name, LOGO_BOX_W, LOGO_BOX_H);
+										return sprite ? (
+											<span role="img" aria-label={`Logo de ${service.name}`} style={sprite.css}></span>
+										) : (
+											// Servicio que aún no está en el sprite: se cae a la URL de la BD.
+											<img
+												src={service.logo}
+												alt={`Logo de ${service.name}`}
+												width={LOGO_BOX_W}
+												height={LOGO_BOX_H}
+												class="max-w-15 max-h-10 object-contain"
+												loading="lazy"
+												decoding="async"
+											/>
+										);
+									})()}
 								</div>
 								<div class="flex-1 min-w-0">
 									<h2 class="text-base font-semibold text-text-primary leading-tight truncate">{service.name}</h2>
