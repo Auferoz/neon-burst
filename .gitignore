@@ -22,3 +22,9 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# credenciales de streaming (viven en D1, no en el repo)
+src/data/SSAccounts.js
+
+# base D1 local de miniflare (contiene datos reales, incl. contrasenas)
+.wrangler/

@@ -20,7 +20,9 @@
     "seed-series": "node --env-file=.env db/seed-series.js",
     "seed-series:remote": "node --env-file=.env db/seed-series.js --remote",
     "sync-series": "node --env-file=.env db/sync-series.js",
-    "sync-series:remote": "node --env-file=.env db/sync-series.js --remote"
+    "sync-series:remote": "node --env-file=.env db/sync-series.js --remote",
+    "seed-streaming": "node db/seed-streaming.js",
+    "seed-streaming:remote": "node db/seed-streaming.js --remote"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.2",

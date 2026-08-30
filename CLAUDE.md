@@ -20,6 +20,8 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 - `npm run sync-movies:remote` — Sync movies from Trakt on remote D1
 - `npm run seed-series` — Seed series watched data + sync cache locally
 - `npm run seed-series:remote` — Seed series on remote D1
+- `npm run seed-streaming` — Seed streaming_accounts desde `src/data/SSAccounts.js` (local)
+- `npm run seed-streaming:remote` — Idem contra D1 remoto
 - `npm run sync-series` — Refresh series cache from Trakt locally
 - `npm run sync-series:remote` — Refresh series cache on remote D1
 
@@ -129,6 +131,8 @@ existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL n
 | `/api/series` | GET, POST | List all series / Create series entry |
 | `/api/series/[id]` | GET, PUT, DELETE | Series entry CRUD by ID |
 | `/api/series/sync` | GET | Trigger Trakt series sync (requires auth) |
+| `/api/streaming/unlock` | POST | `{ pin }` → valida el PIN y emite la cookie de sesión |
+| `/api/streaming/lock` | POST | Borra la cookie de sesión de streaming |
 | `/api/series/detail/[slug]` | GET | Series full detail (on-demand fetch) |
 | `/api/igdb/lookup` | GET | `?q=<url\|slug\|id>` → datos de un juego de IGDB para autocompletar el modal |
 
@@ -151,9 +155,13 @@ existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL n
 - **series_cache** — Cached series data (trakt_slug PK, poster, thumb, genres, rating, plus detail columns: tagline, certification, cast_json, videos_json, images_json, seasons_json, `season_posters_json` (mapa `{"1":"url"}`), `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at)
 - **series_watched** — User's watched entries (trakt_slug + season_number UNIQUE, year_watched, platform, status_viewed)
 
+**Streaming tables**:
+- **streaming_accounts** — Cuentas de servicios de streaming (name UNIQUE, url, logo, email, password, plan, sort_order). Sustituye a `src/data/SSAccounts.js`, que está en `.gitignore`
+- **streaming_attempts** — Freno de fuerza bruta del PIN (ip PK, fails, locked_until)
+
 **Migraciones** (`db/migrate-*.sql`, se aplican con `wrangler d1 execute`): `add-movies-tables`,
 `add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
-`add-demo-early-access`, `add-data-source`, `add-movies-data-source`. Ojo: `db/schema.sql`
+`add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`. Ojo: `db/schema.sql`
 **no** incluye todavía `season_posters_json` ni las columnas `data_source` — una base creada
 solo desde `schema.sql` necesita correr esas migraciones aparte.
 
@@ -173,9 +181,37 @@ npx wrangler d1 execute neon-burst-db --remote --file db/<migracion>.sql
 - `src/services/moviesService.ts` — D1 CRUD for movies_cache + on-demand detail fetch from Trakt (cast, videos, images)
 - `src/services/tmdbMovies.ts` — Proveedor TMDB de películas (fallback temporal, ver abajo): detalle completo desde `/movie/{id}` con `credits`, `images`, `release_dates`, `videos` y `external_ids`
 - `src/services/moviesSync.ts` — Fetches Trakt user movie lists → upserts movies_cache (cron syncs current year only). **Devuelve 0 mientras Trakt esté caído**: las listas no tienen equivalente en TMDB
+- `src/services/streamingAuth.ts` — PIN + cookie de sesión firmada (HMAC-SHA256 vía Web Crypto) + rate limiting por IP en `streaming_attempts`
+- `src/services/streamingService.ts` — Lectura de `streaming_accounts`; `getStreamingAccountsPublic()` omite email y contraseña
 - `src/services/seriesService.ts` — D1 CRUD for series_watched + series_cache + on-demand detail fetch from Trakt (cast, seasons, episodes, videos)
 - `src/services/seriesSync.ts` — Refreshes series_cache metadata from Trakt for current year / ongoing shows; `syncSingleShow` cae a TMDB y lanza `TraktRequestError` (→ HTTP 502) si ambas APIs fallan
 - `src/services/tmdbSeries.ts` — Proveedor TMDB de series (fallback temporal, ver abajo): resuelve el slug de Trakt a un id de TMDB por búsqueda y devuelve los datos con la misma forma que las funciones de Trakt
+
+### Streaming (puerta de PIN)
+
+`/streaming` no es prerenderizable (`export const prerender = false`): decide qué
+renderizar según la cookie de sesión, **antes** de tocar D1.
+
+1. `GET /streaming` verifica la cookie `nb_streaming` con `isValidSessionToken()`
+2. Sin sesión → renderiza `StreamingPinGate.astro`. Ese HTML no contiene ninguna cuenta:
+   las contraseñas ni siquiera se consultan a D1
+3. El gate hace `POST /api/streaming/unlock` con el PIN. El servidor lo compara en tiempo
+   constante contra el secret `STREAMING_PIN` y responde con `Set-Cookie` HttpOnly
+4. La cookie es `<expiraEnSegundos>.<HMAC-SHA256 del payload>`, firmada con
+   `STREAMING_SESSION_SECRET`. Dura 8 h y el cliente no puede alargarla: cambiar el `exp`
+   invalida la firma
+5. Con sesión válida → tarjetas con las contraseñas ya dentro del HTML. El ojo y el botón de
+   copiar son cosméticos (evitar miradas ajenas), no un candado
+6. El botón "Bloquear" llama a `POST /api/streaming/lock`, que borra la cookie
+
+**El rate limiting es la defensa real**, no la longitud del PIN: `streaming_attempts` cuenta
+fallos por IP (`CF-Connecting-IP`) y bloquea 15 min tras 8 fallos consecutivos. Con la IP
+bloqueada, ni siquiera un PIN correcto pasa. Un acierto borra la fila.
+
+**Ojo con el 401 en POST:** el dev server de Astro con el adaptador de Cloudflare convierte
+cualquier respuesta 401 a un POST en un `500 fetch failed` al reenviarla por el proxy de
+vite (GET 401 y POST 403/429 funcionan bien). Por eso `unlock` devuelve **403** para el PIN
+incorrecto y 429 para el bloqueo. No lo cambies a 401.
 
 ### On-Demand Detail Fetch Pattern
 
@@ -264,6 +300,8 @@ Required in `.env` locally and as Cloudflare secrets for the worker:
 - `TRAKT_CLIENT_ID` — Trakt API key (for movies and series)
 - `TMDB_API_KEY` — TMDB API key (trailers + fallback temporal de series)
 - `CRON_SECRET` — Authenticates cron/sync requests
+- `STREAMING_PIN` — PIN de 6 dígitos que abre `/streaming`
+- `STREAMING_SESSION_SECRET` — Clave HMAC que firma la cookie de sesión de streaming
 - `STEAM_SYNC_URL` / `NEXT_GAMES_SYNC_URL` / `MOVIES_SYNC_URL` / `SERIES_SYNC_URL` — Remote worker sync endpoint URLs (las cuatro se leen en build time por `integrations/cloudflare-cron.ts` y quedan inlineadas en el handler `scheduled`; si faltan al buildear, el cron apunta a URLs vacías)
 
 ### DB Sync Scripts (Windows Shell Notes)

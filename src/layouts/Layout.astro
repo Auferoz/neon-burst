@@ -5,9 +5,17 @@ import FloatingNav from '../components/Astro/FloatingNav.astro';
 
 interface Props {
 	title?: string;
+	description?: string;
+	noindex?: boolean;
+	hideMenu?: boolean;
 }
 
-const { title = 'Neon Burst' } = Astro.props;
+const {
+	title = 'Neon Burst',
+	description,
+	noindex = false,
+	hideMenu = false,
+} = Astro.props;
 const currentPath = Astro.url.pathname;
 ---
 <!doctype html>
@@ -15,6 +23,8 @@ const currentPath = Astro.url.pathname;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		{description && <meta name="description" content={description} />}
+		{noindex && <meta name="robots" content="noindex, nofollow" />}
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,11 +41,17 @@ const currentPath = Astro.url.pathname;
 		</a>
 
 		<!-- Main content area with bottom padding for floating nav -->
-		<main id="main-content" class="flex-1 max-w-7xl mx-auto w-full px-4 pt-8 sm:pt-12 pb-28 sm:pb-24">
+		<main
+			id="main-content"
+			class:list={[
+				'flex-1 max-w-7xl mx-auto w-full px-4 pt-8 sm:pt-12',
+				hideMenu ? 'pb-12' : 'pb-28 sm:pb-24',
+			]}
+		>
 			<slot />
 		</main>
 
-		<FloatingNav currentPath={currentPath} />
+		{!hideMenu && <FloatingNav currentPath={currentPath} />}
 
 	</body>
 </html>

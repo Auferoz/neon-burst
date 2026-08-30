@@ -1,0 +1,286 @@
+---
+/**
+ * Pantalla de PIN. Se renderiza en lugar de las tarjetas cuando no hay sesión
+ * válida, así que este HTML nunca contiene credenciales.
+ */
+import IconLock from '../Icons/IconLock.astro';
+import IconEye from '../Icons/IconEye.astro';
+import IconEyeOff from '../Icons/IconEyeOff.astro';
+
+interface Props {
+	length?: number;
+}
+
+const { length = 6 } = Astro.props;
+const digits = Array.from({ length }, (_, i) => i);
+---
+
+<div class="min-h-[60vh] flex items-center justify-center">
+	<form
+		id="pin-form"
+		class="flex flex-col items-center gap-6 px-6 py-8 w-full max-w-md bg-surface-2 border border-border-hover rounded-2xl shadow-2xl"
+		novalidate
+	>
+		<div class="flex items-center justify-center w-16 h-16 rounded-full bg-neon-purple/10 border border-neon-purple/20">
+			<span class="text-neon-purple">
+				<IconLock width={28} height={28} />
+			</span>
+		</div>
+
+		<div class="text-center space-y-1">
+			<h1 class="text-lg font-bold text-text-primary tracking-tight">Introduce el PIN</h1>
+			<p class="text-xs text-text-secondary">{length} dígitos para acceder a tus cuentas</p>
+		</div>
+
+		<div class="flex items-center gap-2 sm:gap-3">
+			<div class="flex gap-1.5 sm:gap-2" id="pin-container">
+				{digits.map((i) => (
+					<input
+						type="password"
+						inputmode="numeric"
+						maxlength="1"
+						class="pin-input w-10 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold bg-surface-1 border border-border-hover rounded-xl text-text-primary focus:border-neon-purple focus:outline-none focus:ring-1 focus:ring-neon-purple/50 transition-all duration-200 caret-transparent disabled:opacity-40"
+						aria-label={`Dígito ${i + 1} del PIN`}
+						autocomplete={i === 0 ? 'one-time-code' : 'off'}
+					/>
+				))}
+			</div>
+			<button
+				id="pin-toggle-visibility"
+				type="button"
+				class="shrink-0 p-2 rounded-lg text-text-muted hover:text-neon-purple hover:bg-neon-purple/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-purple"
+				aria-label="Mostrar PIN"
+				aria-pressed="false"
+			>
+				<span class="pin-icon-eye-off block">
+					<IconEyeOff width={20} height={20} />
+				</span>
+				<span class="pin-icon-eye hidden">
+					<IconEye width={20} height={20} />
+				</span>
+			</button>
+		</div>
+
+		<p id="pin-error" role="alert" aria-live="assertive" class="text-neon-pink text-xs font-medium text-center min-h-4 opacity-0 transition-opacity duration-200"></p>
+	</form>
+</div>
+
+<style>
+	@keyframes shake {
+		0%, 100% { transform: translateX(0); }
+		10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+		20%, 40%, 60%, 80% { transform: translateX(6px); }
+	}
+	.pin-shake { animation: shake 0.5s ease-in-out; }
+
+	.pin-input::selection { background: transparent; }
+
+	@keyframes pinSuccess {
+		0%   { box-shadow: 0 0 0 0 rgb(176 38 255 / 0.4); }
+		50%  { box-shadow: 0 0 12px 2px rgb(176 38 255 / 0.3); }
+		100% { box-shadow: 0 0 0 0 rgb(176 38 255 / 0); }
+	}
+	.pin-success {
+		animation: pinSuccess 0.6s ease-out;
+		border-color: var(--color-neon-purple) !important;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pin-shake, .pin-success { animation: none; }
+	}
+</style>
+
+<script>
+	document.addEventListener('astro:page-load', () => {
+		const form = document.getElementById('pin-form') as HTMLFormElement | null;
+		const container = document.getElementById('pin-container');
+		if (!form || !container) return;
+
+		const inputs = Array.from(container.querySelectorAll<HTMLInputElement>('.pin-input'));
+		const errorEl = document.getElementById('pin-error');
+		const toggleBtn = document.getElementById('pin-toggle-visibility');
+		const iconEyeOff = toggleBtn?.querySelector<HTMLElement>('.pin-icon-eye-off');
+		const iconEye = toggleBtn?.querySelector<HTMLElement>('.pin-icon-eye');
+		const PIN_LENGTH = inputs.length;
+
+		// Los listeners sobre document se acumularían en cada navegación del
+		// ClientRouter si no se cortan antes del swap.
+		const controller = new AbortController();
+		const { signal } = controller;
+		document.addEventListener('astro:before-swap', () => controller.abort(), { once: true });
+
+		let pinVisible = false;
+		let submitting = false;
+		let lockedUntil = 0;
+		let countdownTimer: number | undefined;
+
+		function setVisibility(visible: boolean): void {
+			pinVisible = visible;
+			inputs.forEach((input) => { input.type = visible ? 'text' : 'password'; });
+			iconEyeOff?.classList.toggle('hidden', visible);
+			iconEye?.classList.toggle('hidden', !visible);
+			toggleBtn?.setAttribute('aria-pressed', String(visible));
+			toggleBtn?.setAttribute('aria-label', visible ? 'Ocultar PIN' : 'Mostrar PIN');
+		}
+
+		toggleBtn?.addEventListener('click', () => setVisibility(!pinVisible), { signal });
+
+		function showError(message: string): void {
+			if (errorEl) {
+				errorEl.textContent = message;
+				errorEl.style.opacity = '1';
+			}
+			container!.classList.add('pin-shake');
+			inputs.forEach((input) => input.classList.add('border-neon-pink'));
+
+			setTimeout(() => {
+				container!.classList.remove('pin-shake');
+				inputs.forEach((input) => input.classList.remove('border-neon-pink'));
+			}, 600);
+		}
+
+		function clearPin(focus = true): void {
+			inputs.forEach((input) => { input.value = ''; input.classList.remove('pin-success'); });
+			setVisibility(false);
+			if (focus) inputs[0]?.focus();
+		}
+
+		function setDisabled(disabled: boolean): void {
+			inputs.forEach((input) => { input.disabled = disabled; });
+			if (toggleBtn) (toggleBtn as HTMLButtonElement).disabled = disabled;
+		}
+
+		function startLockCountdown(seconds: number): void {
+			lockedUntil = Date.now() + seconds * 1000;
+			setDisabled(true);
+			clearPin(false);
+			window.clearInterval(countdownTimer);
+
+			const tick = () => {
+				const left = Math.ceil((lockedUntil - Date.now()) / 1000);
+				if (left <= 0) {
+					window.clearInterval(countdownTimer);
+					lockedUntil = 0;
+					setDisabled(false);
+					if (errorEl) errorEl.style.opacity = '0';
+					inputs[0]?.focus();
+					return;
+				}
+				const mins = Math.floor(left / 60);
+				const secs = String(left % 60).padStart(2, '0');
+				if (errorEl) {
+					errorEl.textContent = `Demasiados intentos. Reintenta en ${mins}:${secs}`;
+					errorEl.style.opacity = '1';
+				}
+			};
+
+			tick();
+			countdownTimer = window.setInterval(tick, 1000);
+		}
+
+		async function submitPin(): Promise<void> {
+			if (submitting || lockedUntil > Date.now()) return;
+
+			const pin = inputs.map((input) => input.value).join('');
+			if (pin.length !== PIN_LENGTH) return;
+
+			submitting = true;
+			setDisabled(true);
+
+			try {
+				const res = await fetch('/api/streaming/unlock', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ pin }),
+				});
+				const data = await res.json().catch(() => ({})) as {
+					error?: string;
+					retryAfter?: number;
+					remaining?: number;
+				};
+
+				if (res.ok) {
+					inputs.forEach((input) => input.classList.add('pin-success'));
+					// Recarga completa: el servidor vuelve a renderizar la página,
+					// ahora con la cookie válida y las tarjetas dentro.
+					setTimeout(() => window.location.reload(), 350);
+					return;
+				}
+
+				setDisabled(false);
+				submitting = false;
+
+				if (res.status === 429) {
+					startLockCountdown(data.retryAfter ?? 900);
+					return;
+				}
+
+				const remaining = data.remaining;
+				showError(
+					typeof remaining === 'number' && remaining > 0
+						? `PIN incorrecto. Te quedan ${remaining} intento${remaining === 1 ? '' : 's'}`
+						: data.error ?? 'PIN incorrecto',
+				);
+				clearPin();
+			} catch {
+				setDisabled(false);
+				submitting = false;
+				showError('No se pudo conectar con el servidor');
+				clearPin();
+			}
+		}
+
+		form.addEventListener('submit', (e) => { e.preventDefault(); submitPin(); }, { signal });
+
+		inputs.forEach((input, index) => {
+			input.addEventListener('input', () => {
+				input.value = input.value.replace(/\D/g, '').slice(0, 1);
+				if (!input.value) return;
+				if (errorEl) errorEl.style.opacity = '0';
+
+				if (index < inputs.length - 1) inputs[index + 1].focus();
+				else submitPin();
+			}, { signal });
+
+			input.addEventListener('keydown', (e) => {
+				if (e.key === 'Backspace') {
+					e.preventDefault();
+					if (input.value === '') {
+						const prev = inputs[index - 1];
+						if (prev) { prev.value = ''; prev.focus(); }
+					} else {
+						input.value = '';
+					}
+				} else if (e.key === 'ArrowLeft') {
+					e.preventDefault();
+					inputs[index - 1]?.focus();
+				} else if (e.key === 'ArrowRight') {
+					e.preventDefault();
+					inputs[index + 1]?.focus();
+				}
+			}, { signal });
+
+			input.addEventListener('focus', () => input.select(), { signal });
+
+			input.addEventListener('paste', (e) => {
+				e.preventDefault();
+				const pasted = (e.clipboardData?.getData('text') ?? '').replace(/\D/g, '').slice(0, PIN_LENGTH);
+				if (!pasted) return;
+
+				pasted.split('').forEach((digit, i) => {
+					const target = inputs[i];
+					if (target) target.value = digit;
+				});
+
+				if (pasted.length === PIN_LENGTH) {
+					inputs[PIN_LENGTH - 1].focus();
+					submitPin();
+				} else {
+					inputs[pasted.length]?.focus();
+				}
+			}, { signal });
+		});
+
+		inputs[0]?.focus();
+	});
+</script>
