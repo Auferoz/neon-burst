@@ -4,6 +4,7 @@ import IconGrid from '../Icons/IconGrid.vue';
 import IconClock from '../Icons/IconClock.vue';
 import IconGamepad from '../Icons/IconGamepad.vue';
 import IconRocket from '../Icons/IconRocket.vue';
+import SyncButton from './SyncButton.vue';
 
 interface SteamGame {
   appid: number;
@@ -113,11 +114,11 @@ function onArtworkError(e: Event) {
   if (fallback) fallback.style.display = 'flex';
 }
 
-async function fetchGames() {
+async function fetchGames(force = false) {
   loading.value = true;
   error.value = '';
   try {
-    const res = await fetch('/api/steam');
+    const res = await fetch('/api/steam', force ? { cache: 'no-store' } : {});
     if (!res.ok) throw new Error('Error al cargar la biblioteca');
     games.value = await res.json();
   } catch (e) {
@@ -127,14 +128,17 @@ async function fetchGames() {
   }
 }
 
-onMounted(fetchGames);
+onMounted(() => fetchGames());
 </script>
 
 <template>
   <div class="space-y-6">
     <!-- Header -->
     <div>
-      <h1 class="text-xl sm:text-2xl font-bold text-neon-cyan neon-glow-cyan leading-tight">steam_library</h1>
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl sm:text-2xl font-bold text-neon-cyan neon-glow-cyan leading-tight">steam_library</h1>
+        <SyncButton endpoint="/api/steam/sync" accent="cyan" label="Sync" @synced="fetchGames(true)" />
+      </div>
       <p class="text-text-secondary text-sm leading-relaxed mt-1">Tu colección completa de juegos en Steam</p>
 
       <!-- Totals -->
