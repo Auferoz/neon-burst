@@ -3,7 +3,7 @@ interface Props {
 	href: string;
 	title: string;
 	subtitle: string;
-	accentColor?: 'blue' | 'cyan' | 'pink' | 'emerald' | 'indigo' | 'white';
+	accentColor?: 'blue' | 'cyan' | 'pink' | 'emerald' | 'indigo' | 'purple' | 'white';
 }
 
 const { href, title, subtitle, accentColor = 'blue' } = Astro.props;
@@ -48,6 +48,17 @@ const colorMap = {
 		iconBg: 'bg-neon-indigo/8 group-hover:bg-neon-indigo/15',
 		iconText: 'text-neon-indigo',
 		titleHover: 'group-hover:text-neon-indigo',
+	},
+	// neon-purple (#b026ff) is much darker than the other accents, so the shared
+	// opacity scale reads as almost invisible on the dark surfaces. These values
+	// are raised to match the perceived weight of the other accent colors.
+	purple: {
+		border: 'hover:border-neon-purple/50',
+		bg: 'hover:bg-neon-purple/[0.07]',
+		outline: 'focus-visible:outline-neon-purple',
+		iconBg: 'bg-neon-purple/20 group-hover:bg-neon-purple/35',
+		iconText: 'text-neon-purple',
+		titleHover: 'group-hover:text-neon-purple',
 	},
 	white: {
 		border: 'hover:border-neon-white/40',

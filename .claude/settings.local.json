@@ -3,7 +3,11 @@
     "allow": [
       "Bash(npx wrangler:*)",
       "Bash(node db/fetch-ratings.js)",
-      "WebFetch(domain:trakt.docs.apiary.io)"
+      "WebFetch(domain:trakt.docs.apiary.io)",
+      "Bash(where gentle-ai *)",
+      "Bash(gentle-ai --version)",
+      "Bash(go version *)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }

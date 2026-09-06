@@ -28,3 +28,5 @@ src/data/SSAccounts.js
 
 # base D1 local de miniflare (contiene datos reales, incl. contrasenas)
 .wrangler/
+# Local AI runtime state
+.atl/
