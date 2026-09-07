@@ -9,6 +9,7 @@ import IconHome from '../components/Icons/IconHome.astro';
 import IconFilm from '../components/Icons/IconFilm.astro';
 import IconTv from '../components/Icons/IconTv.astro';
 import IconMonitorPlay from '../components/Icons/IconMonitorPlay.astro';
+import IconBoxes from '../components/Icons/IconBoxes.astro';
 ---
 
 <Layout title="Neon Burst | Inicio">
@@ -44,6 +45,10 @@ import IconMonitorPlay from '../components/Icons/IconMonitorPlay.astro';
 
 			<NavCard href="/ListMovies" title="Movies" subtitle="Lista de peliculas" accentColor="emerald">
 				<IconFilm size={22} />
+			</NavCard>
+
+			<NavCard href="/myLibrary" title="Game Library" subtitle="Epic, GOG, Xbox y más" accentColor="yellow">
+				<IconBoxes size={22} />
 			</NavCard>
 
 			<NavCard href="/streaming" title="Streaming" subtitle="Cuentas y accesos" accentColor="purple">

@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LibraryMain from '../components/Vue/LibraryMain.vue';
+
+export const prerender = false;
+---
+
+<Layout title="Neon Burst | Game Library">
+	<LibraryMain client:load />
+</Layout>

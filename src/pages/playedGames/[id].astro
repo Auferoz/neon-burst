@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
 import { getGameById } from '../../services/gamesService';
+import { igdbImage } from '../../utils/igdbImage';
 import PlayedGamesEditButton from '../../components/Vue/PlayedGamesEditButton.vue';
 
 export const prerender = false;
@@ -11,12 +12,6 @@ const game = await getGameById(env.DB, Number(id));
 
 if (!game) {
 	return Astro.redirect('/playedGames');
-}
-
-function igdbImage(imageId: string, size: string) {
-	if (!imageId) return '';
-	const clean = imageId.replace(/\.\w+$/, '');
-	return `https://images.igdb.com/igdb/image/upload/t_${size}/${clean}.webp`;
 }
 
 const posterUrl = igdbImage(game.poster, 'cover_big_2x');

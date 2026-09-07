@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { igdbImage } from '../../utils/igdbImage';
 interface Game {
   id: number;
   title: string;
@@ -35,12 +36,6 @@ const estadoColor: Record<string, string> = {
 const logrosPercent = props.game.logros_total > 0
   ? Math.round((props.game.logros_obt / props.game.logros_total) * 100)
   : 0;
-
-function igdbImage(id: string, size: string) {
-  if (!id) return '';
-  const clean = id.replace(/\.\w+$/, '');
-  return `https://images.igdb.com/igdb/image/upload/t_${size}/${clean}.webp`;
-}
 
 const posterUrl = igdbImage(props.game.poster, 'cover_big');
 const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
