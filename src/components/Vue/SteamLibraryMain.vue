@@ -5,6 +5,7 @@ import IconClock from '../Icons/IconClock.vue';
 import IconGamepad from '../Icons/IconGamepad.vue';
 import IconRocket from '../Icons/IconRocket.vue';
 import SyncButton from './SyncButton.vue';
+import IconBoxes from '../Icons/IconBoxes.vue';
 
 interface SteamGame {
   appid: number;
@@ -171,6 +172,13 @@ onMounted(() => fetchGames());
         >
           <IconRocket :size="14" />
           Próximos
+        </a>
+        <a
+          href="/myLibrary"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-neon-yellow/10 transition-colors"
+        >
+          <IconBoxes :size="14" />
+          Game Library
         </a>
       </div>
     </div>

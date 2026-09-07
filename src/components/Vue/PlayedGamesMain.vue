@@ -10,6 +10,7 @@ import IconTrophy from '../Icons/IconTrophy.vue';
 import IconPlusCircle from '../Icons/IconPlusCircle.vue';
 import IconLibrary from '../Icons/IconLibrary.vue';
 import IconRocket from '../Icons/IconRocket.vue';
+import IconBoxes from '../Icons/IconBoxes.vue';
 
 interface Game {
   id: number;
@@ -222,6 +223,13 @@ onMounted(fetchGames);
           >
             <IconRocket :size="14" />
             Próximos
+          </a>
+          <a
+            href="/myLibrary"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-neon-yellow/10 transition-colors"
+          >
+            <IconBoxes :size="14" />
+            Game Library
           </a>
         </div>
 
