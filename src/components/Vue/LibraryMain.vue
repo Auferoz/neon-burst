@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import LibraryCard from './LibraryCard.vue';
+import LibraryFilters from './LibraryFilters.vue';
 import LibraryFormModal from './LibraryFormModal.vue';
 import LibraryImportModal from './LibraryImportModal.vue';
 import IconGrid from '../Icons/IconGrid.vue';
@@ -8,23 +9,8 @@ import IconLibrary from '../Icons/IconLibrary.vue';
 import IconGamepad from '../Icons/IconGamepad.vue';
 import IconRocket from '../Icons/IconRocket.vue';
 import { STORES } from '../../data/stores';
-
-interface LibraryGame {
-  id: number;
-  title: string;
-  store: string;
-  igdb_id: number | null;
-  poster: string;
-  artworks: string;
-  released: string;
-  companie: string;
-  genre: string;
-  description: string;
-  trailer: string;
-  store_url: string;
-  owned_via: string;
-  notes: string;
-}
+import { buildGroups, type LibraryGame } from '../../utils/libraryGrouping';
+import { filterAndSortGroups, type SortBy, type DataFilter } from '../../utils/libraryFilters';
 
 const games = ref<LibraryGame[]>([]);
 const loading = ref(true);
@@ -32,11 +18,18 @@ const error = ref('');
 
 const searchQuery = ref('');
 const selectedStore = ref('');
-const sortBy = ref<'title' | 'released' | 'recent'>('title');
+const sortBy = ref<SortBy>('title');
+const dataFilter = ref<DataFilter>('all');
 
 const formOpen = ref(false);
 const importOpen = ref(false);
 const editing = ref<LibraryGame | null>(null);
+
+/** One entry per game, carrying every store it is owned on. */
+const groups = computed(() => buildGroups(games.value));
+
+const incompleteCount = computed(() => groups.value.filter((g) => g.missing.length > 0).length);
+const multiStoreCount = computed(() => groups.value.filter((g) => g.stores.length > 1).length);
 
 /** Only the stores that actually have games, so the filter never offers dead options. */
 const activeStores = computed(() => {
@@ -50,37 +43,14 @@ const countByStore = computed(() => {
   return counts;
 });
 
-/** DD/MM/YYYY -> timestamp, 0 when empty or unparsable. Same convention as playedGames. */
-function parseFecha(fecha: string): number {
-  if (!fecha) return 0;
-  const [d, m, y] = fecha.split('/');
-  const time = new Date(`${y}-${m}-${d}`).getTime();
-  return Number.isNaN(time) ? 0 : time;
-}
-
-const filteredGames = computed(() => {
-  let result = games.value;
-
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase();
-    result = result.filter(
-      (g) =>
-        g.title.toLowerCase().includes(q) ||
-        g.companie.toLowerCase().includes(q) ||
-        g.genre.toLowerCase().includes(q),
-    );
-  }
-
-  if (selectedStore.value) {
-    result = result.filter((g) => g.store === selectedStore.value);
-  }
-
-  return [...result].sort((a, b) => {
-    if (sortBy.value === 'title') return a.title.localeCompare(b.title);
-    if (sortBy.value === 'released') return parseFecha(b.released) - parseFecha(a.released);
-    return b.id - a.id;
-  });
-});
+const visibleGroups = computed(() =>
+  filterAndSortGroups(groups.value, {
+    search: searchQuery.value,
+    store: selectedStore.value,
+    data: dataFilter.value,
+    sort: sortBy.value,
+  }),
+);
 
 async function fetchGames(force = false) {
   loading.value = true;
@@ -117,6 +87,13 @@ async function removeGame(game: LibraryGame) {
   }
 }
 
+/** Jumps straight to the games that need manual checking. */
+function showIncomplete() {
+  dataFilter.value = 'incomplete';
+  selectedStore.value = '';
+  searchQuery.value = '';
+}
+
 onMounted(() => fetchGames());
 </script>
 
@@ -150,12 +127,26 @@ onMounted(() => fetchGames());
       >
         <span class="inline-flex items-center gap-1">
           <IconGrid :size="14" class="text-neon-yellow" />
-          <span class="text-neon-yellow font-semibold">{{ games.length }}</span> juegos
+          <span class="text-neon-yellow font-semibold">{{ groups.length }}</span> juegos
         </span>
         <span class="inline-flex items-center gap-1">
           <IconLibrary :size="14" class="text-neon-yellow" />
           <span class="text-neon-yellow font-semibold">{{ activeStores.length }}</span> tiendas
         </span>
+        <span>
+          <span class="text-neon-yellow font-semibold">{{ games.length }}</span> copias
+        </span>
+        <span v-if="multiStoreCount">
+          <span class="text-neon-yellow font-semibold">{{ multiStoreCount }}</span> en varias tiendas
+        </span>
+        <button
+          v-if="incompleteCount"
+          type="button"
+          class="inline-flex items-center gap-1 text-neon-pink hover:underline cursor-pointer focus-visible:outline-2 focus-visible:outline-neon-pink rounded"
+          @click="showIncomplete"
+        >
+          ⚠ <span class="font-semibold">{{ incompleteCount }}</span> sin información
+        </button>
       </div>
 
       <!-- Cross-nav -->
@@ -186,38 +177,17 @@ onMounted(() => fetchGames());
 
     <div class="h-px bg-linear-to-r from-neon-yellow/40 via-neon-yellow/20 to-transparent"></div>
 
-    <!-- Filters -->
-    <div class="flex flex-wrap items-center gap-3">
-      <input
-        v-model="searchQuery"
-        type="search"
-        placeholder="Buscar juego..."
-        aria-label="Buscar juego"
-        class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:border-neon-yellow/40 focus-visible:outline-none transition-colors"
-      />
-      <select
-        v-model="selectedStore"
-        aria-label="Filtrar por tienda"
-        class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none transition-colors"
-      >
-        <option value="">Todas las tiendas</option>
-        <option v-for="s in activeStores" :key="s" :value="s">
-          {{ s }} ({{ countByStore[s] }})
-        </option>
-      </select>
-      <select
-        v-model="sortBy"
-        aria-label="Ordenar"
-        class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none transition-colors"
-      >
-        <option value="title">Título (A-Z)</option>
-        <option value="released">Lanzamiento</option>
-        <option value="recent">Añadidos recientemente</option>
-      </select>
-      <span class="ml-auto text-xs text-text-muted">
-        {{ filteredGames.length }} de {{ games.length }}
-      </span>
-    </div>
+    <LibraryFilters
+      v-model:search="searchQuery"
+      v-model:store="selectedStore"
+      v-model:sort="sortBy"
+      v-model:data="dataFilter"
+      :active-stores="activeStores"
+      :count-by-store="countByStore"
+      :incomplete-count="incompleteCount"
+      :shown-count="visibleGroups.length"
+      :total-count="groups.length"
+    />
 
     <!-- States -->
     <div
@@ -250,16 +220,16 @@ onMounted(() => fetchGames());
     </div>
 
     <div
-      v-else-if="filteredGames.length === 0"
+      v-else-if="visibleGroups.length === 0"
       class="border border-dashed border-neon-yellow/20 rounded-xl p-10 text-center text-text-muted text-sm"
     >Ningún juego coincide con el filtro.</div>
 
     <!-- Grid -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list">
       <LibraryCard
-        v-for="game in filteredGames"
-        :key="game.id"
-        :game="game"
+        v-for="group in visibleGroups"
+        :key="group.key"
+        :group="group"
         @edit="openEdit"
         @remove="removeGame"
       />
