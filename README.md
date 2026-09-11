@@ -17,7 +17,7 @@ Seguimiento de juegos jugados, biblioteca de Steam, juegos por salir, películas
 
 | Sección | Descripción | Fuente de datos |
 |---------|-------------|-----------------|
-| Juegos Jugados | Catálogo personal de juegos completados, en progreso o abandonados | Manual + RAWG (ratings) |
+| Juegos Jugados | Catálogo personal de juegos completados, en progreso o abandonados | Manual + Metacritic/OpenCritic (ratings) |
 | Mi Biblioteca Steam | Librería de Steam sincronizada con tiempos de HLTB | Steam API + HowLongToBeat |
 | Próximos Juegos | Juegos por salir con interés de la comunidad | IGDB (via Twitch) |
 | Películas | Películas vistas organizadas por año con listas de Trakt | Trakt API |
@@ -74,7 +74,8 @@ integrations/         # Cloudflare Cron (sync diario a la 1 AM UTC)
 - **Trakt** — Películas y series (metadata, cast, temporadas, episodios, imágenes)
 - **Steam** — Librería de juegos y detalles
 - **IGDB** — Juegos próximos a salir (via Twitch OAuth)
-- **RAWG** — Ratings de juegos
+- **RAWG** — Fuente interna del score de Metacritic
+- **OpenCritic** (via RapidAPI) — Nota de la crítica (`topCriticScore`, 0-100)
 - **TMDB** — Trailers de YouTube
 
 ## Diseño
@@ -97,7 +98,8 @@ Push a GitHub despliega automáticamente en Cloudflare Workers/Pages. Cron diari
 | `STEAM_API_KEY` | API de Steam |
 | `STEAM_ID` | ID de usuario Steam |
 | `TWITCH_CLIENT_ID` / `TWITCH_CLIENT_SECRET` | Acceso a IGDB |
-| `RAWG_API_KEY` | Ratings de juegos |
+| `RAWG_API_KEY` | Score de Metacritic |
+| `OPENCRITIC_API_KEY` | Score de OpenCritic (RapidAPI) |
 | `TRAKT_CLIENT_ID` | API de Trakt (películas y series) |
 | `TMDB_API_KEY` | Trailers de YouTube |
 | `CRON_SECRET` | Autenticación de endpoints de sync |

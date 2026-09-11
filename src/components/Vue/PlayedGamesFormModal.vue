@@ -25,7 +25,7 @@ interface GameData {
   first_year_played: number | '';
   description: string;
   rating_metacritic: number | '';
-  rating_rawg: number | '';
+  rating_opencritic: number | '';
   is_demo: boolean;
   is_early_access: boolean;
   is_testing: boolean;
@@ -107,7 +107,7 @@ function emptyForm(): GameData {
     artworks: '', genre: '', estado: 'Jugando',
     logros_obt: '', logros_total: '', console_pc: '', igdb_id: '',
     first_year_played: '', description: '', rating_metacritic: '',
-    rating_rawg: '', is_demo: false, is_early_access: false, is_testing: false, dates_played: [],
+    rating_opencritic: '', is_demo: false, is_early_access: false, is_testing: false, dates_played: [],
   };
 }
 
@@ -122,7 +122,7 @@ watch(() => props.open, (val) => {
         igdb_id: props.game.igdb_id || '',
         first_year_played: props.game.first_year_played || '',
         rating_metacritic: props.game.rating_metacritic || '',
-        rating_rawg: props.game.rating_rawg || '',
+        rating_opencritic: props.game.rating_opencritic || '',
         is_demo: !!props.game.is_demo,
         is_early_access: !!props.game.is_early_access,
         is_testing: !!props.game.is_testing,
@@ -169,7 +169,7 @@ async function save() {
     igdb_id: Number(form.value.igdb_id) || null,
     first_year_played: Number(form.value.first_year_played) || null,
     rating_metacritic: Number(form.value.rating_metacritic) || null,
-    rating_rawg: Number(form.value.rating_rawg) || null,
+    rating_opencritic: Number(form.value.rating_opencritic) || null,
     is_demo: form.value.is_demo ? 1 : 0,
     is_early_access: form.value.is_early_access ? 1 : 0,
     is_testing: form.value.is_testing ? 1 : 0,
@@ -408,8 +408,8 @@ function onBackdrop(e: MouseEvent) {
               <input id="game-mc" v-model="form.rating_metacritic" type="number" min="0" max="100" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
             </div>
             <div>
-              <label for="game-rawg" class="block text-xs text-text-muted mb-1">RAWG</label>
-              <input id="game-rawg" v-model="form.rating_rawg" type="number" step="0.01" min="0" max="5" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-5" />
+              <label for="game-opencritic" class="block text-xs text-text-muted mb-1">OpenCritic</label>
+              <input id="game-opencritic" v-model="form.rating_opencritic" type="number" step="0.01" min="0" max="100" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
             </div>
             <div>
               <label for="game-igdb" class="block text-xs text-text-muted mb-1">IGDB ID</label>

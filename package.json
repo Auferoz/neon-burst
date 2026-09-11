@@ -13,6 +13,7 @@
     "generate-types": "wrangler types",
     "sync-local": "node db/sync-local.js",
     "fetch-ratings": "node --env-file=.env db/fetch-ratings.js",
+    "fetch-ratings:missing": "node --env-file=.env db/fetch-ratings.js --only-missing",
     "sync-steam": "node --env-file=.env db/sync-steam.js",
     "sync-steam:remote": "node --env-file=.env db/sync-steam.js --remote",
     "sync-movies": "node --env-file=.env db/sync-movies.js",

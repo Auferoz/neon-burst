@@ -12,8 +12,9 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 - `npm run build` — Production build (outputs to `dist/`)
 - `npm run preview` — Preview production build locally
 - `npm run generate-types` — Generate Cloudflare Worker types via Wrangler
-- `npm run sync-local` — Sync local D1 database
+- `npm run sync-local` — Sobrescribe la D1 local con un export del remoto (dropea todas las tablas de usuario primero)
 - `npm run fetch-ratings` — Fetch game ratings from external sources
+- `npm run fetch-ratings:missing` — Idem, pero solo los ratings que siguen en NULL (ahorra cuota de OpenCritic)
 - `npm run sync-steam` — Run Steam library sync locally
 - `npm run sync-steam:remote` — Trigger Steam sync on remote worker
 - `npm run sync-movies` — Sync movies from Trakt locally
@@ -161,7 +162,8 @@ existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL n
 
 **Migraciones** (`db/migrate-*.sql`, se aplican con `wrangler d1 execute`): `add-movies-tables`,
 `add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
-`add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`. Ojo: `db/schema.sql`
+`add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
+`rename-rawg-opencritic`. Ojo: `db/schema.sql`
 **no** incluye todavía `season_posters_json` ni las columnas `data_source` — una base creada
 solo desde `schema.sql` necesita correr esas migraciones aparte.
 
@@ -235,7 +237,8 @@ Movies and series use a lazy-loading pattern for detailed data:
 - **Trakt API** — Movies and series data, cast, seasons/episodes. All images come from Trakt (poster, fanart, thumb, headshots). Uses `?extended=full` for images.
 - **Steam API** — Steam library and game details
 - **IGDB (via Twitch OAuth)** — Upcoming games with community interest metrics
-- **RAWG API** — Game ratings
+- **RAWG API** — Internal source for the Metacritic score only (its own user rating is not stored)
+- **OpenCritic (via RapidAPI)** — `topCriticScore` (0-100) shown next to Metacritic
 - **TMDB API** — YouTube video trailers, y **fallback temporal de series y películas** (ver abajo)
 
 ### Fallback temporal a TMDB (series y películas)
@@ -304,7 +307,8 @@ Required in `.env` locally and as Cloudflare secrets for the worker:
 - `STEAM_API_KEY` — Steam Web API key
 - `STEAM_ID` — Steam user ID to sync
 - `TWITCH_CLIENT_ID` / `TWITCH_CLIENT_SECRET` — For IGDB API access (via Twitch OAuth)
-- `RAWG_API_KEY` — RAWG API key (for ratings)
+- `RAWG_API_KEY` — RAWG API key (solo para leer el score de Metacritic)
+- `OPENCRITIC_API_KEY` — Key de RapidAPI para la API de OpenCritic (solo la usa `npm run fetch-ratings` en local, no es secret del worker)
 - `TRAKT_CLIENT_ID` — Trakt API key (for movies and series)
 - `TMDB_API_KEY` — TMDB API key (trailers + fallback temporal de series)
 - `CRON_SECRET` — Authenticates cron/sync requests
@@ -318,6 +322,18 @@ The `db/sync-*.js` and `db/seed-*.js` scripts use `wrangler d1 execute` via `exe
 - Multi-line SQL with `datetime('now')` fails on Windows shell due to quote escaping — tables must be created manually via single-line commands (see `comandos.txt`)
 - The `--remote` flag syncs against Cloudflare D1; without it, syncs locally
 - Errors in `d1()` helper are logged to console
+
+**Los ids de `games` NO son estables entre local y remoto.** Un script que lee de la
+base local y genera SQL con `WHERE id = ...` le escribe a la fila equivocada al
+aplicarlo con `--remote`. Pasó de verdad: el `id 59` era *Uncharted 4* en local y
+*Breath of the Wild* en remoto. Por eso `db/fetch-ratings.js` genera sus `UPDATE`
+con `WHERE title = '...'` (escapando las comillas simples). Cualquier script nuevo
+que genere SQL portable entre las dos bases tiene que hacer lo mismo.
+
+Para evitar la divergencia de raíz, correr `npm run sync-local` antes de trabajar
+contra la base local. Es **sobrescritura en un solo sentido**: dropea todas las
+tablas de usuario locales y las reemplaza por el export del remoto, así que lo que
+solo exista en local se pierde.
 
 ## Conventions
 
