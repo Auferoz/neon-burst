@@ -146,11 +146,11 @@ onMounted(fetchMovies);
           <h1 class="text-xl sm:text-2xl font-bold text-neon-emerald neon-glow-emerald leading-tight">movies</h1>
           <button
             @click="showForm = true"
-            class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-neon-emerald border border-neon-emerald/30 rounded-lg hover:bg-neon-emerald/10 transition-colors cursor-pointer"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-emerald border border-neon-emerald/30 rounded-lg hover:bg-neon-emerald/10 transition-colors cursor-pointer"
             aria-label="Agregar película"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
             </svg>
             Agregar
           </button>

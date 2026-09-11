@@ -207,7 +207,11 @@ y se pierde el lote entero de 50.
 **Migraciones** (`db/migrate-*.sql`, se aplican con `wrangler d1 execute`): `add-movies-tables`,
 `add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
 `add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
-`rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`. Ojo: `db/schema.sql`
+`rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`.
+`drop-movies-list-columns` es **irreversible**: el respaldo de lo que borró
+(`list_slug`, `list_order`, `listed_at` de las 481 filas) es
+`db/backup-movies-list-slug.json`, y es lo único que queda de esos datos.
+Ojo: `db/schema.sql`
 **no** incluye todavía `season_posters_json` ni las columnas `data_source` — una base creada
 solo desde `schema.sql` necesita correr esas migraciones aparte.
 
@@ -308,8 +312,14 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
   se completan desde `en-US`
 - **La pertenencia a listas no se puede recuperar automáticamente**: qué películas están en
   `movies-2026` solo lo sabe Trakt, así que el sync sigue devolviendo 0 y no se añaden
-  películas nuevas solas. **Para eso está el alta manual** (ver abajo): se cargan a mano y
+  películas nuevas solas. **Para eso está el alta manual** (ver arriba): se cargan a mano y
   se reconcilian cuando Trakt vuelva
+- **Cuando Trakt vuelva, correr una vez `npm run sync-movies:remote`**. `movies_lists`
+  suma 513 entradas contra 481 películas en el caché: esas 32 son rewatches que el modelo
+  viejo aplastaba (`movies_cache` tenía una sola columna `list_slug`, así que una película
+  vista en 2018 y en 2022 se quedaba solo con el último año). `movies_watched` ya puede
+  representarlas, y ese script recorre **todas** las listas —el cron del worker solo hace
+  el año en curso—, así que las recupera de una
 - Scrapear `app.trakt.tv` no es viable: es una SPA que sirve el `<body>` vacío y no expone
   ningún endpoint JSON público (`.json` devuelve el shell HTML). Medido: `api.trakt.tv`
   devuelve `403` **incluso con la key y para rutas inventadas** (corta por auth antes de
