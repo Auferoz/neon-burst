@@ -20,7 +20,7 @@ Seguimiento de juegos jugados, biblioteca de Steam, juegos por salir, películas
 | Juegos Jugados | Catálogo personal de juegos completados, en progreso o abandonados | Manual + Metacritic/OpenCritic (ratings) |
 | Mi Biblioteca Steam | Librería de Steam sincronizada con tiempos de HLTB | Steam API + HowLongToBeat |
 | Próximos Juegos | Juegos por salir con interés de la comunidad | IGDB (via Twitch) |
-| Películas | Películas vistas organizadas por año con listas de Trakt | Trakt API |
+| Películas | Películas vistas por año, con alta manual mientras Trakt esté caído | Trakt API + TMDB |
 | Series | Series vistas con temporadas, episodios y cast | Trakt API |
 
 ## Desarrollo
@@ -71,7 +71,7 @@ integrations/         # Cloudflare Cron (sync diario a la 1 AM UTC)
 
 ## APIs Externas
 
-- **Trakt** — Películas y series (metadata, cast, temporadas, episodios, imágenes)
+- **Trakt** — Películas y series (metadata, cast, temporadas, episodios, imágenes). **Su API responde 403 desde que pasó a ser de pago**: TMDB actúa de fallback y las películas se cargan a mano desde la propia página
 - **Steam** — Librería de juegos y detalles
 - **IGDB** — Juegos próximos a salir (via Twitch OAuth)
 - **RAWG** — Fuente interna del score de Metacritic

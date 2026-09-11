@@ -76,12 +76,19 @@ async function main() {
     trakt_id INTEGER PRIMARY KEY, tmdb_id INTEGER, imdb_id TEXT,
     title TEXT NOT NULL, year INTEGER, released TEXT, runtime INTEGER DEFAULT 0,
     genres TEXT, overview TEXT, rating REAL DEFAULT 0, poster TEXT, thumb TEXT,
-    list_slug TEXT, list_order INTEGER DEFAULT 0, listed_at TEXT,
     updated_at TEXT DEFAULT (datetime('now'))
   )`);
+  d1(`CREATE TABLE IF NOT EXISTS movies_watched (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, tmdb_id INTEGER NOT NULL,
+    trakt_id INTEGER, trakt_slug TEXT, year_watched INTEGER NOT NULL,
+    platform TEXT, source TEXT NOT NULL DEFAULT 'trakt' CHECK (source IN ('trakt', 'manual')),
+    listed_at TEXT, created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')), UNIQUE (tmdb_id, year_watched)
+  )`);
   d1(`CREATE INDEX IF NOT EXISTS idx_movies_cache_year ON movies_cache(year)`);
-  d1(`CREATE INDEX IF NOT EXISTS idx_movies_cache_list ON movies_cache(list_slug)`);
   d1(`CREATE INDEX IF NOT EXISTS idx_movies_cache_title ON movies_cache(title)`);
+  d1(`CREATE UNIQUE INDEX IF NOT EXISTS idx_movies_cache_tmdb ON movies_cache(tmdb_id)`);
+  d1(`CREATE INDEX IF NOT EXISTS idx_movies_watched_year ON movies_watched(year_watched)`);
 
   // Fetch lists dynamically
   console.log('Fetching Trakt lists...');
@@ -116,9 +123,25 @@ async function main() {
         const rating = Math.round((m.rating || 0) * 10) / 10;
 
         const listedAt = items[i].listed_at || '';
-        const sql = `INSERT INTO movies_cache (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview, rating, poster, thumb, list_slug, list_order, listed_at, updated_at) VALUES (${m.ids.trakt}, ${m.ids.tmdb || 'NULL'}, '${esc(m.ids.imdb || '')}', '${esc(title)}', ${m.year || 'NULL'}, '${esc(m.released || '')}', ${m.runtime || 0}, '${esc(genres)}', '${esc(m.overview || '')}', ${rating}, '${esc(poster)}', '${esc(thumb)}', '${esc(slug)}', ${i}, '${esc(listedAt)}', datetime('now')) ON CONFLICT(trakt_id) DO UPDATE SET tmdb_id=excluded.tmdb_id, imdb_id=excluded.imdb_id, title=excluded.title, year=excluded.year, released=excluded.released, runtime=excluded.runtime, genres=excluded.genres, overview=excluded.overview, rating=excluded.rating, poster=excluded.poster, thumb=excluded.thumb, list_slug=excluded.list_slug, list_order=excluded.list_order, listed_at=excluded.listed_at, updated_at=excluded.updated_at`;
+
+        // Promoción: una película cargada a mano tiene un trakt_id provisional
+        // negativo. Sin esto el INSERT de abajo choca contra el UNIQUE de
+        // tmdb_id y la película se pierde del sync.
+        if (m.ids.tmdb) {
+          d1(`UPDATE movies_cache SET trakt_id = ${m.ids.trakt}, updated_at = datetime('now') WHERE tmdb_id = ${m.ids.tmdb} AND trakt_id < 0`);
+        }
+
+        const sql = `INSERT INTO movies_cache (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview, rating, poster, thumb, updated_at) VALUES (${m.ids.trakt}, ${m.ids.tmdb || 'NULL'}, '${esc(m.ids.imdb || '')}', '${esc(title)}', ${m.year || 'NULL'}, '${esc(m.released || '')}', ${m.runtime || 0}, '${esc(genres)}', '${esc(m.overview || '')}', ${rating}, '${esc(poster)}', '${esc(thumb)}', datetime('now')) ON CONFLICT(trakt_id) DO UPDATE SET tmdb_id=excluded.tmdb_id, imdb_id=excluded.imdb_id, title=excluded.title, year=excluded.year, released=excluded.released, runtime=excluded.runtime, genres=excluded.genres, overview=excluded.overview, rating=excluded.rating, poster=excluded.poster, thumb=excluded.thumb, updated_at=excluded.updated_at`;
 
         d1(sql);
+
+        // La lista se lee por JOIN contra movies_watched: sin esto el sync no se ve.
+        // El año sale del slug de la lista ('movies-2026' → 2026).
+        const yearWatched = Number(slug.replace('movies-', ''));
+        if (m.ids.tmdb && yearWatched) {
+          d1(`INSERT INTO movies_watched (tmdb_id, trakt_id, trakt_slug, year_watched, listed_at, source) VALUES (${m.ids.tmdb}, ${m.ids.trakt}, '${esc(m.ids.slug || '')}', ${yearWatched}, '${esc(listedAt)}', 'trakt') ON CONFLICT(tmdb_id, year_watched) DO UPDATE SET trakt_id=excluded.trakt_id, trakt_slug=COALESCE(movies_watched.trakt_slug, excluded.trakt_slug), listed_at=excluded.listed_at, source='trakt', updated_at=datetime('now')`);
+        }
+
         totalSynced++;
 
         const parts = [];

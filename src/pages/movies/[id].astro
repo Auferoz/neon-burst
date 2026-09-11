@@ -64,7 +64,7 @@ const heroImage = movie.fanart || movie.thumb || '';
 						src={movie.poster}
 						alt={movie.title}
 						class="w-36 sm:w-44 rounded-xl object-cover aspect-[2/3] bg-surface-3 shadow-lg shadow-black/30"
-						style={`view-transition-name: movie-poster-${movie.trakt_id};`}
+						style={`view-transition-name: movie-poster-${movie.tmdb_id};`}
 						width="176"
 						height="264"
 					/>
@@ -353,13 +353,17 @@ const heroImage = movie.fanart || movie.thumb || '';
 							TMDB
 						</a>
 					)}
-					<a href={`https://trakt.tv/movies/${movie.trakt_id}`} target="_blank" rel="noopener noreferrer"
-						class="flex items-center gap-2 text-sm text-text-secondary hover:text-neon-pink transition-colors">
-						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
-						</svg>
-						Trakt
-					</a>
+					{/* Las películas cargadas a mano llevan un trakt_id provisional negativo
+					    hasta que el sync las reconcilie, y esa URL no existe en Trakt. */}
+					{movie.trakt_id > 0 && (
+						<a href={`https://trakt.tv/movies/${movie.trakt_id}`} target="_blank" rel="noopener noreferrer"
+							class="flex items-center gap-2 text-sm text-text-secondary hover:text-neon-pink transition-colors">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+							</svg>
+							Trakt
+						</a>
+					)}
 					{movie.homepage && (
 						<a href={movie.homepage} target="_blank" rel="noopener noreferrer"
 							class="flex items-center gap-2 text-sm text-text-secondary hover:text-neon-emerald transition-colors">

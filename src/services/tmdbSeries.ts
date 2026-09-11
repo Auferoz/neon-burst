@@ -10,6 +10,7 @@
 
 import { env } from 'cloudflare:workers';
 import type { CastMember, Season, SeriesImages, Video } from './seriesService';
+import { slugToQuery } from '../utils/mediaQuery';
 
 const TMDB_API_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMG = 'https://image.tmdb.org/t/p';
@@ -35,23 +36,6 @@ async function tmdbFetch<T>(path: string, params = '', language = 'es-ES'): Prom
     console.error(`[tmdbSeries] ${path} error:`, e);
     return null;
   }
-}
-
-/**
- * Convierte un slug de Trakt en término de búsqueda + año.
- * "my-hero-academia" → { query: "my hero academia" }
- * "the-office-2005"  → { query: "the office", year: 2005 }
- */
-function slugToQuery(slug: string): { query: string; year?: number } {
-  const parts = slug.split('-');
-  const last = parts[parts.length - 1];
-  if (parts.length > 1 && /^\d{4}$/.test(last)) {
-    const year = Number(last);
-    if (year >= 1900 && year <= new Date().getFullYear() + 5) {
-      return { query: parts.slice(0, -1).join(' '), year };
-    }
-  }
-  return { query: parts.join(' ') };
 }
 
 interface TmdbSearchResult {

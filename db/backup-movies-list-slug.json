@@ -1,0 +1,3872 @@
+[
+  {
+    "results": [
+      {
+        "trakt_id": 9,
+        "tmdb_id": 13,
+        "title": "Forrest Gump",
+        "list_slug": "movies-2022",
+        "list_order": 3,
+        "listed_at": "2022-11-17T22:50:02.000Z"
+      },
+      {
+        "trakt_id": 126,
+        "tmdb_id": 161,
+        "title": "Ocean's Eleven",
+        "list_slug": "movies-2026",
+        "list_order": 38,
+        "listed_at": "2026-02-02T00:58:10.000Z"
+      },
+      {
+        "trakt_id": 128,
+        "tmdb_id": 163,
+        "title": "Ocean's Twelve",
+        "list_slug": "movies-2026",
+        "list_order": 37,
+        "listed_at": "2026-02-02T22:28:56.000Z"
+      },
+      {
+        "trakt_id": 276,
+        "tmdb_id": 329,
+        "title": "Jurassic Park",
+        "list_slug": "movies-2023",
+        "list_order": 69,
+        "listed_at": "2023-02-26T19:56:42.000Z"
+      },
+      {
+        "trakt_id": 383,
+        "tmdb_id": 489,
+        "title": "Good Will Hunting",
+        "list_slug": "movies-2024",
+        "list_order": 39,
+        "listed_at": "2024-05-09T02:00:14.000Z"
+      },
+      {
+        "trakt_id": 443,
+        "tmdb_id": 562,
+        "title": "Die Hard",
+        "list_slug": "movies-2023",
+        "list_order": 17,
+        "listed_at": "2023-09-22T00:31:18.000Z"
+      },
+      {
+        "trakt_id": 445,
+        "tmdb_id": 564,
+        "title": "The Mummy",
+        "list_slug": "movies-2026",
+        "list_order": 25,
+        "listed_at": "2026-03-02T23:52:21.000Z"
+      },
+      {
+        "trakt_id": 463,
+        "tmdb_id": 584,
+        "title": "2 Fast 2 Furious",
+        "list_slug": "movies-2026",
+        "list_order": 28,
+        "listed_at": "2026-02-24T22:33:34.000Z"
+      },
+      {
+        "trakt_id": 497,
+        "tmdb_id": 621,
+        "title": "Grease",
+        "list_slug": "movies-2024",
+        "list_order": 16,
+        "listed_at": "2024-08-13T14:50:19.000Z"
+      },
+      {
+        "trakt_id": 545,
+        "tmdb_id": 671,
+        "title": "Harry Potter and the Philosopher's Stone",
+        "list_slug": "movies-2026",
+        "list_order": 17,
+        "listed_at": "2026-04-11T19:58:07.000Z"
+      },
+      {
+        "trakt_id": 546,
+        "tmdb_id": 672,
+        "title": "Harry Potter and the Chamber of Secrets",
+        "list_slug": "movies-2026",
+        "list_order": 16,
+        "listed_at": "2026-04-11T19:59:28.000Z"
+      },
+      {
+        "trakt_id": 547,
+        "tmdb_id": 673,
+        "title": "Harry Potter and the Prisoner of Azkaban",
+        "list_slug": "movies-2023",
+        "list_order": 83,
+        "listed_at": "2023-02-05T11:07:08.000Z"
+      },
+      {
+        "trakt_id": 548,
+        "tmdb_id": 674,
+        "title": "Harry Potter and the Goblet of Fire",
+        "list_slug": "movies-2023",
+        "list_order": 82,
+        "listed_at": "2023-02-06T01:10:03.000Z"
+      },
+      {
+        "trakt_id": 549,
+        "tmdb_id": 675,
+        "title": "Harry Potter and the Order of the Phoenix",
+        "list_slug": "movies-2023",
+        "list_order": 81,
+        "listed_at": "2023-02-06T01:10:09.000Z"
+      },
+      {
+        "trakt_id": 589,
+        "tmdb_id": 744,
+        "title": "Top Gun",
+        "list_slug": "movies-2022",
+        "list_order": 25,
+        "listed_at": "2022-07-02T02:23:53.000Z"
+      },
+      {
+        "trakt_id": 610,
+        "tmdb_id": 767,
+        "title": "Harry Potter and the Half-Blood Prince",
+        "list_slug": "movies-2023",
+        "list_order": 80,
+        "listed_at": "2023-02-11T11:55:05.000Z"
+      },
+      {
+        "trakt_id": 614,
+        "tmdb_id": 771,
+        "title": "Home Alone",
+        "list_slug": "movies-2025",
+        "list_order": 27,
+        "listed_at": "2025-12-19T01:03:44.000Z"
+      },
+      {
+        "trakt_id": 947,
+        "tmdb_id": 1417,
+        "title": "Pan's Labyrinth",
+        "list_slug": "movies-2022",
+        "list_order": 28,
+        "listed_at": "2022-06-25T23:41:05.000Z"
+      },
+      {
+        "trakt_id": 1028,
+        "tmdb_id": 1571,
+        "title": "Live Free or Die Hard",
+        "list_slug": "movies-2023",
+        "list_order": 13,
+        "listed_at": "2023-09-24T21:45:48.000Z"
+      },
+      {
+        "trakt_id": 1029,
+        "tmdb_id": 1572,
+        "title": "Die Hard: With a Vengeance",
+        "list_slug": "movies-2023",
+        "list_order": 14,
+        "listed_at": "2023-09-23T21:15:57.000Z"
+      },
+      {
+        "trakt_id": 1030,
+        "tmdb_id": 1573,
+        "title": "Die Hard 2",
+        "list_slug": "movies-2023",
+        "list_order": 16,
+        "listed_at": "2023-09-22T18:21:58.000Z"
+      },
+      {
+        "trakt_id": 1071,
+        "tmdb_id": 1624,
+        "title": "Liar Liar",
+        "list_slug": "movies-2023",
+        "list_order": 19,
+        "listed_at": "2023-09-16T20:38:10.000Z"
+      },
+      {
+        "trakt_id": 1157,
+        "tmdb_id": 1726,
+        "title": "Iron Man",
+        "list_slug": "movies-2025",
+        "list_order": 26,
+        "listed_at": "2025-12-21T21:26:12.000Z"
+      },
+      {
+        "trakt_id": 1163,
+        "tmdb_id": 1734,
+        "title": "The Mummy Returns",
+        "list_slug": "movies-2026",
+        "list_order": 24,
+        "listed_at": "2026-03-06T22:41:35.000Z"
+      },
+      {
+        "trakt_id": 1170,
+        "tmdb_id": 1771,
+        "title": "Captain America: The First Avenger",
+        "list_slug": "movies-2025",
+        "list_order": 20,
+        "listed_at": "2025-12-25T20:10:02.000Z"
+      },
+      {
+        "trakt_id": 1458,
+        "tmdb_id": 2109,
+        "title": "Rush Hour",
+        "list_slug": "movies-2026",
+        "list_order": 7,
+        "listed_at": "2026-06-21T21:02:07.000Z"
+      },
+      {
+        "trakt_id": 2313,
+        "tmdb_id": 3638,
+        "title": "No Reservations",
+        "list_slug": "movies-2024",
+        "list_order": 55,
+        "listed_at": "2024-01-29T01:30:24.000Z"
+      },
+      {
+        "trakt_id": 2494,
+        "tmdb_id": 4247,
+        "title": "Scary Movie",
+        "list_slug": "movies-2026",
+        "list_order": 22,
+        "listed_at": "2026-03-10T22:51:17.000Z"
+      },
+      {
+        "trakt_id": 2495,
+        "tmdb_id": 4248,
+        "title": "Scary Movie 2",
+        "list_slug": "movies-2026",
+        "list_order": 21,
+        "listed_at": "2026-03-11T21:34:04.000Z"
+      },
+      {
+        "trakt_id": 2503,
+        "tmdb_id": 4256,
+        "title": "Scary Movie 3",
+        "list_slug": "movies-2026",
+        "list_order": 20,
+        "listed_at": "2026-03-12T23:28:06.000Z"
+      },
+      {
+        "trakt_id": 3013,
+        "tmdb_id": 5174,
+        "title": "Rush Hour 3",
+        "list_slug": "movies-2026",
+        "list_order": 4,
+        "listed_at": "2026-07-05T23:11:29.000Z"
+      },
+      {
+        "trakt_id": 3014,
+        "tmdb_id": 5175,
+        "title": "Rush Hour 2",
+        "list_slug": "movies-2026",
+        "list_order": 6,
+        "listed_at": "2026-06-24T00:18:12.000Z"
+      },
+      {
+        "trakt_id": 3752,
+        "tmdb_id": 6877,
+        "title": "Failure to Launch",
+        "list_slug": "movies-2025",
+        "list_order": 51,
+        "listed_at": "2025-01-18T18:39:12.000Z"
+      },
+      {
+        "trakt_id": 3825,
+        "tmdb_id": 7131,
+        "title": "Van Helsing",
+        "list_slug": "movies-2024",
+        "list_order": 38,
+        "listed_at": "2024-05-11T07:14:25.000Z"
+      },
+      {
+        "trakt_id": 3925,
+        "tmdb_id": 7485,
+        "title": "Shooter",
+        "list_slug": "movies-2018",
+        "list_order": 31,
+        "listed_at": "2018-03-30T13:11:27.000Z"
+      },
+      {
+        "trakt_id": 4032,
+        "tmdb_id": 8065,
+        "title": "21",
+        "list_slug": "movies-2023",
+        "list_order": 72,
+        "listed_at": "2023-02-19T22:40:35.000Z"
+      },
+      {
+        "trakt_id": 4123,
+        "tmdb_id": 8326,
+        "title": "Holes",
+        "list_slug": "movies-2023",
+        "list_order": 3,
+        "listed_at": "2023-12-17T15:05:32.000Z"
+      },
+      {
+        "trakt_id": 4429,
+        "tmdb_id": 8961,
+        "title": "Bad Boys II",
+        "list_slug": "movies-2024",
+        "list_order": 17,
+        "listed_at": "2024-07-25T22:09:12.000Z"
+      },
+      {
+        "trakt_id": 4472,
+        "tmdb_id": 9016,
+        "title": "Treasure Planet",
+        "list_slug": "movies-2023",
+        "list_order": 2,
+        "listed_at": "2023-12-17T22:29:59.000Z"
+      },
+      {
+        "trakt_id": 4628,
+        "tmdb_id": 9334,
+        "title": "The Scorpion King",
+        "list_slug": "movies-2026",
+        "list_order": 23,
+        "listed_at": "2026-03-07T00:08:32.000Z"
+      },
+      {
+        "trakt_id": 4765,
+        "tmdb_id": 9479,
+        "title": "The Nightmare Before Christmas",
+        "list_slug": "movies-2022",
+        "list_order": 6,
+        "listed_at": "2022-10-30T01:36:19.000Z"
+      },
+      {
+        "trakt_id": 4929,
+        "tmdb_id": 9654,
+        "title": "The Italian Job",
+        "list_slug": "movies-2020",
+        "list_order": 10,
+        "listed_at": "2020-08-10T02:58:21.000Z"
+      },
+      {
+        "trakt_id": 4951,
+        "tmdb_id": 9679,
+        "title": "Gone in Sixty Seconds",
+        "list_slug": "movies-2026",
+        "list_order": 33,
+        "listed_at": "2026-02-13T22:36:20.000Z"
+      },
+      {
+        "trakt_id": 5003,
+        "tmdb_id": 9737,
+        "title": "Bad Boys",
+        "list_slug": "movies-2024",
+        "list_order": 19,
+        "listed_at": "2024-07-15T22:19:05.000Z"
+      },
+      {
+        "trakt_id": 5023,
+        "tmdb_id": 9762,
+        "title": "Step Up",
+        "list_slug": "movies-2024",
+        "list_order": 53,
+        "listed_at": "2024-02-11T23:02:26.000Z"
+      },
+      {
+        "trakt_id": 5058,
+        "tmdb_id": 9799,
+        "title": "The Fast and the Furious",
+        "list_slug": "movies-2026",
+        "list_order": 29,
+        "listed_at": "2026-02-24T00:54:58.000Z"
+      },
+      {
+        "trakt_id": 5076,
+        "tmdb_id": 9820,
+        "title": "The Parent Trap",
+        "list_slug": "movies-2023",
+        "list_order": 37,
+        "listed_at": "2023-07-29T21:04:32.000Z"
+      },
+      {
+        "trakt_id": 5117,
+        "tmdb_id": 9880,
+        "title": "The Princess Diaries",
+        "list_slug": "movies-2024",
+        "list_order": 51,
+        "listed_at": "2024-02-15T01:00:34.000Z"
+      },
+      {
+        "trakt_id": 5355,
+        "tmdb_id": 10138,
+        "title": "Iron Man 2",
+        "list_slug": "movies-2025",
+        "list_order": 23,
+        "listed_at": "2025-12-24T22:51:12.000Z"
+      },
+      {
+        "trakt_id": 5408,
+        "tmdb_id": 10195,
+        "title": "Thor",
+        "list_slug": "movies-2025",
+        "list_order": 22,
+        "listed_at": "2025-12-25T13:43:16.000Z"
+      },
+      {
+        "trakt_id": 5684,
+        "tmdb_id": 10501,
+        "title": "The Road to El Dorado",
+        "list_slug": "movies-2023",
+        "list_order": 4,
+        "listed_at": "2023-12-10T23:56:37.000Z"
+      },
+      {
+        "trakt_id": 5927,
+        "tmdb_id": 10764,
+        "title": "Quantum of Solace",
+        "list_slug": "movies-2026",
+        "list_order": 9,
+        "listed_at": "2026-06-11T00:07:35.000Z"
+      },
+      {
+        "trakt_id": 6074,
+        "tmdb_id": 10923,
+        "title": "Agent Cody Banks",
+        "list_slug": "movies-2023",
+        "list_order": 18,
+        "listed_at": "2023-09-17T23:27:00.000Z"
+      },
+      {
+        "trakt_id": 6707,
+        "tmdb_id": 11631,
+        "title": "Mamma Mia!",
+        "list_slug": "movies-2022",
+        "list_order": 20,
+        "listed_at": "2022-08-06T21:55:33.000Z"
+      },
+      {
+        "trakt_id": 7068,
+        "tmdb_id": 12153,
+        "title": "White Chicks",
+        "list_slug": "movies-2024",
+        "list_order": 28,
+        "listed_at": "2024-06-01T20:48:40.000Z"
+      },
+      {
+        "trakt_id": 7228,
+        "tmdb_id": 12444,
+        "title": "Harry Potter and the Deathly Hallows: Part 1",
+        "list_slug": "movies-2023",
+        "list_order": 79,
+        "listed_at": "2023-02-12T22:29:59.000Z"
+      },
+      {
+        "trakt_id": 7229,
+        "tmdb_id": 12445,
+        "title": "Harry Potter and the Deathly Hallows: Part 2",
+        "list_slug": "movies-2023",
+        "list_order": 78,
+        "listed_at": "2023-02-12T22:30:02.000Z"
+      },
+      {
+        "trakt_id": 7738,
+        "tmdb_id": 13192,
+        "title": "Moonwalker",
+        "list_slug": "movies-2026",
+        "list_order": 14,
+        "listed_at": "2026-05-04T23:46:06.000Z"
+      },
+      {
+        "trakt_id": 8025,
+        "tmdb_id": 13576,
+        "title": "This Is It",
+        "list_slug": "movies-2026",
+        "list_order": 12,
+        "listed_at": "2026-05-10T19:01:10.000Z"
+      },
+      {
+        "trakt_id": 8202,
+        "tmdb_id": 13804,
+        "title": "Fast & Furious",
+        "list_slug": "movies-2026",
+        "list_order": 26,
+        "listed_at": "2026-02-28T23:47:47.000Z"
+      },
+      {
+        "trakt_id": 10436,
+        "tmdb_id": 17047,
+        "title": "Agent Cody Banks 2: Destination London",
+        "list_slug": "movies-2023",
+        "list_order": 15,
+        "listed_at": "2023-09-23T21:12:59.000Z"
+      },
+      {
+        "trakt_id": 11165,
+        "tmdb_id": 18240,
+        "title": "The Proposal",
+        "list_slug": "movies-2024",
+        "list_order": 9,
+        "listed_at": "2024-08-30T22:41:59.000Z"
+      },
+      {
+        "trakt_id": 14701,
+        "tmdb_id": 24428,
+        "title": "The Avengers",
+        "list_slug": "movies-2025",
+        "list_order": 18,
+        "listed_at": "2025-12-25T21:27:01.000Z"
+      },
+      {
+        "trakt_id": 21764,
+        "tmdb_id": 34016,
+        "title": "She's Out of My League",
+        "list_slug": "movies-2024",
+        "list_order": 34,
+        "listed_at": "2024-05-21T19:44:59.000Z"
+      },
+      {
+        "trakt_id": 23217,
+        "tmdb_id": 36557,
+        "title": "Casino Royale",
+        "list_slug": "movies-2026",
+        "list_order": 10,
+        "listed_at": "2026-06-05T15:37:34.000Z"
+      },
+      {
+        "trakt_id": 23734,
+        "tmdb_id": 37165,
+        "title": "The Truman Show",
+        "list_slug": "movies-2024",
+        "list_order": 36,
+        "listed_at": "2024-05-21T19:44:04.000Z"
+      },
+      {
+        "trakt_id": 24221,
+        "tmdb_id": 37724,
+        "title": "Skyfall",
+        "list_slug": "movies-2026",
+        "list_order": 8,
+        "listed_at": "2026-06-11T00:07:41.000Z"
+      },
+      {
+        "trakt_id": 24772,
+        "tmdb_id": 38365,
+        "title": "Grown Ups",
+        "list_slug": "movies-2024",
+        "list_order": 33,
+        "listed_at": "2024-05-24T22:18:08.000Z"
+      },
+      {
+        "trakt_id": 24931,
+        "tmdb_id": 38575,
+        "title": "The Karate Kid",
+        "list_slug": "movies-2018",
+        "list_order": 38,
+        "listed_at": "2018-03-17T22:13:43.000Z"
+      },
+      {
+        "trakt_id": 25039,
+        "tmdb_id": 38700,
+        "title": "Bad Boys for Life",
+        "list_slug": "movies-2020",
+        "list_order": 34,
+        "listed_at": "2020-02-02T15:46:18.000Z"
+      },
+      {
+        "trakt_id": 26388,
+        "tmdb_id": 40264,
+        "title": "Vampires Suck",
+        "list_slug": "movies-2023",
+        "list_order": 21,
+        "listed_at": "2023-09-10T19:11:07.000Z"
+      },
+      {
+        "trakt_id": 26878,
+        "tmdb_id": 40807,
+        "title": "50/50",
+        "list_slug": "movies-2018",
+        "list_order": 24,
+        "listed_at": "2018-08-15T03:17:42.000Z"
+      },
+      {
+        "trakt_id": 29695,
+        "tmdb_id": 43949,
+        "title": "Flipped",
+        "list_slug": "movies-2023",
+        "list_order": 77,
+        "listed_at": "2023-02-15T00:21:05.000Z"
+      },
+      {
+        "trakt_id": 30258,
+        "tmdb_id": 44564,
+        "title": "The Dilemma",
+        "list_slug": "movies-2018",
+        "list_order": 36,
+        "listed_at": "2018-03-30T12:28:57.000Z"
+      },
+      {
+        "trakt_id": 34092,
+        "tmdb_id": 49046,
+        "title": "All Quiet on the Western Front",
+        "list_slug": "movies-2022",
+        "list_order": 5,
+        "listed_at": "2022-11-03T23:09:00.000Z"
+      },
+      {
+        "trakt_id": 34924,
+        "tmdb_id": 50014,
+        "title": "The Help",
+        "list_slug": "movies-2023",
+        "list_order": 73,
+        "listed_at": "2023-02-19T02:38:09.000Z"
+      },
+      {
+        "trakt_id": 35355,
+        "tmdb_id": 50546,
+        "title": "Just Go with It",
+        "list_slug": "movies-2024",
+        "list_order": 22,
+        "listed_at": "2024-06-27T23:45:14.000Z"
+      },
+      {
+        "trakt_id": 36131,
+        "tmdb_id": 51497,
+        "title": "Fast Five",
+        "list_slug": "movies-2024",
+        "list_order": 10,
+        "listed_at": "2024-08-27T01:59:58.000Z"
+      },
+      {
+        "trakt_id": 38566,
+        "tmdb_id": 54445,
+        "title": "S.W.A.T.: Firefight",
+        "list_slug": "movies-2022",
+        "list_order": 27,
+        "listed_at": "2022-06-27T23:15:23.000Z"
+      },
+      {
+        "trakt_id": 39335,
+        "tmdb_id": 55341,
+        "title": "Jeepers Creepers 3",
+        "list_slug": "movies-2019",
+        "list_order": 4,
+        "listed_at": "2019-12-16T20:21:28.000Z"
+      },
+      {
+        "trakt_id": 44681,
+        "tmdb_id": 62214,
+        "title": "Frankenweenie",
+        "list_slug": "movies-2022",
+        "list_order": 9,
+        "listed_at": "2022-10-20T21:54:50.000Z"
+      },
+      {
+        "trakt_id": 46736,
+        "tmdb_id": 64690,
+        "title": "Drive",
+        "list_slug": "movies-2022",
+        "list_order": 63,
+        "listed_at": "2022-01-30T06:45:48.000Z"
+      },
+      {
+        "trakt_id": 50134,
+        "tmdb_id": 68721,
+        "title": "Iron Man 3",
+        "list_slug": "movies-2025",
+        "list_order": 16,
+        "listed_at": "2025-12-26T14:52:29.000Z"
+      },
+      {
+        "trakt_id": 51342,
+        "tmdb_id": 70160,
+        "title": "The Hunger Games",
+        "list_slug": "movies-2023",
+        "list_order": 8,
+        "listed_at": "2023-11-24T23:52:42.000Z"
+      },
+      {
+        "trakt_id": 55753,
+        "tmdb_id": 75612,
+        "title": "Oblivion",
+        "list_slug": "movies-2026",
+        "list_order": 41,
+        "listed_at": "2026-01-31T19:48:35.000Z"
+      },
+      {
+        "trakt_id": 55894,
+        "tmdb_id": 75780,
+        "title": "Jack Reacher",
+        "list_slug": "movies-2026",
+        "list_order": 3,
+        "listed_at": "2026-07-12T22:45:16.000Z"
+      },
+      {
+        "trakt_id": 56188,
+        "tmdb_id": 76122,
+        "title": "Marvel One-Shot: The Consultant",
+        "list_slug": "movies-2025",
+        "list_order": 21,
+        "listed_at": "2025-12-25T14:31:43.000Z"
+      },
+      {
+        "trakt_id": 56358,
+        "tmdb_id": 76338,
+        "title": "Thor: The Dark World",
+        "list_slug": "movies-2025",
+        "list_order": 14,
+        "listed_at": "2025-12-26T20:30:02.000Z"
+      },
+      {
+        "trakt_id": 56529,
+        "tmdb_id": 76535,
+        "title": "Marvel One-Shot: A Funny Thing Happened on the Way to Thor's Hammer",
+        "list_slug": "movies-2025",
+        "list_order": 19,
+        "listed_at": "2025-12-25T20:10:19.000Z"
+      },
+      {
+        "trakt_id": 62123,
+        "tmdb_id": 82992,
+        "title": "Fast & Furious 6",
+        "list_slug": "movies-2024",
+        "list_order": 8,
+        "listed_at": "2024-09-02T14:19:50.000Z"
+      },
+      {
+        "trakt_id": 64171,
+        "tmdb_id": 85446,
+        "title": "Step Up Revolution",
+        "list_slug": "movies-2024",
+        "list_order": 52,
+        "listed_at": "2024-02-13T00:50:12.000Z"
+      },
+      {
+        "trakt_id": 70421,
+        "tmdb_id": 96721,
+        "title": "Rush",
+        "list_slug": "movies-2025",
+        "list_order": 41,
+        "listed_at": "2025-04-01T22:51:08.000Z"
+      },
+      {
+        "trakt_id": 71938,
+        "tmdb_id": 99861,
+        "title": "Avengers: Age of Ultron",
+        "list_slug": "movies-2025",
+        "list_order": 10,
+        "listed_at": "2025-12-28T11:21:44.000Z"
+      },
+      {
+        "trakt_id": 72297,
+        "tmdb_id": 100402,
+        "title": "Captain America: The Winter Soldier",
+        "list_slug": "movies-2025",
+        "list_order": 12,
+        "listed_at": "2025-12-27T18:35:39.000Z"
+      },
+      {
+        "trakt_id": 72719,
+        "tmdb_id": 101299,
+        "title": "The Hunger Games: Catching Fire",
+        "list_slug": "movies-2023",
+        "list_order": 7,
+        "listed_at": "2023-11-24T23:53:43.000Z"
+      },
+      {
+        "trakt_id": 73582,
+        "tmdb_id": 102899,
+        "title": "Ant-Man",
+        "list_slug": "movies-2025",
+        "list_order": 9,
+        "listed_at": "2025-12-28T17:24:05.000Z"
+      },
+      {
+        "trakt_id": 76416,
+        "tmdb_id": 107811,
+        "title": "21 & Over",
+        "list_slug": "movies-2023",
+        "list_order": 66,
+        "listed_at": "2023-03-03T10:53:48.000Z"
+      },
+      {
+        "trakt_id": 77328,
+        "tmdb_id": 109417,
+        "title": "Battle of the Year",
+        "list_slug": "movies-2024",
+        "list_order": 54,
+        "listed_at": "2024-02-08T22:26:06.000Z"
+      },
+      {
+        "trakt_id": 77329,
+        "tmdb_id": 109418,
+        "title": "Grown Ups 2",
+        "list_slug": "movies-2024",
+        "list_order": 29,
+        "listed_at": "2024-05-26T23:10:31.000Z"
+      },
+      {
+        "trakt_id": 78916,
+        "tmdb_id": 112205,
+        "title": "The Family",
+        "list_slug": "movies-2024",
+        "list_order": 11,
+        "listed_at": "2024-08-25T23:36:46.000Z"
+      },
+      {
+        "trakt_id": 79928,
+        "tmdb_id": 114150,
+        "title": "Pitch Perfect",
+        "list_slug": "movies-2023",
+        "list_order": 67,
+        "listed_at": "2023-03-02T23:15:01.000Z"
+      },
+      {
+        "trakt_id": 82405,
+        "tmdb_id": 118340,
+        "title": "Guardians of the Galaxy",
+        "list_slug": "movies-2025",
+        "list_order": 11,
+        "listed_at": "2025-12-27T21:56:29.000Z"
+      },
+      {
+        "trakt_id": 83096,
+        "tmdb_id": 119569,
+        "title": "Marvel One-Shot: Item 47",
+        "list_slug": "movies-2025",
+        "list_order": 17,
+        "listed_at": "2025-12-25T21:35:21.000Z"
+      },
+      {
+        "trakt_id": 84894,
+        "tmdb_id": 122906,
+        "title": "About Time",
+        "list_slug": "movies-2024",
+        "list_order": 5,
+        "listed_at": "2024-10-06T20:50:31.000Z"
+      },
+      {
+        "trakt_id": 84956,
+        "tmdb_id": 123025,
+        "title": "Batman: The Dark Knight Returns, Part 1",
+        "list_slug": "movies-2021",
+        "list_order": 24,
+        "listed_at": "2021-02-10T22:54:34.000Z"
+      },
+      {
+        "trakt_id": 89542,
+        "tmdb_id": 131631,
+        "title": "The Hunger Games: Mockingjay - Part 1",
+        "list_slug": "movies-2023",
+        "list_order": 6,
+        "listed_at": "2023-11-26T22:45:12.000Z"
+      },
+      {
+        "trakt_id": 89543,
+        "tmdb_id": 131634,
+        "title": "The Hunger Games: Mockingjay - Part 2",
+        "list_slug": "movies-2023",
+        "list_order": 5,
+        "listed_at": "2023-11-29T10:56:07.000Z"
+      },
+      {
+        "trakt_id": 92062,
+        "tmdb_id": 136797,
+        "title": "Need for Speed",
+        "list_slug": "movies-2025",
+        "list_order": 40,
+        "listed_at": "2025-04-07T19:00:35.000Z"
+      },
+      {
+        "trakt_id": 94232,
+        "tmdb_id": 141052,
+        "title": "Justice League",
+        "list_slug": "movies-2018",
+        "list_order": 42,
+        "listed_at": "2018-02-18T17:45:18.000Z"
+      },
+      {
+        "trakt_id": 94682,
+        "tmdb_id": 142061,
+        "title": "Batman: The Dark Knight Returns, Part 2",
+        "list_slug": "movies-2021",
+        "list_order": 23,
+        "listed_at": "2021-02-11T23:09:23.000Z"
+      },
+      {
+        "trakt_id": 98998,
+        "tmdb_id": 150540,
+        "title": "Inside Out",
+        "list_slug": "movies-2024",
+        "list_order": 24,
+        "listed_at": "2024-06-21T23:49:44.000Z"
+      },
+      {
+        "trakt_id": 102209,
+        "tmdb_id": 157433,
+        "title": "Pet Sematary",
+        "list_slug": "movies-2019",
+        "list_order": 26,
+        "listed_at": "2019-08-11T17:39:08.000Z"
+      },
+      {
+        "trakt_id": 102526,
+        "tmdb_id": 158015,
+        "title": "The Purge",
+        "list_slug": "movies-2019",
+        "list_order": 55,
+        "listed_at": "2019-03-06T02:16:23.000Z"
+      },
+      {
+        "trakt_id": 125408,
+        "tmdb_id": 201088,
+        "title": "Blackhat",
+        "list_slug": "movies-2021",
+        "list_order": 13,
+        "listed_at": "2021-05-17T23:06:13.000Z"
+      },
+      {
+        "trakt_id": 127828,
+        "tmdb_id": 205596,
+        "title": "The Imitation Game",
+        "list_slug": "movies-2023",
+        "list_order": 71,
+        "listed_at": "2023-02-21T23:33:49.000Z"
+      },
+      {
+        "trakt_id": 128378,
+        "tmdb_id": 206647,
+        "title": "Spectre",
+        "list_slug": "movies-2026",
+        "list_order": 1,
+        "listed_at": "2026-07-19T01:06:11.000Z"
+      },
+      {
+        "trakt_id": 128888,
+        "tmdb_id": 207703,
+        "title": "Kingsman: The Secret Service",
+        "list_slug": "movies-2018",
+        "list_order": 4,
+        "listed_at": "2018-12-27T01:46:18.000Z"
+      },
+      {
+        "trakt_id": 130811,
+        "tmdb_id": 211387,
+        "title": "Marvel One-Shot: Agent Carter",
+        "list_slug": "movies-2025",
+        "list_order": 15,
+        "listed_at": "2025-12-26T15:06:29.000Z"
+      },
+      {
+        "trakt_id": 145659,
+        "tmdb_id": 238636,
+        "title": "The Purge: Anarchy",
+        "list_slug": "movies-2019",
+        "list_order": 42,
+        "listed_at": "2019-05-26T16:33:08.000Z"
+      },
+      {
+        "trakt_id": 147225,
+        "tmdb_id": 241554,
+        "title": "Run All Night",
+        "list_slug": "movies-2020",
+        "list_order": 8,
+        "listed_at": "2020-08-25T01:54:40.000Z"
+      },
+      {
+        "trakt_id": 148388,
+        "tmdb_id": 243683,
+        "title": "Step Up All In",
+        "list_slug": "movies-2024",
+        "list_order": 50,
+        "listed_at": "2024-02-16T00:50:02.000Z"
+      },
+      {
+        "trakt_id": 153456,
+        "tmdb_id": 252838,
+        "title": "The Wedding Ringer",
+        "list_slug": "movies-2023",
+        "list_order": 57,
+        "listed_at": "2023-04-07T19:55:28.000Z"
+      },
+      {
+        "trakt_id": 154423,
+        "tmdb_id": 253980,
+        "title": "Marvel One-Shot: All Hail the King",
+        "list_slug": "movies-2025",
+        "list_order": 13,
+        "listed_at": "2025-12-26T20:30:29.000Z"
+      },
+      {
+        "trakt_id": 154861,
+        "tmdb_id": 254470,
+        "title": "Pitch Perfect 2",
+        "list_slug": "movies-2023",
+        "list_order": 65,
+        "listed_at": "2023-03-04T00:53:36.000Z"
+      },
+      {
+        "trakt_id": 156997,
+        "tmdb_id": 257211,
+        "title": "The Intern",
+        "list_slug": "movies-2024",
+        "list_order": 41,
+        "listed_at": "2024-05-01T20:14:17.000Z"
+      },
+      {
+        "trakt_id": 157093,
+        "tmdb_id": 257344,
+        "title": "Pixels",
+        "list_slug": "movies-2024",
+        "list_order": 32,
+        "listed_at": "2024-05-25T19:00:26.000Z"
+      },
+      {
+        "trakt_id": 157811,
+        "tmdb_id": 258230,
+        "title": "A Monster Calls",
+        "list_slug": "movies-2018",
+        "list_order": 0,
+        "listed_at": "2019-08-06T01:41:23.000Z"
+      },
+      {
+        "trakt_id": 158661,
+        "tmdb_id": 259316,
+        "title": "Fantastic Beasts and Where to Find Them",
+        "list_slug": "movies-2023",
+        "list_order": 76,
+        "listed_at": "2023-02-16T00:03:59.000Z"
+      },
+      {
+        "trakt_id": 159626,
+        "tmdb_id": 260513,
+        "title": "Incredibles 2",
+        "list_slug": "movies-2018",
+        "list_order": 15,
+        "listed_at": "2018-11-16T10:49:26.000Z"
+      },
+      {
+        "trakt_id": 167163,
+        "tmdb_id": 268896,
+        "title": "Pacific Rim: Uprising",
+        "list_slug": "movies-2018",
+        "list_order": 26,
+        "listed_at": "2018-08-13T13:42:24.000Z"
+      },
+      {
+        "trakt_id": 169105,
+        "tmdb_id": 271110,
+        "title": "Captain America: Civil War",
+        "list_slug": "movies-2025",
+        "list_order": 7,
+        "listed_at": "2025-12-29T20:08:32.000Z"
+      },
+      {
+        "trakt_id": 172017,
+        "tmdb_id": 274167,
+        "title": "Daddy's Home",
+        "list_slug": "movies-2025",
+        "list_order": 46,
+        "listed_at": "2025-02-11T00:27:33.000Z"
+      },
+      {
+        "trakt_id": 178749,
+        "tmdb_id": 281338,
+        "title": "War for the Planet of the Apes",
+        "list_slug": "movies-2018",
+        "list_order": 43,
+        "listed_at": "2018-02-18T17:44:57.000Z"
+      },
+      {
+        "trakt_id": 181256,
+        "tmdb_id": 283995,
+        "title": "Guardians of the Galaxy Vol. 2",
+        "list_slug": "movies-2025",
+        "list_order": 1,
+        "listed_at": "2025-12-31T01:15:32.000Z"
+      },
+      {
+        "trakt_id": 181311,
+        "tmdb_id": 284052,
+        "title": "Doctor Strange",
+        "list_slug": "movies-2025",
+        "list_order": 3,
+        "listed_at": "2025-12-29T23:03:20.000Z"
+      },
+      {
+        "trakt_id": 181312,
+        "tmdb_id": 284053,
+        "title": "Thor: Ragnarok",
+        "list_slug": "movies-2025",
+        "list_order": 0,
+        "listed_at": "2025-12-31T22:13:33.000Z"
+      },
+      {
+        "trakt_id": 181313,
+        "tmdb_id": 284054,
+        "title": "Black Panther",
+        "list_slug": "movies-2026",
+        "list_order": 60,
+        "listed_at": "2026-01-02T20:39:35.000Z"
+      },
+      {
+        "trakt_id": 181660,
+        "tmdb_id": 284427,
+        "title": "Who Am I",
+        "list_slug": "movies-2020",
+        "list_order": 24,
+        "listed_at": "2020-04-22T02:22:35.000Z"
+      },
+      {
+        "trakt_id": 181765,
+        "tmdb_id": 284536,
+        "title": "The Gambler",
+        "list_slug": "movies-2019",
+        "list_order": 44,
+        "listed_at": "2019-05-15T03:04:28.000Z"
+      },
+      {
+        "trakt_id": 183692,
+        "tmdb_id": 286554,
+        "title": "Two Night Stand",
+        "list_slug": "movies-2019",
+        "list_order": 1,
+        "listed_at": "2019-12-29T19:02:24.000Z"
+      },
+      {
+        "trakt_id": 184992,
+        "tmdb_id": 287947,
+        "title": "Shazam!",
+        "list_slug": "movies-2019",
+        "list_order": 36,
+        "listed_at": "2019-07-14T18:50:12.000Z"
+      },
+      {
+        "trakt_id": 186208,
+        "tmdb_id": 289222,
+        "title": "The Zookeeper's Wife",
+        "list_slug": "movies-2024",
+        "list_order": 26,
+        "listed_at": "2024-06-06T22:31:55.000Z"
+      },
+      {
+        "trakt_id": 187745,
+        "tmdb_id": 290859,
+        "title": "Terminator: Dark Fate",
+        "list_slug": "movies-2021",
+        "list_order": 8,
+        "listed_at": "2021-08-01T17:12:58.000Z"
+      },
+      {
+        "trakt_id": 191783,
+        "tmdb_id": 298250,
+        "title": "Jigsaw",
+        "list_slug": "movies-2018",
+        "list_order": 50,
+        "listed_at": "2018-02-18T17:40:41.000Z"
+      },
+      {
+        "trakt_id": 191797,
+        "tmdb_id": 299536,
+        "title": "Avengers: Infinity War",
+        "list_slug": "movies-2026",
+        "list_order": 59,
+        "listed_at": "2026-01-03T22:13:29.000Z"
+      },
+      {
+        "trakt_id": 191798,
+        "tmdb_id": 299534,
+        "title": "Avengers: Endgame",
+        "list_slug": "movies-2026",
+        "list_order": 56,
+        "listed_at": "2026-01-06T22:52:24.000Z"
+      },
+      {
+        "trakt_id": 193963,
+        "tmdb_id": 299537,
+        "title": "Captain Marvel",
+        "list_slug": "movies-2026",
+        "list_order": 57,
+        "listed_at": "2026-01-05T22:55:32.000Z"
+      },
+      {
+        "trakt_id": 193968,
+        "tmdb_id": 297802,
+        "title": "Aquaman",
+        "list_slug": "movies-2019",
+        "list_order": 49,
+        "listed_at": "2019-04-09T10:53:52.000Z"
+      },
+      {
+        "trakt_id": 193972,
+        "tmdb_id": 301528,
+        "title": "Toy Story 4",
+        "list_slug": "movies-2019",
+        "list_order": 13,
+        "listed_at": "2019-10-07T02:10:47.000Z"
+      },
+      {
+        "trakt_id": 195144,
+        "tmdb_id": 298618,
+        "title": "The Flash",
+        "list_slug": "movies-2023",
+        "list_order": 51,
+        "listed_at": "2023-06-17T22:33:38.000Z"
+      },
+      {
+        "trakt_id": 196213,
+        "tmdb_id": 315635,
+        "title": "Spider-Man: Homecoming",
+        "list_slug": "movies-2026",
+        "list_order": 61,
+        "listed_at": "2026-01-01T17:22:35.000Z"
+      },
+      {
+        "trakt_id": 196830,
+        "tmdb_id": 316023,
+        "title": "Mike and Dave Need Wedding Dates",
+        "list_slug": "movies-2018",
+        "list_order": 40,
+        "listed_at": "2018-02-21T21:17:10.000Z"
+      },
+      {
+        "trakt_id": 196835,
+        "tmdb_id": 316029,
+        "title": "The Greatest Showman",
+        "list_slug": "movies-2018",
+        "list_order": 37,
+        "listed_at": "2018-03-30T12:24:53.000Z"
+      },
+      {
+        "trakt_id": 197298,
+        "tmdb_id": 315162,
+        "title": "Puss in Boots: The Last Wish",
+        "list_slug": "movies-2023",
+        "list_order": 90,
+        "listed_at": "2023-01-15T11:17:00.000Z"
+      },
+      {
+        "trakt_id": 197608,
+        "tmdb_id": 316727,
+        "title": "The Purge: Election Year",
+        "list_slug": "movies-2019",
+        "list_order": 41,
+        "listed_at": "2019-05-31T12:27:50.000Z"
+      },
+      {
+        "trakt_id": 200946,
+        "tmdb_id": 320288,
+        "title": "Dark Phoenix",
+        "list_slug": "movies-2019",
+        "list_order": 18,
+        "listed_at": "2019-09-19T22:53:21.000Z"
+      },
+      {
+        "trakt_id": 203309,
+        "tmdb_id": 302946,
+        "title": "The Accountant",
+        "list_slug": "movies-2025",
+        "list_order": 29,
+        "listed_at": "2025-12-16T00:15:37.000Z"
+      },
+      {
+        "trakt_id": 204310,
+        "tmdb_id": 323676,
+        "title": "The Boss",
+        "list_slug": "movies-2019",
+        "list_order": 38,
+        "listed_at": "2019-06-09T16:28:24.000Z"
+      },
+      {
+        "trakt_id": 205398,
+        "tmdb_id": 324849,
+        "title": "The Lego Batman Movie",
+        "list_slug": "movies-2026",
+        "list_order": 47,
+        "listed_at": "2026-01-23T22:00:56.000Z"
+      },
+      {
+        "trakt_id": 205404,
+        "tmdb_id": 324857,
+        "title": "Spider-Man: Into the Spider-Verse",
+        "list_slug": "movies-2019",
+        "list_order": 54,
+        "listed_at": "2019-03-10T18:26:11.000Z"
+      },
+      {
+        "trakt_id": 210942,
+        "tmdb_id": 329996,
+        "title": "Dumbo",
+        "list_slug": "movies-2019",
+        "list_order": 2,
+        "listed_at": "2019-12-17T17:59:27.000Z"
+      },
+      {
+        "trakt_id": 211394,
+        "tmdb_id": 330457,
+        "title": "Frozen II",
+        "list_slug": "movies-2020",
+        "list_order": 14,
+        "listed_at": "2020-07-06T20:18:23.000Z"
+      },
+      {
+        "trakt_id": 214279,
+        "tmdb_id": 333339,
+        "title": "Ready Player One",
+        "list_slug": "movies-2018",
+        "list_order": 30,
+        "listed_at": "2018-08-05T19:33:38.000Z"
+      },
+      {
+        "trakt_id": 216570,
+        "tmdb_id": 335797,
+        "title": "Sing",
+        "list_slug": "movies-2022",
+        "list_order": 14,
+        "listed_at": "2022-10-07T21:52:19.000Z"
+      },
+      {
+        "trakt_id": 216712,
+        "tmdb_id": 335977,
+        "title": "Indiana Jones and the Dial of Destiny",
+        "list_slug": "movies-2023",
+        "list_order": 12,
+        "listed_at": "2023-09-30T00:42:27.000Z"
+      },
+      {
+        "trakt_id": 216715,
+        "tmdb_id": 335983,
+        "title": "Venom",
+        "list_slug": "movies-2025",
+        "list_order": 44,
+        "listed_at": "2025-02-23T21:54:52.000Z"
+      },
+      {
+        "trakt_id": 216716,
+        "tmdb_id": 335984,
+        "title": "Blade Runner 2049",
+        "list_slug": "movies-2018",
+        "list_order": 48,
+        "listed_at": "2018-02-18T17:42:54.000Z"
+      },
+      {
+        "trakt_id": 217461,
+        "tmdb_id": 336843,
+        "title": "Maze Runner: The Death Cure",
+        "list_slug": "movies-2018",
+        "list_order": 27,
+        "listed_at": "2018-08-11T02:08:30.000Z"
+      },
+      {
+        "trakt_id": 218008,
+        "tmdb_id": 337404,
+        "title": "Cruella",
+        "list_slug": "movies-2021",
+        "list_order": 12,
+        "listed_at": "2021-06-27T03:00:57.000Z"
+      },
+      {
+        "trakt_id": 218281,
+        "tmdb_id": 312221,
+        "title": "Creed",
+        "list_slug": "movies-2019",
+        "list_order": 62,
+        "listed_at": "2019-01-05T14:13:27.000Z"
+      },
+      {
+        "trakt_id": 218815,
+        "tmdb_id": 338762,
+        "title": "Bloodshot",
+        "list_slug": "movies-2021",
+        "list_order": 11,
+        "listed_at": "2021-07-27T01:10:13.000Z"
+      },
+      {
+        "trakt_id": 219417,
+        "tmdb_id": 338952,
+        "title": "Fantastic Beasts: The Crimes of Grindelwald",
+        "list_slug": "movies-2023",
+        "list_order": 75,
+        "listed_at": "2023-02-17T00:21:47.000Z"
+      },
+      {
+        "trakt_id": 219418,
+        "tmdb_id": 338953,
+        "title": "Fantastic Beasts: The Secrets of Dumbledore",
+        "list_slug": "movies-2023",
+        "list_order": 74,
+        "listed_at": "2023-02-18T19:24:27.000Z"
+      },
+      {
+        "trakt_id": 219433,
+        "tmdb_id": 338967,
+        "title": "Zombieland: Double Tap",
+        "list_slug": "movies-2020",
+        "list_order": 37,
+        "listed_at": "2020-01-10T01:33:34.000Z"
+      },
+      {
+        "trakt_id": 219436,
+        "tmdb_id": 338970,
+        "title": "Tomb Raider",
+        "list_slug": "movies-2018",
+        "list_order": 21,
+        "listed_at": "2018-10-15T19:27:40.000Z"
+      },
+      {
+        "trakt_id": 219562,
+        "tmdb_id": 339095,
+        "title": "The Last Days of American Crime",
+        "list_slug": "movies-2025",
+        "list_order": 34,
+        "listed_at": "2025-09-15T05:24:02.000Z"
+      },
+      {
+        "trakt_id": 220423,
+        "tmdb_id": 339964,
+        "title": "Valerian and the City of a Thousand Planets",
+        "list_slug": "movies-2018",
+        "list_order": 41,
+        "listed_at": "2018-02-18T17:45:38.000Z"
+      },
+      {
+        "trakt_id": 220447,
+        "tmdb_id": 310307,
+        "title": "The Founder",
+        "list_slug": "movies-2023",
+        "list_order": 1,
+        "listed_at": "2023-12-26T00:12:55.000Z"
+      },
+      {
+        "trakt_id": 220484,
+        "tmdb_id": 340022,
+        "title": "Gringo",
+        "list_slug": "movies-2018",
+        "list_order": 8,
+        "listed_at": "2018-12-18T13:31:37.000Z"
+      },
+      {
+        "trakt_id": 221327,
+        "tmdb_id": 342470,
+        "title": "All the Bright Places",
+        "list_slug": "movies-2020",
+        "list_order": 5,
+        "listed_at": "2020-10-10T23:42:35.000Z"
+      },
+      {
+        "trakt_id": 222160,
+        "tmdb_id": 353081,
+        "title": "Mission: Impossible - Fallout",
+        "list_slug": "movies-2019",
+        "list_order": 59,
+        "listed_at": "2019-01-29T01:21:14.000Z"
+      },
+      {
+        "trakt_id": 222199,
+        "tmdb_id": 353616,
+        "title": "Pitch Perfect 3",
+        "list_slug": "movies-2023",
+        "list_order": 64,
+        "listed_at": "2023-03-05T23:06:25.000Z"
+      },
+      {
+        "trakt_id": 222216,
+        "tmdb_id": 351286,
+        "title": "Jurassic World: Fallen Kingdom",
+        "list_slug": "movies-2018",
+        "list_order": 10,
+        "listed_at": "2018-12-15T13:39:29.000Z"
+      },
+      {
+        "trakt_id": 222254,
+        "tmdb_id": 353486,
+        "title": "Jumanji: Welcome to the Jungle",
+        "list_slug": "movies-2018",
+        "list_order": 39,
+        "listed_at": "2018-03-14T20:44:53.000Z"
+      },
+      {
+        "trakt_id": 222605,
+        "tmdb_id": 354912,
+        "title": "Coco",
+        "list_slug": "movies-2018",
+        "list_order": 34,
+        "listed_at": "2018-03-30T12:29:58.000Z"
+      },
+      {
+        "trakt_id": 222814,
+        "tmdb_id": 351901,
+        "title": "12 Rounds 3: Lockdown",
+        "list_slug": "movies-2022",
+        "list_order": 56,
+        "listed_at": "2022-02-21T20:56:07.000Z"
+      },
+      {
+        "trakt_id": 222913,
+        "tmdb_id": 343611,
+        "title": "Jack Reacher: Never Go Back",
+        "list_slug": "movies-2026",
+        "list_order": 2,
+        "listed_at": "2026-07-15T23:36:27.000Z"
+      },
+      {
+        "trakt_id": 223139,
+        "tmdb_id": 335787,
+        "title": "Uncharted",
+        "list_slug": "movies-2022",
+        "list_order": 50,
+        "listed_at": "2022-03-06T19:23:07.000Z"
+      },
+      {
+        "trakt_id": 223262,
+        "tmdb_id": 363088,
+        "title": "Ant-Man and the Wasp",
+        "list_slug": "movies-2026",
+        "list_order": 58,
+        "listed_at": "2026-01-04T00:06:54.000Z"
+      },
+      {
+        "trakt_id": 223444,
+        "tmdb_id": 343668,
+        "title": "Kingsman: The Golden Circle",
+        "list_slug": "movies-2026",
+        "list_order": 34,
+        "listed_at": "2026-02-11T21:57:54.000Z"
+      },
+      {
+        "trakt_id": 224015,
+        "tmdb_id": 345940,
+        "title": "The Meg",
+        "list_slug": "movies-2023",
+        "list_order": 33,
+        "listed_at": "2023-08-05T23:51:28.000Z"
+      },
+      {
+        "trakt_id": 224641,
+        "tmdb_id": 374720,
+        "title": "Dunkirk",
+        "list_slug": "movies-2018",
+        "list_order": 46,
+        "listed_at": "2018-02-18T17:43:10.000Z"
+      },
+      {
+        "trakt_id": 225019,
+        "tmdb_id": 347375,
+        "title": "Mile 22",
+        "list_slug": "movies-2019",
+        "list_order": 52,
+        "listed_at": "2019-04-01T01:11:09.000Z"
+      },
+      {
+        "trakt_id": 225109,
+        "tmdb_id": 375588,
+        "title": "Robin Hood",
+        "list_slug": "movies-2019",
+        "list_order": 50,
+        "listed_at": "2019-04-07T10:44:13.000Z"
+      },
+      {
+        "trakt_id": 226108,
+        "tmdb_id": 383498,
+        "title": "Deadpool 2",
+        "list_slug": "movies-2018",
+        "list_order": 20,
+        "listed_at": "2018-10-15T19:29:01.000Z"
+      },
+      {
+        "trakt_id": 226253,
+        "tmdb_id": 385128,
+        "title": "F9",
+        "list_slug": "movies-2021",
+        "list_order": 7,
+        "listed_at": "2021-08-02T00:03:00.000Z"
+      },
+      {
+        "trakt_id": 226428,
+        "tmdb_id": 345914,
+        "title": "The House",
+        "list_slug": "movies-2018",
+        "list_order": 44,
+        "listed_at": "2018-02-18T17:44:22.000Z"
+      },
+      {
+        "trakt_id": 226615,
+        "tmdb_id": 376659,
+        "title": "Bad Moms",
+        "list_slug": "movies-2019",
+        "list_order": 39,
+        "listed_at": "2019-06-09T16:27:39.000Z"
+      },
+      {
+        "trakt_id": 226775,
+        "tmdb_id": 384677,
+        "title": "Set It Up",
+        "list_slug": "movies-2023",
+        "list_order": 44,
+        "listed_at": "2023-07-20T22:48:14.000Z"
+      },
+      {
+        "trakt_id": 232288,
+        "tmdb_id": 382748,
+        "title": "Stargirl",
+        "list_slug": "movies-2020",
+        "list_order": 18,
+        "listed_at": "2020-05-25T22:57:35.000Z"
+      },
+      {
+        "trakt_id": 233151,
+        "tmdb_id": 384521,
+        "title": "The Cloverfield Paradox",
+        "list_slug": "movies-2018",
+        "list_order": 35,
+        "listed_at": "2018-03-30T12:29:33.000Z"
+      },
+      {
+        "trakt_id": 234190,
+        "tmdb_id": 385687,
+        "title": "Fast X",
+        "list_slug": "movies-2023",
+        "list_order": 46,
+        "listed_at": "2023-07-17T14:36:06.000Z"
+      },
+      {
+        "trakt_id": 237528,
+        "tmdb_id": 394741,
+        "title": "Stan & Ollie",
+        "list_slug": "movies-2019",
+        "list_order": 15,
+        "listed_at": "2019-09-29T20:55:09.000Z"
+      },
+      {
+        "trakt_id": 239425,
+        "tmdb_id": 396535,
+        "title": "Train to Busan",
+        "list_slug": "movies-2021",
+        "list_order": 16,
+        "listed_at": "2021-04-01T14:58:48.000Z"
+      },
+      {
+        "trakt_id": 240099,
+        "tmdb_id": 373571,
+        "title": "Godzilla: King of the Monsters",
+        "list_slug": "movies-2019",
+        "list_order": 23,
+        "listed_at": "2019-09-06T01:18:01.000Z"
+      },
+      {
+        "trakt_id": 241112,
+        "tmdb_id": 381284,
+        "title": "Hidden Figures",
+        "list_slug": "movies-2022",
+        "list_order": 22,
+        "listed_at": "2022-08-03T01:06:56.000Z"
+      },
+      {
+        "trakt_id": 242104,
+        "tmdb_id": 346698,
+        "title": "Barbie",
+        "list_slug": "movies-2023",
+        "list_order": 43,
+        "listed_at": "2023-07-22T21:14:58.000Z"
+      },
+      {
+        "trakt_id": 242226,
+        "tmdb_id": 346364,
+        "title": "It",
+        "list_slug": "movies-2025",
+        "list_order": 30,
+        "listed_at": "2025-12-15T00:18:13.000Z"
+      },
+      {
+        "trakt_id": 242257,
+        "tmdb_id": 399055,
+        "title": "The Shape of Water",
+        "list_slug": "movies-2018",
+        "list_order": 33,
+        "listed_at": "2018-03-30T12:30:30.000Z"
+      },
+      {
+        "trakt_id": 242616,
+        "tmdb_id": 399361,
+        "title": "Triple Frontier",
+        "list_slug": "movies-2019",
+        "list_order": 45,
+        "listed_at": "2019-04-29T03:45:49.000Z"
+      },
+      {
+        "trakt_id": 242869,
+        "tmdb_id": 399566,
+        "title": "Godzilla vs. Kong",
+        "list_slug": "movies-2024",
+        "list_order": 40,
+        "listed_at": "2024-05-04T00:06:32.000Z"
+      },
+      {
+        "trakt_id": 243968,
+        "tmdb_id": 400928,
+        "title": "Gifted",
+        "list_slug": "movies-2025",
+        "list_order": 49,
+        "listed_at": "2025-01-19T01:08:32.000Z"
+      },
+      {
+        "trakt_id": 247337,
+        "tmdb_id": 402900,
+        "title": "Ocean's Eight",
+        "list_slug": "movies-2026",
+        "list_order": 39,
+        "listed_at": "2026-02-01T19:53:19.000Z"
+      },
+      {
+        "trakt_id": 250049,
+        "tmdb_id": 405774,
+        "title": "Bird Box",
+        "list_slug": "movies-2019",
+        "list_order": 57,
+        "listed_at": "2019-03-02T22:36:01.000Z"
+      },
+      {
+        "trakt_id": 254935,
+        "tmdb_id": 370172,
+        "title": "No Time to Die",
+        "list_slug": "movies-2026",
+        "list_order": 0,
+        "listed_at": "2026-07-20T00:41:12.000Z"
+      },
+      {
+        "trakt_id": 257726,
+        "tmdb_id": 365620,
+        "title": "Ferrari",
+        "list_slug": "movies-2024",
+        "list_order": 48,
+        "listed_at": "2024-02-17T22:17:04.000Z"
+      },
+      {
+        "trakt_id": 258479,
+        "tmdb_id": 413279,
+        "title": "Team Thor",
+        "list_slug": "movies-2025",
+        "list_order": 6,
+        "listed_at": "2025-12-29T20:15:03.000Z"
+      },
+      {
+        "trakt_id": 259852,
+        "tmdb_id": 414906,
+        "title": "The Batman",
+        "list_slug": "movies-2023",
+        "list_order": 11,
+        "listed_at": "2023-10-04T00:42:09.000Z"
+      },
+      {
+        "trakt_id": 260750,
+        "tmdb_id": 407451,
+        "title": "A Wrinkle in Time",
+        "list_slug": "movies-2018",
+        "list_order": 13,
+        "listed_at": "2018-11-18T16:21:43.000Z"
+      },
+      {
+        "trakt_id": 260759,
+        "tmdb_id": 415842,
+        "title": "American Assassin",
+        "list_slug": "movies-2018",
+        "list_order": 49,
+        "listed_at": "2018-02-18T17:41:51.000Z"
+      },
+      {
+        "trakt_id": 261000,
+        "tmdb_id": 416194,
+        "title": "The Quake",
+        "list_slug": "movies-2019",
+        "list_order": 20,
+        "listed_at": "2019-09-08T22:07:40.000Z"
+      },
+      {
+        "trakt_id": 264716,
+        "tmdb_id": 400106,
+        "title": "Bright",
+        "list_slug": "movies-2018",
+        "list_order": 22,
+        "listed_at": "2018-09-30T14:24:24.000Z"
+      },
+      {
+        "trakt_id": 264823,
+        "tmdb_id": 419831,
+        "title": "I Kill Giants",
+        "list_slug": "movies-2019",
+        "list_order": 51,
+        "listed_at": "2019-04-06T02:14:04.000Z"
+      },
+      {
+        "trakt_id": 265465,
+        "tmdb_id": 420809,
+        "title": "Maleficent: Mistress of Evil",
+        "list_slug": "movies-2021",
+        "list_order": 22,
+        "listed_at": "2021-02-13T00:40:15.000Z"
+      },
+      {
+        "trakt_id": 265474,
+        "tmdb_id": 420821,
+        "title": "Chip 'n Dale: Rescue Rangers",
+        "list_slug": "movies-2022",
+        "list_order": 34,
+        "listed_at": "2022-05-29T22:39:11.000Z"
+      },
+      {
+        "trakt_id": 265897,
+        "tmdb_id": 421447,
+        "title": "The Climb",
+        "list_slug": "movies-2022",
+        "list_order": 1,
+        "listed_at": "2022-12-08T17:23:07.000Z"
+      },
+      {
+        "trakt_id": 268664,
+        "tmdb_id": 423204,
+        "title": "Angel Has Fallen",
+        "list_slug": "movies-2020",
+        "list_order": 27,
+        "listed_at": "2020-04-05T01:07:10.000Z"
+      },
+      {
+        "trakt_id": 269568,
+        "tmdb_id": 424783,
+        "title": "Bumblebee",
+        "list_slug": "movies-2019",
+        "list_order": 48,
+        "listed_at": "2019-04-13T09:59:14.000Z"
+      },
+      {
+        "trakt_id": 271850,
+        "tmdb_id": 427641,
+        "title": "Rampage",
+        "list_slug": "movies-2018",
+        "list_order": 25,
+        "listed_at": "2018-08-14T13:55:48.000Z"
+      },
+      {
+        "trakt_id": 273322,
+        "tmdb_id": 429351,
+        "title": "12 Strong",
+        "list_slug": "movies-2018",
+        "list_order": 16,
+        "listed_at": "2018-11-10T18:01:44.000Z"
+      },
+      {
+        "trakt_id": 273537,
+        "tmdb_id": 429617,
+        "title": "Spider-Man: Far From Home",
+        "list_slug": "movies-2026",
+        "list_order": 55,
+        "listed_at": "2026-01-07T01:06:46.000Z"
+      },
+      {
+        "trakt_id": 273865,
+        "tmdb_id": 430040,
+        "title": "The Hurricane Heist",
+        "list_slug": "movies-2019",
+        "list_order": 19,
+        "listed_at": "2019-09-08T23:55:12.000Z"
+      },
+      {
+        "trakt_id": 276911,
+        "tmdb_id": 420817,
+        "title": "Aladdin",
+        "list_slug": "movies-2019",
+        "list_order": 17,
+        "listed_at": "2019-09-20T01:46:20.000Z"
+      },
+      {
+        "trakt_id": 276945,
+        "tmdb_id": 419479,
+        "title": "The Babysitter",
+        "list_slug": "movies-2021",
+        "list_order": 26,
+        "listed_at": "2021-01-18T01:20:27.000Z"
+      },
+      {
+        "trakt_id": 277430,
+        "tmdb_id": 379686,
+        "title": "Space Jam: A New Legacy",
+        "list_slug": "movies-2022",
+        "list_order": 52,
+        "listed_at": "2022-03-05T01:19:34.000Z"
+      },
+      {
+        "trakt_id": 277572,
+        "tmdb_id": 431693,
+        "title": "Spies in Disguise",
+        "list_slug": "movies-2020",
+        "list_order": 0,
+        "listed_at": "2020-12-12T11:46:47.000Z"
+      },
+      {
+        "trakt_id": 283316,
+        "tmdb_id": 436931,
+        "title": "Pokémon the Movie: I Choose You!",
+        "list_slug": "movies-2018",
+        "list_order": 14,
+        "listed_at": "2018-11-17T01:36:52.000Z"
+      },
+      {
+        "trakt_id": 283364,
+        "tmdb_id": 436969,
+        "title": "The Suicide Squad",
+        "list_slug": "movies-2023",
+        "list_order": 63,
+        "listed_at": "2023-03-09T00:29:05.000Z"
+      },
+      {
+        "trakt_id": 284359,
+        "tmdb_id": 438148,
+        "title": "Minions: The Rise of Gru",
+        "list_slug": "movies-2022",
+        "list_order": 11,
+        "listed_at": "2022-10-16T17:28:04.000Z"
+      },
+      {
+        "trakt_id": 284678,
+        "tmdb_id": 429415,
+        "title": "Extinction",
+        "list_slug": "movies-2018",
+        "list_order": 9,
+        "listed_at": "2018-12-16T10:45:59.000Z"
+      },
+      {
+        "trakt_id": 284803,
+        "tmdb_id": 438650,
+        "title": "Cold Pursuit",
+        "list_slug": "movies-2019",
+        "list_order": 33,
+        "listed_at": "2019-07-21T00:23:26.000Z"
+      },
+      {
+        "trakt_id": 284832,
+        "tmdb_id": 438695,
+        "title": "Sing 2",
+        "list_slug": "movies-2022",
+        "list_order": 13,
+        "listed_at": "2022-10-08T00:17:15.000Z"
+      },
+      {
+        "trakt_id": 285120,
+        "tmdb_id": 428078,
+        "title": "Mortal Engines",
+        "list_slug": "movies-2019",
+        "list_order": 47,
+        "listed_at": "2019-04-13T19:56:05.000Z"
+      },
+      {
+        "trakt_id": 286243,
+        "tmdb_id": 440471,
+        "title": "Escape Plan 2: Hades",
+        "list_slug": "movies-2019",
+        "list_order": 61,
+        "listed_at": "2019-01-12T01:45:04.000Z"
+      },
+      {
+        "trakt_id": 287748,
+        "tmdb_id": 441829,
+        "title": "Team Thor: Part 2",
+        "list_slug": "movies-2025",
+        "list_order": 5,
+        "listed_at": "2025-12-29T20:19:02.000Z"
+      },
+      {
+        "trakt_id": 288212,
+        "tmdb_id": 436270,
+        "title": "Black Adam",
+        "list_slug": "movies-2023",
+        "list_order": 36,
+        "listed_at": "2023-07-30T00:28:01.000Z"
+      },
+      {
+        "trakt_id": 288355,
+        "tmdb_id": 442249,
+        "title": "The First Purge",
+        "list_slug": "movies-2019",
+        "list_order": 40,
+        "listed_at": "2019-06-02T12:23:52.000Z"
+      },
+      {
+        "trakt_id": 290188,
+        "tmdb_id": 434555,
+        "title": "The Possession of Hannah Grace",
+        "list_slug": "movies-2022",
+        "list_order": 60,
+        "listed_at": "2022-02-13T16:41:31.000Z"
+      },
+      {
+        "trakt_id": 290190,
+        "tmdb_id": 402431,
+        "title": "Wicked",
+        "list_slug": "movies-2025",
+        "list_order": 36,
+        "listed_at": "2025-07-20T00:34:29.000Z"
+      },
+      {
+        "trakt_id": 292275,
+        "tmdb_id": 425274,
+        "title": "Now You See Me: Now You Don't",
+        "list_slug": "movies-2025",
+        "list_order": 2,
+        "listed_at": "2025-12-30T23:00:57.000Z"
+      },
+      {
+        "trakt_id": 292395,
+        "tmdb_id": 445629,
+        "title": "Fighting with My Family",
+        "list_slug": "movies-2019",
+        "list_order": 11,
+        "listed_at": "2019-10-26T18:49:45.000Z"
+      },
+      {
+        "trakt_id": 292712,
+        "tmdb_id": 446021,
+        "title": "Bad Times at the El Royale",
+        "list_slug": "movies-2025",
+        "list_order": 48,
+        "listed_at": "2025-01-19T23:11:06.000Z"
+      },
+      {
+        "trakt_id": 293862,
+        "tmdb_id": 447200,
+        "title": "Skyscraper",
+        "list_slug": "movies-2019",
+        "list_order": 9,
+        "listed_at": "2019-10-26T23:54:41.000Z"
+      },
+      {
+        "trakt_id": 293908,
+        "tmdb_id": 447277,
+        "title": "The Little Mermaid",
+        "list_slug": "movies-2023",
+        "list_order": 53,
+        "listed_at": "2023-05-27T21:42:53.000Z"
+      },
+      {
+        "trakt_id": 293990,
+        "tmdb_id": 447365,
+        "title": "Guardians of the Galaxy Volume 3",
+        "list_slug": "movies-2026",
+        "list_order": 42,
+        "listed_at": "2026-01-28T00:25:32.000Z"
+      },
+      {
+        "trakt_id": 294039,
+        "tmdb_id": 447404,
+        "title": "Pokémon Detective Pikachu",
+        "list_slug": "movies-2019",
+        "list_order": 28,
+        "listed_at": "2019-08-08T19:10:57.000Z"
+      },
+      {
+        "trakt_id": 294821,
+        "tmdb_id": 448119,
+        "title": "Dolittle",
+        "list_slug": "movies-2020",
+        "list_order": 26,
+        "listed_at": "2020-04-06T01:45:12.000Z"
+      },
+      {
+        "trakt_id": 295134,
+        "tmdb_id": 399796,
+        "title": "Life of the Party",
+        "list_slug": "movies-2018",
+        "list_order": 6,
+        "listed_at": "2018-12-21T12:56:57.000Z"
+      },
+      {
+        "trakt_id": 296164,
+        "tmdb_id": 449443,
+        "title": "Den of Thieves",
+        "list_slug": "movies-2018",
+        "list_order": 11,
+        "listed_at": "2018-12-10T20:56:44.000Z"
+      },
+      {
+        "trakt_id": 296293,
+        "tmdb_id": 449562,
+        "title": "The Hustle",
+        "list_slug": "movies-2019",
+        "list_order": 10,
+        "listed_at": "2019-10-26T20:45:38.000Z"
+      },
+      {
+        "trakt_id": 297485,
+        "tmdb_id": 361743,
+        "title": "Top Gun: Maverick",
+        "list_slug": "movies-2022",
+        "list_order": 24,
+        "listed_at": "2022-07-03T00:28:18.000Z"
+      },
+      {
+        "trakt_id": 298164,
+        "tmdb_id": 419704,
+        "title": "Ad Astra",
+        "list_slug": "movies-2020",
+        "list_order": 39,
+        "listed_at": "2020-01-02T17:23:25.000Z"
+      },
+      {
+        "trakt_id": 298686,
+        "tmdb_id": 450465,
+        "title": "Glass",
+        "list_slug": "movies-2019",
+        "list_order": 12,
+        "listed_at": "2019-10-23T21:08:33.000Z"
+      },
+      {
+        "trakt_id": 299887,
+        "tmdb_id": 384018,
+        "title": "Fast & Furious Presents: Hobbs & Shaw",
+        "list_slug": "movies-2019",
+        "list_order": 8,
+        "listed_at": "2019-10-28T00:48:17.000Z"
+      },
+      {
+        "trakt_id": 299910,
+        "tmdb_id": 453395,
+        "title": "Doctor Strange in the Multiverse of Madness",
+        "list_slug": "movies-2026",
+        "list_order": 49,
+        "listed_at": "2026-01-20T00:48:25.000Z"
+      },
+      {
+        "trakt_id": 299929,
+        "tmdb_id": 453405,
+        "title": "Gemini Man",
+        "list_slug": "movies-2020",
+        "list_order": 33,
+        "listed_at": "2020-02-04T01:58:31.000Z"
+      },
+      {
+        "trakt_id": 300068,
+        "tmdb_id": 424694,
+        "title": "Bohemian Rhapsody",
+        "list_slug": "movies-2019",
+        "list_order": 58,
+        "listed_at": "2019-02-24T17:53:52.000Z"
+      },
+      {
+        "trakt_id": 301015,
+        "tmdb_id": 454626,
+        "title": "Sonic the Hedgehog",
+        "list_slug": "movies-2020",
+        "list_order": 15,
+        "listed_at": "2020-07-06T20:15:49.000Z"
+      },
+      {
+        "trakt_id": 301030,
+        "tmdb_id": 454640,
+        "title": "The Angry Birds Movie 2",
+        "list_slug": "movies-2019",
+        "list_order": 7,
+        "listed_at": "2019-11-09T21:23:28.000Z"
+      },
+      {
+        "trakt_id": 301700,
+        "tmdb_id": 455476,
+        "title": "Knights of the Zodiac",
+        "list_slug": "movies-2023",
+        "list_order": 32,
+        "listed_at": "2023-08-08T12:10:58.000Z"
+      },
+      {
+        "trakt_id": 302219,
+        "tmdb_id": 455980,
+        "title": "Tag",
+        "list_slug": "movies-2018",
+        "list_order": 5,
+        "listed_at": "2018-12-24T00:34:18.000Z"
+      },
+      {
+        "trakt_id": 303487,
+        "tmdb_id": 457332,
+        "title": "Hidden Strike",
+        "list_slug": "movies-2024",
+        "list_order": 27,
+        "listed_at": "2024-06-04T00:15:45.000Z"
+      },
+      {
+        "trakt_id": 304278,
+        "tmdb_id": 458156,
+        "title": "John Wick: Chapter 3 - Parabellum",
+        "list_slug": "movies-2019",
+        "list_order": 14,
+        "listed_at": "2019-10-06T10:34:43.000Z"
+      },
+      {
+        "trakt_id": 305912,
+        "tmdb_id": 458423,
+        "title": "Mamma Mia! Here We Go Again",
+        "list_slug": "movies-2022",
+        "list_order": 19,
+        "listed_at": "2022-08-06T23:44:10.000Z"
+      },
+      {
+        "trakt_id": 306046,
+        "tmdb_id": 458897,
+        "title": "Charlie's Angels",
+        "list_slug": "movies-2020",
+        "list_order": 19,
+        "listed_at": "2020-05-25T21:31:33.000Z"
+      },
+      {
+        "trakt_id": 307062,
+        "tmdb_id": 459992,
+        "title": "Long Shot",
+        "list_slug": "movies-2019",
+        "list_order": 32,
+        "listed_at": "2019-07-21T20:00:55.000Z"
+      },
+      {
+        "trakt_id": 307489,
+        "tmdb_id": 460458,
+        "title": "Resident Evil: Welcome to Raccoon City",
+        "list_slug": "movies-2023",
+        "list_order": 89,
+        "listed_at": "2023-01-21T00:24:25.000Z"
+      },
+      {
+        "trakt_id": 307490,
+        "tmdb_id": 460465,
+        "title": "Mortal Kombat",
+        "list_slug": "movies-2022",
+        "list_order": 49,
+        "listed_at": "2022-03-11T02:13:51.000Z"
+      },
+      {
+        "trakt_id": 313547,
+        "tmdb_id": 433310,
+        "title": "When We First Met",
+        "list_slug": "movies-2023",
+        "list_order": 35,
+        "listed_at": "2023-08-03T01:15:12.000Z"
+      },
+      {
+        "trakt_id": 318607,
+        "tmdb_id": 437033,
+        "title": "Toc Toc",
+        "list_slug": "movies-2018",
+        "list_order": 23,
+        "listed_at": "2018-09-30T12:33:20.000Z"
+      },
+      {
+        "trakt_id": 322000,
+        "tmdb_id": 474350,
+        "title": "It Chapter Two",
+        "list_slug": "movies-2025",
+        "list_order": 28,
+        "listed_at": "2025-12-18T01:34:58.000Z"
+      },
+      {
+        "trakt_id": 322102,
+        "tmdb_id": 474395,
+        "title": "Teen Titans Go! To the Movies",
+        "list_slug": "movies-2018",
+        "list_order": 12,
+        "listed_at": "2018-11-25T19:14:47.000Z"
+      },
+      {
+        "trakt_id": 322988,
+        "tmdb_id": 475557,
+        "title": "Joker",
+        "list_slug": "movies-2020",
+        "list_order": 36,
+        "listed_at": "2020-01-13T09:52:16.000Z"
+      },
+      {
+        "trakt_id": 323569,
+        "tmdb_id": 476292,
+        "title": "Maquia: When the Promised Flower Blooms",
+        "list_slug": "movies-2025",
+        "list_order": 45,
+        "listed_at": "2025-02-11T21:22:58.000Z"
+      },
+      {
+        "trakt_id": 324048,
+        "tmdb_id": 476669,
+        "title": "The King's Man",
+        "list_slug": "movies-2022",
+        "list_order": 31,
+        "listed_at": "2022-06-10T02:19:26.000Z"
+      },
+      {
+        "trakt_id": 324762,
+        "tmdb_id": 359724,
+        "title": "Ford v Ferrari",
+        "list_slug": "movies-2025",
+        "list_order": 42,
+        "listed_at": "2025-03-04T13:13:56.000Z"
+      },
+      {
+        "trakt_id": 326808,
+        "tmdb_id": 479455,
+        "title": "Men in Black: International",
+        "list_slug": "movies-2019",
+        "list_order": 24,
+        "listed_at": "2019-08-25T20:28:16.000Z"
+      },
+      {
+        "trakt_id": 327439,
+        "tmdb_id": 480042,
+        "title": "Escape Plan: The Extractors",
+        "list_slug": "movies-2019",
+        "list_order": 35,
+        "listed_at": "2019-07-15T00:23:39.000Z"
+      },
+      {
+        "trakt_id": 327751,
+        "tmdb_id": 480414,
+        "title": "The Curse of La Llorona",
+        "list_slug": "movies-2019",
+        "list_order": 31,
+        "listed_at": "2019-07-26T02:34:49.000Z"
+      },
+      {
+        "trakt_id": 328079,
+        "tmdb_id": 480857,
+        "title": "Radioactive",
+        "list_slug": "movies-2023",
+        "list_order": 68,
+        "listed_at": "2023-02-27T00:04:29.000Z"
+      },
+      {
+        "trakt_id": 331682,
+        "tmdb_id": 480530,
+        "title": "Creed II",
+        "list_slug": "movies-2019",
+        "list_order": 56,
+        "listed_at": "2019-03-05T02:12:38.000Z"
+      },
+      {
+        "trakt_id": 339412,
+        "tmdb_id": 492449,
+        "title": "Killerman",
+        "list_slug": "movies-2020",
+        "list_order": 21,
+        "listed_at": "2020-05-03T01:39:42.000Z"
+      },
+      {
+        "trakt_id": 340442,
+        "tmdb_id": 493529,
+        "title": "Dungeons & Dragons: Honor Among Thieves",
+        "list_slug": "movies-2023",
+        "list_order": 27,
+        "listed_at": "2023-08-25T23:26:40.000Z"
+      },
+      {
+        "trakt_id": 342639,
+        "tmdb_id": 495764,
+        "title": "Birds of Prey (and the Fantabulous Emancipation of One Harley Quinn)",
+        "list_slug": "movies-2021",
+        "list_order": 9,
+        "listed_at": "2021-07-30T02:22:08.000Z"
+      },
+      {
+        "trakt_id": 344612,
+        "tmdb_id": 497582,
+        "title": "Enola Holmes",
+        "list_slug": "movies-2020",
+        "list_order": 6,
+        "listed_at": "2020-10-01T14:43:05.000Z"
+      },
+      {
+        "trakt_id": 344686,
+        "tmdb_id": 497698,
+        "title": "Black Widow",
+        "list_slug": "movies-2026",
+        "list_order": 54,
+        "listed_at": "2026-01-07T10:02:24.000Z"
+      },
+      {
+        "trakt_id": 345222,
+        "tmdb_id": 498248,
+        "title": "Mia and the White Lion",
+        "list_slug": "movies-2020",
+        "list_order": 35,
+        "listed_at": "2020-01-19T02:11:50.000Z"
+      },
+      {
+        "trakt_id": 346591,
+        "tmdb_id": 454983,
+        "title": "The Kissing Booth",
+        "list_slug": "movies-2019",
+        "list_order": 0,
+        "listed_at": "2019-12-29T22:27:01.000Z"
+      },
+      {
+        "trakt_id": 349425,
+        "tmdb_id": 502356,
+        "title": "The Super Mario Bros. Movie",
+        "list_slug": "movies-2023",
+        "list_order": 54,
+        "listed_at": "2023-05-18T02:13:52.000Z"
+      },
+      {
+        "trakt_id": 350802,
+        "tmdb_id": 503314,
+        "title": "Dragon Ball Super: Broly",
+        "list_slug": "movies-2019",
+        "list_order": 60,
+        "listed_at": "2019-01-13T15:37:58.000Z"
+      },
+      {
+        "trakt_id": 350970,
+        "tmdb_id": 503736,
+        "title": "Army of the Dead",
+        "list_slug": "movies-2021",
+        "list_order": 1,
+        "listed_at": "2021-11-23T11:50:49.000Z"
+      },
+      {
+        "trakt_id": 352457,
+        "tmdb_id": 505262,
+        "title": "My Hero Academia: Two Heroes",
+        "list_slug": "movies-2019",
+        "list_order": 43,
+        "listed_at": "2019-05-18T03:30:13.000Z"
+      },
+      {
+        "trakt_id": 352612,
+        "tmdb_id": 505058,
+        "title": "Unfriended: Dark Web",
+        "list_slug": "movies-2019",
+        "list_order": 21,
+        "listed_at": "2019-09-08T02:00:29.000Z"
+      },
+      {
+        "trakt_id": 352796,
+        "tmdb_id": 505642,
+        "title": "Black Panther: Wakanda Forever",
+        "list_slug": "movies-2026",
+        "list_order": 45,
+        "listed_at": "2026-01-25T14:29:58.000Z"
+      },
+      {
+        "trakt_id": 353020,
+        "tmdb_id": 505746,
+        "title": "Asphalt Burning",
+        "list_slug": "movies-2021",
+        "list_order": 28,
+        "listed_at": "2021-01-10T00:40:03.000Z"
+      },
+      {
+        "trakt_id": 353298,
+        "tmdb_id": 505945,
+        "title": "Team Darryl",
+        "list_slug": "movies-2025",
+        "list_order": 4,
+        "listed_at": "2025-12-29T20:24:00.000Z"
+      },
+      {
+        "trakt_id": 354191,
+        "tmdb_id": 507086,
+        "title": "Jurassic World Dominion",
+        "list_slug": "movies-2022",
+        "list_order": 33,
+        "listed_at": "2022-06-05T01:01:04.000Z"
+      },
+      {
+        "trakt_id": 355892,
+        "tmdb_id": 508439,
+        "title": "Onward",
+        "list_slug": "movies-2022",
+        "list_order": 38,
+        "listed_at": "2022-05-13T01:28:04.000Z"
+      },
+      {
+        "trakt_id": 356441,
+        "tmdb_id": 508947,
+        "title": "Turning Red",
+        "list_slug": "movies-2022",
+        "list_order": 47,
+        "listed_at": "2022-03-31T22:00:32.000Z"
+      },
+      {
+        "trakt_id": 356482,
+        "tmdb_id": 508965,
+        "title": "Klaus",
+        "list_slug": "movies-2024",
+        "list_order": 3,
+        "listed_at": "2024-11-24T17:28:44.000Z"
+      },
+      {
+        "trakt_id": 357288,
+        "tmdb_id": 509967,
+        "title": "6 Underground",
+        "list_slug": "movies-2019",
+        "list_order": 5,
+        "listed_at": "2019-12-16T02:26:35.000Z"
+      },
+      {
+        "trakt_id": 359424,
+        "tmdb_id": 511785,
+        "title": "Alex Strangelove",
+        "list_slug": "movies-2018",
+        "list_order": 19,
+        "listed_at": "2018-10-21T23:13:22.000Z"
+      },
+      {
+        "trakt_id": 359731,
+        "tmdb_id": 512195,
+        "title": "Red Notice",
+        "list_slug": "movies-2022",
+        "list_order": 62,
+        "listed_at": "2022-01-30T23:02:07.000Z"
+      },
+      {
+        "trakt_id": 360095,
+        "tmdb_id": 512200,
+        "title": "Jumanji: The Next Level",
+        "list_slug": "movies-2020",
+        "list_order": 31,
+        "listed_at": "2020-03-22T02:47:27.000Z"
+      },
+      {
+        "trakt_id": 363355,
+        "tmdb_id": 514999,
+        "title": "Murder Mystery",
+        "list_slug": "movies-2023",
+        "list_order": 61,
+        "listed_at": "2023-03-19T22:00:45.000Z"
+      },
+      {
+        "trakt_id": 363514,
+        "tmdb_id": 515001,
+        "title": "Jojo Rabbit",
+        "list_slug": "movies-2022",
+        "list_order": 41,
+        "listed_at": "2022-04-17T01:51:27.000Z"
+      },
+      {
+        "trakt_id": 366045,
+        "tmdb_id": 503619,
+        "title": "The Package",
+        "list_slug": "movies-2023",
+        "list_order": 30,
+        "listed_at": "2023-08-14T21:29:40.000Z"
+      },
+      {
+        "trakt_id": 370404,
+        "tmdb_id": 522162,
+        "title": "Midway",
+        "list_slug": "movies-2021",
+        "list_order": 21,
+        "listed_at": "2021-03-07T13:53:54.000Z"
+      },
+      {
+        "trakt_id": 370883,
+        "tmdb_id": 522627,
+        "title": "The Gentlemen",
+        "list_slug": "movies-2020",
+        "list_order": 22,
+        "listed_at": "2020-04-27T00:16:12.000Z"
+      },
+      {
+        "trakt_id": 371013,
+        "tmdb_id": 522938,
+        "title": "Rambo: Last Blood",
+        "list_slug": "movies-2019",
+        "list_order": 3,
+        "listed_at": "2019-12-17T12:50:57.000Z"
+      },
+      {
+        "trakt_id": 371124,
+        "tmdb_id": 522681,
+        "title": "Escape Room",
+        "list_slug": "movies-2019",
+        "list_order": 22,
+        "listed_at": "2019-09-07T23:53:54.000Z"
+      },
+      {
+        "trakt_id": 372798,
+        "tmdb_id": 524434,
+        "title": "Eternals",
+        "list_slug": "movies-2026",
+        "list_order": 51,
+        "listed_at": "2026-01-15T10:18:21.000Z"
+      },
+      {
+        "trakt_id": 374439,
+        "tmdb_id": 526007,
+        "title": "The Night Clerk",
+        "list_slug": "movies-2021",
+        "list_order": 18,
+        "listed_at": "2021-03-22T23:54:09.000Z"
+      },
+      {
+        "trakt_id": 374949,
+        "tmdb_id": 526896,
+        "title": "Morbius",
+        "list_slug": "movies-2022",
+        "list_order": 8,
+        "listed_at": "2022-10-22T00:59:10.000Z"
+      },
+      {
+        "trakt_id": 379309,
+        "tmdb_id": 529106,
+        "title": "Major Grom: Plague Doctor",
+        "list_slug": "movies-2022",
+        "list_order": 64,
+        "listed_at": "2022-01-18T11:53:07.000Z"
+      },
+      {
+        "trakt_id": 382862,
+        "tmdb_id": 530915,
+        "title": "1917",
+        "list_slug": "movies-2020",
+        "list_order": 30,
+        "listed_at": "2020-03-23T21:57:20.000Z"
+      },
+      {
+        "trakt_id": 383277,
+        "tmdb_id": 531306,
+        "title": "Rim of the World",
+        "list_slug": "movies-2019",
+        "list_order": 25,
+        "listed_at": "2019-08-17T03:03:17.000Z"
+      },
+      {
+        "trakt_id": 387139,
+        "tmdb_id": 535292,
+        "title": "21 Bridges",
+        "list_slug": "movies-2020",
+        "list_order": 16,
+        "listed_at": "2020-06-02T20:11:36.000Z"
+      },
+      {
+        "trakt_id": 388492,
+        "tmdb_id": 537056,
+        "title": "Batman: Hush",
+        "list_slug": "movies-2019",
+        "list_order": 29,
+        "listed_at": "2019-08-08T02:38:16.000Z"
+      },
+      {
+        "trakt_id": 389424,
+        "tmdb_id": 537915,
+        "title": "After",
+        "list_slug": "movies-2019",
+        "list_order": 34,
+        "listed_at": "2019-07-19T14:15:08.000Z"
+      },
+      {
+        "trakt_id": 391004,
+        "tmdb_id": 539885,
+        "title": "Ava",
+        "list_slug": "movies-2021",
+        "list_order": 27,
+        "listed_at": "2021-01-17T01:11:50.000Z"
+      },
+      {
+        "trakt_id": 392042,
+        "tmdb_id": 540901,
+        "title": "Hustlers",
+        "list_slug": "movies-2020",
+        "list_order": 29,
+        "listed_at": "2020-03-29T01:24:32.000Z"
+      },
+      {
+        "trakt_id": 393114,
+        "tmdb_id": 542224,
+        "title": "Gretel & Hansel",
+        "list_slug": "movies-2020",
+        "list_order": 13,
+        "listed_at": "2020-07-06T20:19:05.000Z"
+      },
+      {
+        "trakt_id": 395672,
+        "tmdb_id": 533535,
+        "title": "Deadpool & Wolverine",
+        "list_slug": "movies-2026",
+        "list_order": 35,
+        "listed_at": "2026-02-09T00:05:57.000Z"
+      },
+      {
+        "trakt_id": 396109,
+        "tmdb_id": 545609,
+        "title": "Extraction",
+        "list_slug": "movies-2023",
+        "list_order": 50,
+        "listed_at": "2023-06-20T23:17:31.000Z"
+      },
+      {
+        "trakt_id": 396788,
+        "tmdb_id": 546554,
+        "title": "Knives Out",
+        "list_slug": "movies-2023",
+        "list_order": 70,
+        "listed_at": "2023-02-23T23:52:45.000Z"
+      },
+      {
+        "trakt_id": 401889,
+        "tmdb_id": 552178,
+        "title": "Dark Waters",
+        "list_slug": "movies-2022",
+        "list_order": 17,
+        "listed_at": "2022-09-18T23:45:20.000Z"
+      },
+      {
+        "trakt_id": 406579,
+        "tmdb_id": 555604,
+        "title": "Guillermo del Toro's Pinocchio",
+        "list_slug": "movies-2022",
+        "list_order": 0,
+        "listed_at": "2022-12-17T00:03:49.000Z"
+      },
+      {
+        "trakt_id": 409281,
+        "tmdb_id": 558449,
+        "title": "Gladiator II",
+        "list_slug": "movies-2024",
+        "list_order": 1,
+        "listed_at": "2024-12-07T23:12:11.000Z"
+      },
+      {
+        "trakt_id": 410927,
+        "tmdb_id": 559969,
+        "title": "El Camino: A Breaking Bad Movie",
+        "list_slug": "movies-2020",
+        "list_order": 40,
+        "listed_at": "2020-01-01T21:13:08.000Z"
+      },
+      {
+        "trakt_id": 415437,
+        "tmdb_id": 565770,
+        "title": "Blue Beetle",
+        "list_slug": "movies-2023",
+        "list_order": 9,
+        "listed_at": "2023-11-20T00:53:03.000Z"
+      },
+      {
+        "trakt_id": 416151,
+        "tmdb_id": 566525,
+        "title": "Shang-Chi and the Legend of the Ten Rings",
+        "list_slug": "movies-2026",
+        "list_order": 52,
+        "listed_at": "2026-01-15T09:12:42.000Z"
+      },
+      {
+        "trakt_id": 416763,
+        "tmdb_id": 567189,
+        "title": "Tom Clancy's Without Remorse",
+        "list_slug": "movies-2022",
+        "list_order": 54,
+        "listed_at": "2022-02-28T00:19:47.000Z"
+      },
+      {
+        "trakt_id": 419541,
+        "tmdb_id": 568160,
+        "title": "Weathering with You",
+        "list_slug": "movies-2022",
+        "list_order": 26,
+        "listed_at": "2022-06-28T01:30:33.000Z"
+      },
+      {
+        "trakt_id": 421031,
+        "tmdb_id": 569547,
+        "title": "Black Mirror: Bandersnatch",
+        "list_slug": "movies-2018",
+        "list_order": 2,
+        "listed_at": "2018-12-29T12:39:07.000Z"
+      },
+      {
+        "trakt_id": 422913,
+        "tmdb_id": 571891,
+        "title": "Pokémon the Movie: Mewtwo Strikes Back - Evolution",
+        "list_slug": "movies-2020",
+        "list_order": 3,
+        "listed_at": "2020-10-26T01:22:37.000Z"
+      },
+      {
+        "trakt_id": 425809,
+        "tmdb_id": 575264,
+        "title": "Mission: Impossible - Dead Reckoning Part One",
+        "list_slug": "movies-2023",
+        "list_order": 10,
+        "listed_at": "2023-10-09T23:50:27.000Z"
+      },
+      {
+        "trakt_id": 426078,
+        "tmdb_id": 575265,
+        "title": "Mission: Impossible - The Final Reckoning",
+        "list_slug": "movies-2025",
+        "list_order": 33,
+        "listed_at": "2025-10-06T23:25:30.000Z"
+      },
+      {
+        "trakt_id": 428130,
+        "tmdb_id": 570670,
+        "title": "The Invisible Man",
+        "list_slug": "movies-2021",
+        "list_order": 10,
+        "listed_at": "2021-07-28T01:11:54.000Z"
+      },
+      {
+        "trakt_id": 429764,
+        "tmdb_id": 580489,
+        "title": "Venom: Let There Be Carnage",
+        "list_slug": "movies-2025",
+        "list_order": 43,
+        "listed_at": "2025-02-25T01:19:34.000Z"
+      },
+      {
+        "trakt_id": 430404,
+        "tmdb_id": 581600,
+        "title": "Spenser Confidential",
+        "list_slug": "movies-2020",
+        "list_order": 17,
+        "listed_at": "2020-06-01T01:05:04.000Z"
+      },
+      {
+        "trakt_id": 430947,
+        "tmdb_id": 582570,
+        "title": "Sextuplets",
+        "list_slug": "movies-2020",
+        "list_order": 38,
+        "listed_at": "2020-01-08T12:02:08.000Z"
+      },
+      {
+        "trakt_id": 431262,
+        "tmdb_id": 583083,
+        "title": "The Kissing Booth 2",
+        "list_slug": "movies-2020",
+        "list_order": 11,
+        "listed_at": "2020-07-30T18:37:09.000Z"
+      },
+      {
+        "trakt_id": 432086,
+        "tmdb_id": 547016,
+        "title": "The Old Guard",
+        "list_slug": "movies-2020",
+        "list_order": 12,
+        "listed_at": "2020-07-17T22:10:26.000Z"
+      },
+      {
+        "trakt_id": 432838,
+        "tmdb_id": 585216,
+        "title": "Escape Room: Tournament of Champions",
+        "list_slug": "movies-2022",
+        "list_order": 36,
+        "listed_at": "2022-05-22T20:11:38.000Z"
+      },
+      {
+        "trakt_id": 434184,
+        "tmdb_id": 576040,
+        "title": "Malibu Rescue",
+        "list_slug": "movies-2019",
+        "list_order": 27,
+        "listed_at": "2019-08-10T21:36:57.000Z"
+      },
+      {
+        "trakt_id": 435403,
+        "tmdb_id": 588228,
+        "title": "The Tomorrow War",
+        "list_slug": "movies-2023",
+        "list_order": 56,
+        "listed_at": "2023-04-08T21:39:59.000Z"
+      },
+      {
+        "trakt_id": 436962,
+        "tmdb_id": 590223,
+        "title": "Love and Monsters",
+        "list_slug": "movies-2021",
+        "list_order": 14,
+        "listed_at": "2021-05-14T00:59:43.000Z"
+      },
+      {
+        "trakt_id": 437359,
+        "tmdb_id": 590854,
+        "title": "The Hater",
+        "list_slug": "movies-2021",
+        "list_order": 20,
+        "listed_at": "2021-03-15T14:03:20.000Z"
+      },
+      {
+        "trakt_id": 440420,
+        "tmdb_id": 594188,
+        "title": "NiNoKuni",
+        "list_slug": "movies-2024",
+        "list_order": 6,
+        "listed_at": "2024-09-21T23:40:17.000Z"
+      },
+      {
+        "trakt_id": 440996,
+        "tmdb_id": 594767,
+        "title": "Shazam! Fury of the Gods",
+        "list_slug": "movies-2023",
+        "list_order": 45,
+        "listed_at": "2023-07-19T23:47:52.000Z"
+      },
+      {
+        "trakt_id": 444061,
+        "tmdb_id": 598133,
+        "title": "The F**k-It List",
+        "list_slug": "movies-2020",
+        "list_order": 1,
+        "listed_at": "2020-12-12T11:45:41.000Z"
+      },
+      {
+        "trakt_id": 447593,
+        "tmdb_id": 602223,
+        "title": "The Forever Purge",
+        "list_slug": "movies-2022",
+        "list_order": 44,
+        "listed_at": "2022-04-10T17:50:05.000Z"
+      },
+      {
+        "trakt_id": 448268,
+        "tmdb_id": 602734,
+        "title": "Spiral: From the Book of Saw",
+        "list_slug": "movies-2022",
+        "list_order": 55,
+        "listed_at": "2022-02-27T01:30:59.000Z"
+      },
+      {
+        "trakt_id": 448646,
+        "tmdb_id": 603692,
+        "title": "John Wick: Chapter 4",
+        "list_slug": "movies-2023",
+        "list_order": 59,
+        "listed_at": "2023-03-25T19:19:11.000Z"
+      },
+      {
+        "trakt_id": 449866,
+        "tmdb_id": 605116,
+        "title": "Project Power",
+        "list_slug": "movies-2020",
+        "list_order": 7,
+        "listed_at": "2020-08-26T02:00:49.000Z"
+      },
+      {
+        "trakt_id": 451674,
+        "tmdb_id": 607259,
+        "title": "Fatherhood",
+        "list_slug": "movies-2022",
+        "list_order": 39,
+        "listed_at": "2022-04-24T22:16:44.000Z"
+      },
+      {
+        "trakt_id": 452062,
+        "tmdb_id": 581389,
+        "title": "Space Sweepers",
+        "list_slug": "movies-2024",
+        "list_order": 35,
+        "listed_at": "2024-05-21T19:44:13.000Z"
+      },
+      {
+        "trakt_id": 454154,
+        "tmdb_id": 610150,
+        "title": "Dragon Ball Super: Super Hero",
+        "list_slug": "movies-2022",
+        "list_order": 12,
+        "listed_at": "2022-10-16T14:37:21.000Z"
+      },
+      {
+        "trakt_id": 454832,
+        "tmdb_id": 609681,
+        "title": "The Marvels",
+        "list_slug": "movies-2026",
+        "list_order": 36,
+        "listed_at": "2026-02-04T22:28:01.000Z"
+      },
+      {
+        "trakt_id": 458367,
+        "tmdb_id": 614934,
+        "title": "Elvis",
+        "list_slug": "movies-2022",
+        "list_order": 18,
+        "listed_at": "2022-09-15T00:26:33.000Z"
+      },
+      {
+        "trakt_id": 458708,
+        "tmdb_id": 615678,
+        "title": "Thunder Force",
+        "list_slug": "movies-2022",
+        "list_order": 48,
+        "listed_at": "2022-03-28T09:43:35.000Z"
+      },
+      {
+        "trakt_id": 458866,
+        "tmdb_id": 615469,
+        "title": "Spiderhead",
+        "list_slug": "movies-2022",
+        "list_order": 29,
+        "listed_at": "2022-06-25T01:34:57.000Z"
+      },
+      {
+        "trakt_id": 458953,
+        "tmdb_id": 615656,
+        "title": "Meg 2: The Trench",
+        "list_slug": "movies-2023",
+        "list_order": 23,
+        "listed_at": "2023-09-02T22:05:00.000Z"
+      },
+      {
+        "trakt_id": 459051,
+        "tmdb_id": 615777,
+        "title": "Babylon",
+        "list_slug": "movies-2023",
+        "list_order": 42,
+        "listed_at": "2023-07-23T22:38:01.000Z"
+      },
+      {
+        "trakt_id": 459282,
+        "tmdb_id": 616037,
+        "title": "Thor: Love and Thunder",
+        "list_slug": "movies-2026",
+        "list_order": 48,
+        "listed_at": "2026-01-21T00:12:26.000Z"
+      },
+      {
+        "trakt_id": 460087,
+        "tmdb_id": 617126,
+        "title": "The Fantastic 4: First Steps",
+        "list_slug": "movies-2026",
+        "list_order": 30,
+        "listed_at": "2026-02-18T23:19:51.000Z"
+      },
+      {
+        "trakt_id": 460670,
+        "tmdb_id": 617505,
+        "title": "Hubie Halloween",
+        "list_slug": "movies-2020",
+        "list_order": 4,
+        "listed_at": "2020-10-25T22:23:07.000Z"
+      },
+      {
+        "trakt_id": 462634,
+        "tmdb_id": 619930,
+        "title": "Narvik",
+        "list_slug": "movies-2023",
+        "list_order": 88,
+        "listed_at": "2023-01-25T01:06:30.000Z"
+      },
+      {
+        "trakt_id": 462892,
+        "tmdb_id": 619979,
+        "title": "Deep Water",
+        "list_slug": "movies-2022",
+        "list_order": 43,
+        "listed_at": "2022-04-10T20:28:12.000Z"
+      },
+      {
+        "trakt_id": 463454,
+        "tmdb_id": 620725,
+        "title": "Jexi",
+        "list_slug": "movies-2020",
+        "list_order": 28,
+        "listed_at": "2020-04-04T22:48:21.000Z"
+      },
+      {
+        "trakt_id": 465724,
+        "tmdb_id": 623491,
+        "title": "The Babysitter: Killer Queen",
+        "list_slug": "movies-2021",
+        "list_order": 25,
+        "listed_at": "2021-01-18T12:30:27.000Z"
+      },
+      {
+        "trakt_id": 466815,
+        "tmdb_id": 625450,
+        "title": "Tall Girl",
+        "list_slug": "movies-2022",
+        "list_order": 46,
+        "listed_at": "2022-04-07T01:55:11.000Z"
+      },
+      {
+        "trakt_id": 467115,
+        "tmdb_id": 520765,
+        "title": "Go!",
+        "list_slug": "movies-2022",
+        "list_order": 51,
+        "listed_at": "2022-03-05T23:14:16.000Z"
+      },
+      {
+        "trakt_id": 470494,
+        "tmdb_id": 630004,
+        "title": "The Vault",
+        "list_slug": "movies-2022",
+        "list_order": 30,
+        "listed_at": "2022-06-23T01:42:35.000Z"
+      },
+      {
+        "trakt_id": 474180,
+        "tmdb_id": 634649,
+        "title": "Spider-Man: No Way Home",
+        "list_slug": "movies-2026",
+        "list_order": 50,
+        "listed_at": "2026-01-19T00:44:49.000Z"
+      },
+      {
+        "trakt_id": 474745,
+        "tmdb_id": 635302,
+        "title": "Demon Slayer -Kimetsu no Yaiba- The Movie: Mugen Train",
+        "list_slug": "movies-2021",
+        "list_order": 4,
+        "listed_at": "2021-10-11T21:59:15.000Z"
+      },
+      {
+        "trakt_id": 476569,
+        "tmdb_id": 637649,
+        "title": "Wrath of Man",
+        "list_slug": "movies-2022",
+        "list_order": 53,
+        "listed_at": "2022-02-28T02:22:32.000Z"
+      },
+      {
+        "trakt_id": 476914,
+        "tmdb_id": 637920,
+        "title": "Miracle in Cell No. 7",
+        "list_slug": "movies-2020",
+        "list_order": 25,
+        "listed_at": "2020-04-12T02:36:56.000Z"
+      },
+      {
+        "trakt_id": 477589,
+        "tmdb_id": 638597,
+        "title": "YES DAY",
+        "list_slug": "movies-2021",
+        "list_order": 17,
+        "listed_at": "2021-03-25T23:13:30.000Z"
+      },
+      {
+        "trakt_id": 477865,
+        "tmdb_id": 638974,
+        "title": "Murder Mystery 2",
+        "list_slug": "movies-2023",
+        "list_order": 58,
+        "listed_at": "2023-04-01T00:20:24.000Z"
+      },
+      {
+        "trakt_id": 478761,
+        "tmdb_id": 640146,
+        "title": "Ant-Man and the Wasp: Quantumania",
+        "list_slug": "movies-2026",
+        "list_order": 43,
+        "listed_at": "2026-01-25T17:59:32.000Z"
+      },
+      {
+        "trakt_id": 479845,
+        "tmdb_id": 641501,
+        "title": "How I Became a Superhero",
+        "list_slug": "movies-2021",
+        "list_order": 5,
+        "listed_at": "2021-10-10T22:27:40.000Z"
+      },
+      {
+        "trakt_id": 480709,
+        "tmdb_id": 642885,
+        "title": "Hocus Pocus 2",
+        "list_slug": "movies-2022",
+        "list_order": 15,
+        "listed_at": "2022-10-02T23:38:05.000Z"
+      },
+      {
+        "trakt_id": 495296,
+        "tmdb_id": 661231,
+        "title": "Operation Mincemeat",
+        "list_slug": "movies-2023",
+        "list_order": 86,
+        "listed_at": "2023-01-28T01:15:43.000Z"
+      },
+      {
+        "trakt_id": 495668,
+        "tmdb_id": 661374,
+        "title": "Glass Onion: A Knives Out Mystery",
+        "list_slug": "movies-2023",
+        "list_order": 87,
+        "listed_at": "2023-01-27T00:20:47.000Z"
+      },
+      {
+        "trakt_id": 499863,
+        "tmdb_id": 666243,
+        "title": "The Witcher: Nightmare of the Wolf",
+        "list_slug": "movies-2021",
+        "list_order": 6,
+        "listed_at": "2021-09-18T18:32:47.000Z"
+      },
+      {
+        "trakt_id": 501235,
+        "tmdb_id": 667538,
+        "title": "Transformers: Rise of the Beasts",
+        "list_slug": "movies-2023",
+        "list_order": 40,
+        "listed_at": "2023-07-26T00:15:33.000Z"
+      },
+      {
+        "trakt_id": 504008,
+        "tmdb_id": 671043,
+        "title": "Spoiled Brats",
+        "list_slug": "movies-2022",
+        "list_order": 58,
+        "listed_at": "2022-02-15T12:13:40.000Z"
+      },
+      {
+        "trakt_id": 512258,
+        "tmdb_id": 677179,
+        "title": "Creed III",
+        "list_slug": "movies-2024",
+        "list_order": 49,
+        "listed_at": "2024-02-17T00:27:57.000Z"
+      },
+      {
+        "trakt_id": 534110,
+        "tmdb_id": 689723,
+        "title": "Dangerous Lies",
+        "list_slug": "movies-2020",
+        "list_order": 20,
+        "listed_at": "2020-05-19T02:44:01.000Z"
+      },
+      {
+        "trakt_id": 535487,
+        "tmdb_id": 691179,
+        "title": "Friends: The Reunion",
+        "list_slug": "movies-2021",
+        "list_order": 0,
+        "listed_at": "2022-06-05T23:35:16.000Z"
+      },
+      {
+        "trakt_id": 538340,
+        "tmdb_id": 694234,
+        "title": "Under the Riccione Sun",
+        "list_slug": "movies-2020",
+        "list_order": 2,
+        "listed_at": "2020-12-12T11:44:51.000Z"
+      },
+      {
+        "trakt_id": 539181,
+        "tmdb_id": 695596,
+        "title": "Malibu Rescue: The Next Wave",
+        "list_slug": "movies-2020",
+        "list_order": 9,
+        "listed_at": "2020-08-21T14:13:50.000Z"
+      },
+      {
+        "trakt_id": 539738,
+        "tmdb_id": 695721,
+        "title": "The Hunger Games: The Ballad of Songbirds & Snakes",
+        "list_slug": "movies-2024",
+        "list_order": 46,
+        "listed_at": "2024-03-02T20:58:39.000Z"
+      },
+      {
+        "trakt_id": 541747,
+        "tmdb_id": 697843,
+        "title": "Extraction 2",
+        "list_slug": "movies-2023",
+        "list_order": 49,
+        "listed_at": "2023-06-21T21:13:34.000Z"
+      },
+      {
+        "trakt_id": 543972,
+        "tmdb_id": 700391,
+        "title": "65",
+        "list_slug": "movies-2023",
+        "list_order": 48,
+        "listed_at": "2023-06-25T20:36:06.000Z"
+      },
+      {
+        "trakt_id": 549825,
+        "tmdb_id": 706503,
+        "title": "Lost Bullet",
+        "list_slug": "movies-2021",
+        "list_order": 15,
+        "listed_at": "2021-04-28T23:42:53.000Z"
+      },
+      {
+        "trakt_id": 561702,
+        "tmdb_id": 718930,
+        "title": "Bullet Train",
+        "list_slug": "movies-2023",
+        "list_order": 38,
+        "listed_at": "2023-07-29T00:46:17.000Z"
+      },
+      {
+        "trakt_id": 564258,
+        "tmdb_id": 721625,
+        "title": "Songbird",
+        "list_slug": "movies-2022",
+        "list_order": 57,
+        "listed_at": "2022-02-19T23:40:08.000Z"
+      },
+      {
+        "trakt_id": 566681,
+        "tmdb_id": 724209,
+        "title": "Heart of Stone",
+        "list_slug": "movies-2023",
+        "list_order": 31,
+        "listed_at": "2023-08-13T21:10:18.000Z"
+      },
+      {
+        "trakt_id": 567523,
+        "tmdb_id": 725201,
+        "title": "The Gray Man",
+        "list_slug": "movies-2022",
+        "list_order": 16,
+        "listed_at": "2022-09-23T01:25:44.000Z"
+      },
+      {
+        "trakt_id": 569001,
+        "tmdb_id": 726759,
+        "title": "Tetris",
+        "list_slug": "movies-2024",
+        "list_order": 42,
+        "listed_at": "2024-04-06T20:26:09.000Z"
+      },
+      {
+        "trakt_id": 579704,
+        "tmdb_id": 738362,
+        "title": "The Fresh Prince of Bel-Air Reunion",
+        "list_slug": "movies-2023",
+        "list_order": 22,
+        "listed_at": "2023-09-08T18:10:50.000Z"
+      },
+      {
+        "trakt_id": 587403,
+        "tmdb_id": 747188,
+        "title": "Asteroid City",
+        "list_slug": "movies-2023",
+        "list_order": 39,
+        "listed_at": "2023-07-28T01:48:01.000Z"
+      },
+      {
+        "trakt_id": 588471,
+        "tmdb_id": 748167,
+        "title": "Uglies",
+        "list_slug": "movies-2025",
+        "list_order": 47,
+        "listed_at": "2025-01-21T23:39:56.000Z"
+      },
+      {
+        "trakt_id": 597555,
+        "tmdb_id": 758330,
+        "title": "Good Luck to You, Leo Grande",
+        "list_slug": "movies-2023",
+        "list_order": 28,
+        "listed_at": "2023-08-15T17:07:02.000Z"
+      },
+      {
+        "trakt_id": 600729,
+        "tmdb_id": 761898,
+        "title": "Sword Art Online the Movie - Progressive - Aria of a Starless Night",
+        "list_slug": "movies-2022",
+        "list_order": 21,
+        "listed_at": "2022-08-05T11:44:23.000Z"
+      },
+      {
+        "trakt_id": 601689,
+        "tmdb_id": 763215,
+        "title": "Damsel",
+        "list_slug": "movies-2025",
+        "list_order": 50,
+        "listed_at": "2025-01-18T20:22:52.000Z"
+      },
+      {
+        "trakt_id": 605508,
+        "tmdb_id": 767499,
+        "title": "The Manor",
+        "list_slug": "movies-2021",
+        "list_order": 3,
+        "listed_at": "2021-10-31T21:13:02.000Z"
+      },
+      {
+        "trakt_id": 606686,
+        "tmdb_id": 768744,
+        "title": "My Hero Academia: World Heroes' Mission",
+        "list_slug": "movies-2024",
+        "list_order": 43,
+        "listed_at": "2024-04-02T00:38:32.000Z"
+      },
+      {
+        "trakt_id": 609792,
+        "tmdb_id": 772272,
+        "title": "Tall Girl 2",
+        "list_slug": "movies-2022",
+        "list_order": 45,
+        "listed_at": "2022-04-08T00:46:22.000Z"
+      },
+      {
+        "trakt_id": 612106,
+        "tmdb_id": 774752,
+        "title": "The Guardians of the Galaxy Holiday Special",
+        "list_slug": "movies-2026",
+        "list_order": 44,
+        "listed_at": "2026-01-25T16:10:23.000Z"
+      },
+      {
+        "trakt_id": 624003,
+        "tmdb_id": 787699,
+        "title": "Wonka",
+        "list_slug": "movies-2024",
+        "list_order": 45,
+        "listed_at": "2024-03-29T16:02:53.000Z"
+      },
+      {
+        "trakt_id": 627088,
+        "tmdb_id": 791373,
+        "title": "Zack Snyder's Justice League",
+        "list_slug": "movies-2021",
+        "list_order": 19,
+        "listed_at": "2021-03-19T21:10:56.000Z"
+      },
+      {
+        "trakt_id": 631758,
+        "tmdb_id": 796499,
+        "title": "Army of Thieves",
+        "list_slug": "movies-2021",
+        "list_order": 2,
+        "listed_at": "2021-11-13T13:32:14.000Z"
+      },
+      {
+        "trakt_id": 633320,
+        "tmdb_id": 798021,
+        "title": "Family Switch",
+        "list_slug": "movies-2023",
+        "list_order": 0,
+        "listed_at": "2023-12-28T22:05:14.000Z"
+      },
+      {
+        "trakt_id": 635914,
+        "tmdb_id": 800937,
+        "title": "Senior Year",
+        "list_slug": "movies-2022",
+        "list_order": 35,
+        "listed_at": "2022-05-23T10:36:57.000Z"
+      },
+      {
+        "trakt_id": 638383,
+        "tmdb_id": 803796,
+        "title": "KPop Demon Hunters",
+        "list_slug": "movies-2026",
+        "list_order": 15,
+        "listed_at": "2026-05-01T23:50:15.000Z"
+      },
+      {
+        "trakt_id": 644946,
+        "tmdb_id": 811050,
+        "title": "The Legend of the Christmas Witch: The Origins",
+        "list_slug": "movies-2024",
+        "list_order": 0,
+        "listed_at": "2024-12-25T17:22:18.000Z"
+      },
+      {
+        "trakt_id": 651069,
+        "tmdb_id": 817648,
+        "title": "Home Team",
+        "list_slug": "movies-2022",
+        "list_order": 61,
+        "listed_at": "2022-02-12T00:04:56.000Z"
+      },
+      {
+        "trakt_id": 651781,
+        "tmdb_id": 818397,
+        "title": "Memory",
+        "list_slug": "movies-2026",
+        "list_order": 40,
+        "listed_at": "2026-02-01T01:36:44.000Z"
+      },
+      {
+        "trakt_id": 655031,
+        "tmdb_id": 822119,
+        "title": "Captain America: Brave New World",
+        "list_slug": "movies-2026",
+        "list_order": 32,
+        "listed_at": "2026-02-15T00:53:51.000Z"
+      },
+      {
+        "trakt_id": 656266,
+        "tmdb_id": 823464,
+        "title": "Godzilla x Kong: The New Empire",
+        "list_slug": "movies-2024",
+        "list_order": 23,
+        "listed_at": "2024-06-26T00:27:28.000Z"
+      },
+      {
+        "trakt_id": 661276,
+        "tmdb_id": 829051,
+        "title": "About My Father",
+        "list_slug": "movies-2023",
+        "list_order": 41,
+        "listed_at": "2023-07-25T00:34:57.000Z"
+      },
+      {
+        "trakt_id": 661649,
+        "tmdb_id": 829280,
+        "title": "Enola Holmes 2",
+        "list_slug": "movies-2022",
+        "list_order": 2,
+        "listed_at": "2022-12-05T01:08:29.000Z"
+      },
+      {
+        "trakt_id": 664937,
+        "tmdb_id": 833097,
+        "title": "Falling for Christmas",
+        "list_slug": "movies-2022",
+        "list_order": 4,
+        "listed_at": "2022-11-15T23:23:18.000Z"
+      },
+      {
+        "trakt_id": 669559,
+        "tmdb_id": 838484,
+        "title": "Choose or Die",
+        "list_slug": "movies-2022",
+        "list_order": 37,
+        "listed_at": "2022-05-21T01:11:50.000Z"
+      },
+      {
+        "trakt_id": 695073,
+        "tmdb_id": 868759,
+        "title": "Ghosted",
+        "list_slug": "movies-2024",
+        "list_order": 21,
+        "listed_at": "2024-07-03T00:01:36.000Z"
+      },
+      {
+        "trakt_id": 717059,
+        "tmdb_id": 893712,
+        "title": "Sword Art Online the Movie – Progressive – Scherzo of Deep Night",
+        "list_slug": "movies-2023",
+        "list_order": 52,
+        "listed_at": "2023-06-16T00:57:59.000Z"
+      },
+      {
+        "trakt_id": 717362,
+        "tmdb_id": 894205,
+        "title": "Werewolf by Night",
+        "list_slug": "movies-2026",
+        "list_order": 46,
+        "listed_at": "2026-01-24T22:42:58.000Z"
+      },
+      {
+        "trakt_id": 721239,
+        "tmdb_id": 899082,
+        "title": "Harry Potter 20th Anniversary: Return to Hogwarts",
+        "list_slug": "movies-2022",
+        "list_order": 65,
+        "listed_at": "2022-01-02T14:03:29.000Z"
+      },
+      {
+        "trakt_id": 725415,
+        "tmdb_id": 906126,
+        "title": "Society of the Snow",
+        "list_slug": "movies-2024",
+        "list_order": 56,
+        "listed_at": "2024-01-14T20:49:01.000Z"
+      },
+      {
+        "trakt_id": 729817,
+        "tmdb_id": 911430,
+        "title": "F1",
+        "list_slug": "movies-2025",
+        "list_order": 38,
+        "listed_at": "2025-06-27T22:01:43.000Z"
+      },
+      {
+        "trakt_id": 730788,
+        "tmdb_id": 912598,
+        "title": "Bubble",
+        "list_slug": "movies-2022",
+        "list_order": 7,
+        "listed_at": "2022-10-27T00:07:06.000Z"
+      },
+      {
+        "trakt_id": 739823,
+        "tmdb_id": 923632,
+        "title": "The Tinder Swindler",
+        "list_slug": "movies-2022",
+        "list_order": 59,
+        "listed_at": "2022-02-13T20:58:16.000Z"
+      },
+      {
+        "trakt_id": 751145,
+        "tmdb_id": 936075,
+        "title": "Michael",
+        "list_slug": "movies-2026",
+        "list_order": 13,
+        "listed_at": "2026-05-08T23:23:40.000Z"
+      },
+      {
+        "trakt_id": 754266,
+        "tmdb_id": 939475,
+        "title": "Too Old for Fairy Tales",
+        "list_slug": "movies-2022",
+        "list_order": 23,
+        "listed_at": "2022-07-24T19:34:59.000Z"
+      },
+      {
+        "trakt_id": 762047,
+        "tmdb_id": 948276,
+        "title": "Lost Bullet 2",
+        "list_slug": "movies-2023",
+        "list_order": 60,
+        "listed_at": "2023-03-21T00:59:19.000Z"
+      },
+      {
+        "trakt_id": 787984,
+        "tmdb_id": 980489,
+        "title": "Gran Turismo",
+        "list_slug": "movies-2023",
+        "list_order": 26,
+        "listed_at": "2023-08-26T18:56:29.000Z"
+      },
+      {
+        "trakt_id": 792299,
+        "tmdb_id": 986056,
+        "title": "Thunderbolts*",
+        "list_slug": "movies-2026",
+        "list_order": 31,
+        "listed_at": "2026-02-16T21:50:11.000Z"
+      },
+      {
+        "trakt_id": 793803,
+        "tmdb_id": 987686,
+        "title": "A Family Affair",
+        "list_slug": "movies-2024",
+        "list_order": 20,
+        "listed_at": "2024-07-10T01:18:45.000Z"
+      },
+      {
+        "trakt_id": 796977,
+        "tmdb_id": 991494,
+        "title": "The SpongeBob Movie: Search for SquarePants",
+        "list_slug": "movies-2026",
+        "list_order": 53,
+        "listed_at": "2026-01-08T23:49:07.000Z"
+      },
+      {
+        "trakt_id": 797213,
+        "tmdb_id": 991708,
+        "title": "El Conde",
+        "list_slug": "movies-2023",
+        "list_order": 20,
+        "listed_at": "2023-09-16T18:43:53.000Z"
+      },
+      {
+        "trakt_id": 803613,
+        "tmdb_id": 999644,
+        "title": "You Are So Not Invited to My Bat Mitzvah",
+        "list_slug": "movies-2023",
+        "list_order": 25,
+        "listed_at": "2023-08-27T00:47:20.000Z"
+      },
+      {
+        "trakt_id": 813333,
+        "tmdb_id": 1011985,
+        "title": "Kung Fu Panda 4",
+        "list_slug": "movies-2024",
+        "list_order": 44,
+        "listed_at": "2024-03-30T20:03:37.000Z"
+      },
+      {
+        "trakt_id": 813602,
+        "tmdb_id": 1012201,
+        "title": "HAIKYU!! The Dumpster Battle",
+        "list_slug": "movies-2024",
+        "list_order": 25,
+        "listed_at": "2024-06-08T19:53:35.000Z"
+      },
+      {
+        "trakt_id": 815154,
+        "tmdb_id": 921636,
+        "title": "The Out-Laws",
+        "list_slug": "movies-2023",
+        "list_order": 47,
+        "listed_at": "2023-07-09T23:01:34.000Z"
+      },
+      {
+        "trakt_id": 822464,
+        "tmdb_id": 1022789,
+        "title": "Inside Out 2",
+        "list_slug": "movies-2024",
+        "list_order": 18,
+        "listed_at": "2024-07-20T21:48:19.000Z"
+      },
+      {
+        "trakt_id": 827935,
+        "tmdb_id": 1029575,
+        "title": "The Family Plan",
+        "list_slug": "movies-2025",
+        "list_order": 25,
+        "listed_at": "2025-12-21T23:49:41.000Z"
+      },
+      {
+        "trakt_id": 836833,
+        "tmdb_id": 1040148,
+        "title": "Ruby Gillman, Teenage Kraken",
+        "list_slug": "movies-2023",
+        "list_order": 24,
+        "listed_at": "2023-08-31T00:02:49.000Z"
+      },
+      {
+        "trakt_id": 854702,
+        "tmdb_id": 1062807,
+        "title": "SPY x FAMILY CODE: White",
+        "list_slug": "movies-2024",
+        "list_order": 7,
+        "listed_at": "2024-09-07T22:27:01.000Z"
+      },
+      {
+        "trakt_id": 859212,
+        "tmdb_id": 1068141,
+        "title": "Mighty Morphin Power Rangers: Once & Always",
+        "list_slug": "movies-2023",
+        "list_order": 55,
+        "listed_at": "2023-04-20T22:21:06.000Z"
+      },
+      {
+        "trakt_id": 861130,
+        "tmdb_id": 1070514,
+        "title": "Zom 100: Bucket List of the Dead",
+        "list_slug": "movies-2023",
+        "list_order": 29,
+        "listed_at": "2023-08-15T03:14:01.000Z"
+      },
+      {
+        "trakt_id": 862395,
+        "tmdb_id": 1072790,
+        "title": "Anyone But You",
+        "list_slug": "movies-2024",
+        "list_order": 31,
+        "listed_at": "2024-05-25T23:36:33.000Z"
+      },
+      {
+        "trakt_id": 868842,
+        "tmdb_id": 1081003,
+        "title": "Supergirl",
+        "list_slug": "movies-2026",
+        "list_order": 5,
+        "listed_at": "2026-06-28T22:10:00.000Z"
+      },
+      {
+        "trakt_id": 871250,
+        "tmdb_id": 1083862,
+        "title": "Resident Evil: Death Island",
+        "list_slug": "movies-2024",
+        "list_order": 37,
+        "listed_at": "2024-05-16T00:52:46.000Z"
+      },
+      {
+        "trakt_id": 888801,
+        "tmdb_id": 1104844,
+        "title": "BLUE LOCK THE MOVIE -EPISODE NAGI-",
+        "list_slug": "movies-2025",
+        "list_order": 52,
+        "listed_at": "2025-01-04T21:08:30.000Z"
+      },
+      {
+        "trakt_id": 905524,
+        "tmdb_id": 1125257,
+        "title": "Freakier Friday",
+        "list_slug": "movies-2025",
+        "list_order": 32,
+        "listed_at": "2025-11-15T21:37:30.000Z"
+      },
+      {
+        "trakt_id": 908663,
+        "tmdb_id": 1128979,
+        "title": "Imagine Dragons: Live in Vegas",
+        "list_slug": "movies-2023",
+        "list_order": 34,
+        "listed_at": "2023-08-03T23:31:50.000Z"
+      },
+      {
+        "trakt_id": 934153,
+        "tmdb_id": 1159311,
+        "title": "My Hero Academia: You're Next",
+        "list_slug": "movies-2024",
+        "list_order": 4,
+        "listed_at": "2024-10-13T00:26:48.000Z"
+      },
+      {
+        "trakt_id": 955488,
+        "tmdb_id": 1184918,
+        "title": "The Wild Robot",
+        "list_slug": "movies-2025",
+        "list_order": 8,
+        "listed_at": "2025-12-28T22:25:29.000Z"
+      },
+      {
+        "trakt_id": 981266,
+        "tmdb_id": 1216221,
+        "title": "Demon Slayer: Kimetsu no Yaiba -To the Hashira Training-",
+        "list_slug": "movies-2024",
+        "list_order": 47,
+        "listed_at": "2024-02-24T18:23:46.000Z"
+      },
+      {
+        "trakt_id": 991429,
+        "tmdb_id": 1226863,
+        "title": "The Super Mario Galaxy Movie",
+        "list_slug": "movies-2026",
+        "list_order": 18,
+        "listed_at": "2026-04-03T19:56:41.000Z"
+      },
+      {
+        "trakt_id": 998791,
+        "tmdb_id": 1234811,
+        "title": "Our Little Secret",
+        "list_slug": "movies-2024",
+        "list_order": 2,
+        "listed_at": "2024-12-04T23:05:53.000Z"
+      },
+      {
+        "trakt_id": 998800,
+        "tmdb_id": 1234821,
+        "title": "Jurassic World Rebirth",
+        "list_slug": "movies-2026",
+        "list_order": 27,
+        "listed_at": "2026-02-25T23:41:38.000Z"
+      },
+      {
+        "trakt_id": 1071058,
+        "tmdb_id": 1311031,
+        "title": "Demon Slayer: Kimetsu no Yaiba Infinity Castle",
+        "list_slug": "movies-2025",
+        "list_order": 35,
+        "listed_at": "2025-09-12T21:35:41.000Z"
+      },
+      {
+        "trakt_id": 1112909,
+        "tmdb_id": 1363123,
+        "title": "The Family Plan 2",
+        "list_slug": "movies-2025",
+        "list_order": 24,
+        "listed_at": "2025-12-22T23:50:36.000Z"
+      },
+      {
+        "trakt_id": 1124611,
+        "tmdb_id": 1377267,
+        "title": "A Carpenter Christmas Romance",
+        "list_slug": "movies-2025",
+        "list_order": 31,
+        "listed_at": "2025-12-14T20:12:13.000Z"
+      },
+      {
+        "trakt_id": 1178309,
+        "tmdb_id": 1439930,
+        "title": "The Punisher: One Last Kill",
+        "list_slug": "movies-2026",
+        "list_order": 11,
+        "listed_at": "2026-05-13T22:20:42.000Z"
+      },
+      {
+        "trakt_id": 1355758,
+        "tmdb_id": 1637319,
+        "title": "Hannah Montana 20th Anniversary Special",
+        "list_slug": "movies-2026",
+        "list_order": 19,
+        "listed_at": "2026-03-25T23:42:34.000Z"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "ENAM",
+      "served_by_colo": "EWR",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 5.5144
+      },
+      "duration": 5.5144,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 2277376,
+      "rows_read": 481,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

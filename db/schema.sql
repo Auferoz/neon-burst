@@ -118,15 +118,35 @@ CREATE TABLE IF NOT EXISTS movies_cache (
   during_credits INTEGER DEFAULT 0,
   votes INTEGER DEFAULT 0,
   detail_fetched_at TEXT,
-  list_slug TEXT,
-  list_order INTEGER DEFAULT 0,
-  listed_at TEXT,
   updated_at TEXT DEFAULT (datetime('now'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_movies_cache_year ON movies_cache(year);
-CREATE INDEX IF NOT EXISTS idx_movies_cache_list ON movies_cache(list_slug);
 CREATE INDEX IF NOT EXISTS idx_movies_cache_title ON movies_cache(title);
+-- Único: es la clave con la que movies_watched se une al caché, y la que permite
+-- reconciliar una película cargada a mano con la que devuelve Trakt.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_movies_cache_tmdb ON movies_cache(tmdb_id);
+
+-- Las películas vistas. Separada de movies_cache (que es solo metadata) para que
+-- una película pueda estar vista en más de un año y para poder cargarlas a mano
+-- mientras la API de Trakt no esté disponible.
+CREATE TABLE IF NOT EXISTS movies_watched (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tmdb_id INTEGER NOT NULL,
+  trakt_id INTEGER,
+  trakt_slug TEXT,
+  year_watched INTEGER NOT NULL,
+  platform TEXT,
+  source TEXT NOT NULL DEFAULT 'trakt' CHECK (source IN ('trakt', 'manual')),
+  listed_at TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now')),
+  UNIQUE (tmdb_id, year_watched)
+);
+
+CREATE INDEX IF NOT EXISTS idx_movies_watched_year ON movies_watched(year_watched);
+CREATE INDEX IF NOT EXISTS idx_movies_watched_tmdb ON movies_watched(tmdb_id);
+CREATE INDEX IF NOT EXISTS idx_movies_watched_source ON movies_watched(source);
 
 CREATE TABLE IF NOT EXISTS series_cache (
   trakt_slug TEXT PRIMARY KEY,

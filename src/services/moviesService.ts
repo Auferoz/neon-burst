@@ -3,7 +3,8 @@
  */
 
 import { env } from 'cloudflare:workers';
-import { fetchTmdbMovieDetail, resolveTmdbMovieIdByImdb, TMDB_SOURCE } from './tmdbMovies';
+import { fetchTmdbEnglishTitle, fetchTmdbMovieDetail, lookupTmdbMovieId, resolveTmdbMovieIdByImdb, TMDB_SOURCE } from './tmdbMovies';
+import { parseMediaQuery } from '../utils/mediaQuery';
 
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -75,8 +76,189 @@ export interface MovieDetail {
   after_credits: boolean;
   during_credits: boolean;
   votes: number;
-  list_slug: string;
+}
+
+/** Una película vista: la fila de movies_watched + su metadata de movies_cache. */
+export interface MovieListItem {
+  watched_id: number;
+  year_watched: number;
+  platform: string;
+  source: string;
   listed_at: string;
+  trakt_id: number | null;
+  tmdb_id: number;
+  imdb_id: string;
+  title: string;
+  year: number;
+  released: string;
+  runtime: number;
+  genres: string;
+  overview: string;
+  rating: number;
+  poster: string;
+  thumb: string;
+}
+
+/**
+ * Lista completa de películas vistas.
+ *
+ * El año sale de movies_watched.year_watched. El JOIN es por tmdb_id porque es el
+ * único identificador disponible tanto en lo que trae Trakt como en lo que se
+ * carga a mano.
+ */
+export async function getAllMovies(db: D1Database): Promise<MovieListItem[]> {
+  const { results } = await db.prepare(
+    `SELECT
+       w.id AS watched_id, w.year_watched, w.platform, w.source, w.listed_at,
+       COALESCE(w.trakt_id, c.trakt_id) AS trakt_id,
+       c.tmdb_id, c.imdb_id, c.title, c.year, c.released, c.runtime,
+       c.genres, c.overview, c.rating, c.poster, c.thumb
+     FROM movies_watched w
+     JOIN movies_cache c ON c.tmdb_id = w.tmdb_id
+     ORDER BY w.year_watched DESC, w.listed_at DESC`
+  ).all<MovieListItem>();
+
+  return results || [];
+}
+
+/** Motivos por los que un alta manual puede fallar, mapeados a HTTP en la API. */
+export type CreateMovieError =
+  | 'invalid_query'   // 400 — no parece slug de Trakt ni id de TMDB
+  | 'not_found'       // 404 — TMDB respondió y no existe
+  | 'provider_down'   // 502 — TMDB no respondió
+  | 'duplicate';      // 409 — ya está esa película en ese año
+
+export class CreateMovieFailure extends Error {
+  constructor(public reason: CreateMovieError, message: string) {
+    super(message);
+    this.name = 'CreateMovieFailure';
+  }
+}
+
+/**
+ * trakt_id provisional para una película cargada a mano.
+ *
+ * movies_cache.trakt_id es INTEGER PRIMARY KEY, o sea alias del rowid: insertar
+ * NULL haría que SQLite asigne max+1, un id positivo que puede chocar con el
+ * trakt_id real de otra película cuando vuelva el sync. Los ids de Trakt son
+ * siempre positivos, así que el negativo del tmdb_id no colisiona nunca y deja
+ * a la vista que la fila todavía no fue confirmada por Trakt.
+ *
+ * La fase 4 del plan lo reemplaza por el id real al reconciliar.
+ */
+function provisionalTraktId(tmdbId: number): number {
+  return -tmdbId;
+}
+
+/** ¿Es un trakt_id provisional (puesto por un alta manual) y no uno real? */
+export function isProvisionalTraktId(traktId: number | null): boolean {
+  return traktId !== null && traktId < 0;
+}
+
+/**
+ * Da de alta una película vista a mano.
+ *
+ * Resuelve lo que escribió el usuario (slug de Trakt o id de TMDB), trae la
+ * metadata de TMDB si la película todavía no está cacheada, y crea la fila en
+ * movies_watched. No toca nada de lo que sincroniza Trakt.
+ */
+export async function createMovieEntry(
+  db: D1Database,
+  data: { query: string; year_watched: number; platform?: string }
+): Promise<MovieListItem> {
+  const parsed = parseMediaQuery(data.query);
+  if (!parsed) {
+    throw new CreateMovieFailure(
+      'invalid_query',
+      'Escribe el slug o la URL de Trakt (ej. dune-part-two-2024) o el id de TMDB'
+    );
+  }
+
+  const lookup = await lookupTmdbMovieId(parsed);
+  if (!lookup.ok) {
+    throw new CreateMovieFailure('provider_down', 'TMDB no respondió. Intenta de nuevo en un momento.');
+  }
+  if (lookup.id === null) {
+    throw new CreateMovieFailure('not_found', `No se encontró "${data.query}" en TMDB. Prueba pegando el id de TMDB.`);
+  }
+
+  const tmdbId = lookup.id;
+
+  // Cachear la metadata solo si esta película todavía no está
+  const cached = await db.prepare('SELECT trakt_id FROM movies_cache WHERE tmdb_id = ?')
+    .bind(tmdbId).first<{ trakt_id: number }>();
+
+  if (!cached) {
+    const detail = await fetchTmdbMovieDetail(tmdbId);
+    if (!detail) {
+      throw new CreateMovieFailure('provider_down', 'TMDB no devolvió los datos de la película.');
+    }
+
+    // El título va en inglés para no mezclar idiomas con lo que vino de Trakt
+    const title = (await fetchTmdbEnglishTitle(tmdbId)) || detail.title;
+
+    await db.prepare(
+      `INSERT INTO movies_cache
+         (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview,
+          rating, poster, thumb, tagline, certification, country, language, trailer,
+          homepage, fanart, logo, votes, cast_json, videos_json, images_json,
+          data_source, detail_fetched_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+               datetime('now'), datetime('now'))`
+    ).bind(
+      provisionalTraktId(tmdbId), tmdbId, detail.imdb_id, title, detail.year,
+      detail.released, detail.runtime, detail.genres, detail.overview, detail.rating,
+      detail.poster, detail.thumb, detail.tagline, detail.certification, detail.country,
+      detail.language, detail.trailer, detail.homepage, detail.fanart, detail.logo,
+      detail.votes, JSON.stringify(detail.cast), JSON.stringify(detail.videos),
+      JSON.stringify(detail.images), TMDB_SOURCE,
+    ).run();
+  }
+
+  const slug = parsed.kind === 'slug' ? parsed.slug : null;
+
+  try {
+    await db.prepare(
+      `INSERT INTO movies_watched (tmdb_id, trakt_slug, year_watched, platform, source, listed_at)
+       VALUES (?, ?, ?, ?, 'manual', datetime('now'))`
+    ).bind(tmdbId, slug, data.year_watched, data.platform || null).run();
+  } catch (e) {
+    if ((e as Error).message.includes('UNIQUE')) {
+      throw new CreateMovieFailure('duplicate', `Esa película ya está registrada en ${data.year_watched}`);
+    }
+    throw e;
+  }
+
+  const created = await getMovieEntry(db, tmdbId, data.year_watched);
+  if (!created) throw new Error('La película se creó pero no se pudo leer de vuelta');
+  return created;
+}
+
+/** Una entrada concreta de movies_watched, con su metadata. */
+export async function getMovieEntry(
+  db: D1Database,
+  tmdbId: number,
+  yearWatched: number
+): Promise<MovieListItem | null> {
+  return db.prepare(
+    `SELECT
+       w.id AS watched_id, w.year_watched, w.platform, w.source, w.listed_at,
+       COALESCE(w.trakt_id, c.trakt_id) AS trakt_id,
+       c.tmdb_id, c.imdb_id, c.title, c.year, c.released, c.runtime,
+       c.genres, c.overview, c.rating, c.poster, c.thumb
+     FROM movies_watched w
+     JOIN movies_cache c ON c.tmdb_id = w.tmdb_id
+     WHERE w.tmdb_id = ? AND w.year_watched = ?`
+  ).bind(tmdbId, yearWatched).first<MovieListItem>();
+}
+
+/**
+ * Borra una entrada de movies_watched por su id.
+ * La metadata en movies_cache se conserva: es caché, no dato del usuario.
+ */
+export async function deleteMovieEntry(db: D1Database, watchedId: number): Promise<boolean> {
+  const result = await db.prepare('DELETE FROM movies_watched WHERE id = ?').bind(watchedId).run();
+  return (result.meta.changes ?? 0) > 0;
 }
 
 // ── Trakt API fetchers ──
@@ -178,9 +360,22 @@ async function fetchTmdbVideos(tmdbId: number): Promise<Video[]> {
 
 // ── Main service functions ──
 
-export async function getMovieById(db: D1Database, traktId: number): Promise<MovieDetail | null> {
-  const row = await db.prepare('SELECT * FROM movies_cache WHERE trakt_id = ?').bind(traktId).first<Record<string, unknown>>();
+/**
+ * Detalle de una película por id de la URL.
+ *
+ * El id es el `tmdb_id`, que no cambia nunca. Se acepta también el `trakt_id`
+ * como respaldo para no romper links viejos: las rutas de antes usaban ese, y
+ * además el trakt_id de una película cargada a mano es provisional y lo
+ * reemplaza la reconciliación con Trakt.
+ */
+export async function getMovieById(db: D1Database, id: number): Promise<MovieDetail | null> {
+  const byId = (column: 'tmdb_id' | 'trakt_id') =>
+    db.prepare(`SELECT * FROM movies_cache WHERE ${column} = ?`).bind(id).first<Record<string, unknown>>();
+
+  const row = (await byId('tmdb_id')) || (await byId('trakt_id'));
   if (!row) return null;
+
+  const traktId = row.trakt_id as number;
 
   // On-demand detail fetch (or re-fetch if stale/empty)
   const needsFetch = !row.detail_fetched_at || (
@@ -231,8 +426,6 @@ function rowToMovieDetail(row: Record<string, unknown>): MovieDetail {
     after_credits: !!(row.after_credits as number),
     during_credits: !!(row.during_credits as number),
     votes: (row.votes as number) || 0,
-    list_slug: (row.list_slug as string) || '',
-    listed_at: (row.listed_at as string) || '',
   };
 }
 

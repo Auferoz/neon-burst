@@ -76,8 +76,9 @@ integrations/        — cloudflare-cron.ts (injects scheduled handler post-buil
 | `SteamLibraryMain.vue` | Steam games display |
 | `NextGamesMain.vue` | Upcoming games container |
 | `NextGamesCard.vue` | Individual upcoming game card |
-| `MoviesMain.vue` | Movies container with year tabs |
-| `MoviesCard.vue` | Individual movie card |
+| `MoviesMain.vue` | Movies container with year tabs + botón Agregar |
+| `MoviesCard.vue` | Individual movie card (linkea a `/movies/{tmdb_id}`) |
+| `MoviesFormModal.vue` | Alta manual de película, con previsualización antes de guardar |
 | `SeriesMain.vue` | Series container with year tabs |
 | `SeriesCard.vue` | Individual series card |
 | `SeriesFormModal.vue` | Create/edit series entry modal |
@@ -114,6 +115,38 @@ Resolución de la query: ID numérico → `where id =`; URL/slug → `where slug
 existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL no-IGDB,
 404 no encontrado, 502 IGDB inaccesible.
 
+### Alta manual de películas (`MoviesFormModal.vue`)
+
+Mientras la API de Trakt no esté disponible, las películas se cargan a mano desde el
+botón **Agregar** de `/ListMovies`. El campo acepta cuatro formas, en este orden:
+
+1. URL de TMDB — `https://www.themoviedb.org/movie/693134-dune-part-two`
+2. Id de TMDB pelado — `693134`
+3. URL de Trakt — `https://app.trakt.tv/movies/dune-part-two-2024`
+4. Slug de Trakt — `dune-part-two-2024`
+
+El slug de Trakt se resuelve **contra TMDB**, no contra Trakt: `slugToQuery()` lo parte
+en título + año y busca en `/search/movie`. Medido sobre las 481 películas del catálogo,
+usando el `tmdb_id` guardado como verdad de referencia:
+
+| filtro | aciertos |
+|---|---|
+| `&year=` | 471/481 — 97.9% |
+| `&primary_release_year=` | **476/481 — 99.0%** |
+
+**Usar siempre `primary_release_year`**: `year` matchea flojo y devuelve la película más
+popular del título aunque sea de otro año (Robin Hood 2018 → devolvía la de 2010). El
+equivalente estricto en `/search/tv` es `first_air_date_year`, que es el que ya usa
+`lookupTmdbTvId()` en `tmdbSeries.ts`.
+
+Los 5 fallos restantes son colisiones de mismo título **y** mismo año, que ninguna
+búsqueda por texto resuelve: ahí se pega el id de TMDB. Por eso el modal previsualiza
+(póster, título, año, `tmdb_id`, y en qué años ya está registrada) vía
+`/api/movies/lookup`, y el botón Agregar está deshabilitado hasta confirmar.
+
+El título se guarda en **inglés** (`fetchTmdbEnglishTitle()`) para no mezclar idiomas con
+las 481 que vinieron de Trakt; la sinopsis se queda en español.
+
 ### API Endpoints
 
 | Endpoint | Methods | Purpose |
@@ -125,8 +158,9 @@ existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL n
 | `/api/next-games` | GET | Upcoming games cache (5min cache) |
 | `/api/next-games/sync` | GET | Trigger IGDB sync (same auth) |
 | `/api/next-games/featured` | GET, POST | List/toggle featured games |
-| `/api/movies` | GET, POST | List all movies / Create movie |
-| `/api/movies/[id]` | GET, PUT, DELETE | Movie CRUD by ID |
+| `/api/movies` | GET, POST | Lista de películas vistas (JOIN `movies_watched` ↔ `movies_cache`) / alta manual |
+| `/api/movies/[id]` | GET, DELETE | GET: detalle por `tmdb_id` (acepta `trakt_id` por compatibilidad). DELETE: borra una entrada de `movies_watched` por su `watched_id` |
+| `/api/movies/lookup` | GET | `?q=<slug\|url de Trakt\|id de TMDB>` → previsualización sin guardar, con `watched_years` |
 | `/api/movies/sync` | GET | Trigger Trakt movies sync (requires auth) |
 | `/api/movies/lists` | GET | Movie lists metadata |
 | `/api/series` | GET, POST | List all series / Create series entry |
@@ -149,8 +183,18 @@ existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL n
 - **next_games_featured** — Featured game toggles (igdb_id PK)
 
 **Movies tables**:
-- **movies_cache** — Cached movie data (trakt_id PK, poster, thumb, genres, rating, plus detail columns: tagline, certification, cast_json, videos_json, images_json, `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at)
+- **movies_cache** — **Solo metadata** (trakt_id PK, `tmdb_id` UNIQUE, poster, thumb, genres, rating, más columnas de detalle: tagline, certification, cast_json, videos_json, images_json, `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at). Ya **no** tiene `list_slug` / `list_order` / `listed_at`: eso vive en `movies_watched`
+- **movies_watched** — Las películas vistas (`tmdb_id` + `year_watched` UNIQUE, `trakt_id` nullable, `trakt_slug`, `platform`, `source` `'trakt' | 'manual'`, `listed_at`). Es el equivalente de `series_watched`, y lo que permite que una película figure en más de un año
 - **movies_lists** — Movie list metadata (slug PK, description, item_count)
+
+**La clave de unión entre las dos es `tmdb_id`, no `trakt_id`.** Es el único
+identificador que existe tanto en lo que devuelve Trakt como en lo que se puede
+conocer sin su API. Una película cargada a mano guarda un `trakt_id` **provisional
+negativo** (`-tmdb_id`), porque `movies_cache.trakt_id` es `INTEGER PRIMARY KEY`
+—alias del rowid— y un `NULL` haría que SQLite asigne `max+1`, un id positivo que
+puede chocar con el real. `moviesSync.ts` lo promueve al verdadero antes del
+upsert; sin ese paso el sync falla con `UNIQUE constraint failed: movies_cache.tmdb_id`
+y se pierde el lote entero de 50.
 
 **Series tables**:
 - **series_cache** — Cached series data (trakt_slug PK, poster, thumb, genres, rating, plus detail columns: tagline, certification, cast_json, videos_json, images_json, seasons_json, `season_posters_json` (mapa `{"1":"url"}`), `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at)
@@ -163,7 +207,7 @@ existe, cae a `search "<slug con espacios>"`. Respuestas: 400 query vacía/URL n
 **Migraciones** (`db/migrate-*.sql`, se aplican con `wrangler d1 execute`): `add-movies-tables`,
 `add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
 `add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
-`rename-rawg-opencritic`. Ojo: `db/schema.sql`
+`rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`. Ojo: `db/schema.sql`
 **no** incluye todavía `season_posters_json` ni las columnas `data_source` — una base creada
 solo desde `schema.sql` necesita correr esas migraciones aparte.
 
@@ -180,9 +224,10 @@ npx wrangler d1 execute neon-burst-db --remote --file db/<migracion>.sql
 - `src/services/steamSync.ts` — Fetches Steam API → store details → HLTB times → upserts steam_cache
 - `src/services/nextGamesSync.ts` — Queries IGDB for upcoming games with community interest → batch upserts
 - `src/services/igdbGame.ts` — Lookup de **un** juego en IGDB por URL / slug / ID, mapeado a los campos de `games`. Exporta `getIgdbToken()` (compartido con `nextGamesSync.ts`), `parseIgdbQuery()` y `lookupIgdbGame()`. Usado por `/api/igdb/lookup` para el autocompletado del modal
-- `src/services/moviesService.ts` — D1 CRUD for movies_cache + on-demand detail fetch from Trakt (cast, videos, images)
-- `src/services/tmdbMovies.ts` — Proveedor TMDB de películas (fallback temporal, ver abajo): detalle completo desde `/movie/{id}` con `credits`, `images`, `release_dates`, `videos` y `external_ids`
-- `src/services/moviesSync.ts` — Fetches Trakt user movie lists → upserts movies_cache (cron syncs current year only). **Devuelve 0 mientras Trakt esté caído**: las listas no tienen equivalente en TMDB
+- `src/services/moviesService.ts` — D1 CRUD de `movies_watched` + `movies_cache` y detalle on-demand. `getAllMovies()` hace el JOIN; `createMovieEntry()` es el alta manual; `deleteMovieEntry()` borra una entrada
+- `src/services/tmdbMovies.ts` — Proveedor TMDB de películas (fallback temporal, ver abajo): detalle completo desde `/movie/{id}` con `credits`, `images`, `release_dates`, `videos` y `external_ids`. Además `lookupTmdbMovieId()` (slug → id), `fetchTmdbMoviePreview()` (liviano, para el modal) y `fetchTmdbEnglishTitle()`
+- `src/services/moviesSync.ts` — Fetches Trakt user movie lists → upserts `movies_cache` **y `movies_watched`** (cron syncs current year only). **Devuelve 0 mientras Trakt esté caído**: las listas no tienen equivalente en TMDB
+- `src/utils/mediaQuery.ts` — `parseMediaQuery()` (acepta slug de Trakt, URL de Trakt, id o URL de TMDB) y `slugToQuery()` (slug → término + año), compartida con `tmdbSeries.ts`
 - `src/services/streamingAuth.ts` — PIN + cookie de sesión firmada (HMAC-SHA256 vía Web Crypto) + rate limiting por IP en `streaming_attempts`
 - `src/services/streamingService.ts` — Lectura de `streaming_accounts`; `getStreamingAccountsPublic()` omite email y contraseña
 - `src/services/seriesService.ts` — D1 CRUD for series_watched + series_cache + on-demand detail fetch from Trakt (cast, seasons, episodes, videos)
@@ -261,10 +306,16 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 - `after_credits` / `during_credits` se quedan como estén: TMDB no expone ese dato
 - Los textos (`tagline`, `overview`) se piden en `es-ES` y, si TMDB no los tiene traducidos,
   se completan desde `en-US`
-- **La pertenencia a listas no se puede recuperar**: qué películas están en `movies-2026` solo
-  lo sabe Trakt, así que el sync sigue devolviendo 0 y no se añaden películas nuevas solas.
-  Scrapear `app.trakt.tv` no es viable: es una SPA que sirve el `<body>` vacío y no expone
-  ningún endpoint JSON público (`.json` devuelve el shell HTML)
+- **La pertenencia a listas no se puede recuperar automáticamente**: qué películas están en
+  `movies-2026` solo lo sabe Trakt, así que el sync sigue devolviendo 0 y no se añaden
+  películas nuevas solas. **Para eso está el alta manual** (ver abajo): se cargan a mano y
+  se reconcilian cuando Trakt vuelva
+- Scrapear `app.trakt.tv` no es viable: es una SPA que sirve el `<body>` vacío y no expone
+  ningún endpoint JSON público (`.json` devuelve el shell HTML). Medido: `api.trakt.tv`
+  devuelve `403` **incluso con la key y para rutas inventadas** (corta por auth antes de
+  resolver la ruta), y `app.trakt.tv` devuelve `200` solo si el User-Agent parece un
+  navegador — pero sirve 29 KB de cascarón, con el `og:title` genérico del sitio, sin
+  JSON-LD y sin una sola referencia a TMDB o IMDb
 
 **Común a ambos:**
 - El **cron diario sigue siendo solo Trakt** a propósito: si falla, deja el caché intacto
@@ -322,6 +373,12 @@ The `db/sync-*.js` and `db/seed-*.js` scripts use `wrangler d1 execute` via `exe
 - Multi-line SQL with `datetime('now')` fails on Windows shell due to quote escaping — tables must be created manually via single-line commands (see `comandos.txt`)
 - The `--remote` flag syncs against Cloudflare D1; without it, syncs locally
 - Errors in `d1()` helper are logged to console
+
+**La lógica de sync está duplicada.** Cada sync existe dos veces: en el worker
+(`src/services/*Sync.ts`, que corre por cron y por `/api/*/sync`) y como script local
+(`db/sync-*.js`, que corre por `npm run sync-*` usando `wrangler d1 execute`). No
+comparten código. Todo cambio en el esquema o en la lógica de upsert hay que aplicarlo
+**en las dos**, o el script local queda escribiendo contra columnas que ya no existen.
 
 **Los ids de `games` NO son estables entre local y remoto.** Un script que lee de la
 base local y genera SQL con `WHERE id = ...` le escribe a la fila equivocada al

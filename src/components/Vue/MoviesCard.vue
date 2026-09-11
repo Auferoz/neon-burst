@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface Movie {
-  trakt_id: number;
+  trakt_id: number | null;
   tmdb_id: number;
   imdb_id: string;
   title: string;
@@ -12,7 +12,6 @@ interface Movie {
   rating: number;
   poster: string;
   thumb: string;
-  list_slug: string;
 }
 
 const props = defineProps<{
@@ -46,7 +45,7 @@ function onPosterError(e: Event) {
 </script>
 
 <template>
-  <a :href="`/movies/${movie.trakt_id}`" class="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-emerald rounded-xl" :aria-label="`${movie.title} (${movie.year}), ${formatRuntime(movie.runtime)}, rating ${movie.rating}`">
+  <a :href="`/movies/${movie.tmdb_id}`" class="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-emerald rounded-xl" :aria-label="`${movie.title} (${movie.year}), ${formatRuntime(movie.runtime)}, rating ${movie.rating}`">
   <article
     class="group relative border border-border-default rounded-xl overflow-hidden transition-all duration-200 hover:border-border-hover h-full flex flex-col cursor-pointer"
   >
@@ -92,7 +91,7 @@ function onPosterError(e: Event) {
           :alt="`Poster de ${movie.title}`"
           @error="onPosterError"
           class="w-20 sm:w-24 rounded-lg object-cover aspect-[2/3] bg-surface-3"
-          :style="{ viewTransitionName: `movie-poster-${movie.trakt_id}` }"
+          :style="{ viewTransitionName: `movie-poster-${movie.tmdb_id}` }"
           loading="lazy"
           width="96"
           height="144"

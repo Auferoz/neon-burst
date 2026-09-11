@@ -8,6 +8,7 @@
 
 import { env } from 'cloudflare:workers';
 import type { CastMember, MovieImages, Video } from './moviesService';
+import { slugToQuery, type MediaQuery } from '../utils/mediaQuery';
 
 const TMDB_API_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMG = 'https://image.tmdb.org/t/p';
@@ -185,6 +186,96 @@ export async function fetchTmdbMovieDetail(tmdbId: number): Promise<TmdbMovieDet
     videos,
     images,
   };
+}
+
+interface TmdbSearchResult {
+  results?: Array<{ id: number; title: string; release_date?: string }>;
+}
+
+/**
+ * Resultado de resolver lo que escribió el usuario.
+ * Distingue "TMDB respondió y no existe" (→ 404) de "TMDB no respondió" (→ 502).
+ */
+export type TmdbMovieLookup =
+  | { ok: true; id: number }
+  | { ok: true; id: null }
+  | { ok: false; id: null };
+
+/**
+ * Resuelve una entrada del usuario a un id de TMDB.
+ *
+ * Un id de TMDB se usa tal cual. Un slug de Trakt se busca por título + año,
+ * usando `primary_release_year` (filtro estricto) y no `year`: medido sobre las
+ * 481 películas del catálogo, `year` acierta 97.9% y el estricto 99.0%, porque
+ * `year` devuelve la película más popular del título aunque sea de otro año
+ * (Robin Hood 2018 → devolvía la de 2010).
+ */
+export async function lookupTmdbMovieId(query: MediaQuery): Promise<TmdbMovieLookup> {
+  if (query.kind === 'tmdb') return { ok: true, id: query.id };
+
+  const { query: term, year } = slugToQuery(query.slug);
+  const termParam = `&query=${encodeURIComponent(term)}`;
+
+  let data = await tmdbFetch<TmdbSearchResult>(
+    '/search/movie', termParam + (year ? `&primary_release_year=${year}` : '')
+  );
+  if (!data) return { ok: false, id: null };
+
+  // Si el año del slug no dio resultados, reintentar sin filtrar por año
+  if (!data.results?.length && year) {
+    data = await tmdbFetch<TmdbSearchResult>('/search/movie', termParam);
+    if (!data) return { ok: false, id: null };
+  }
+
+  const id = data.results?.[0]?.id;
+  return id ? { ok: true, id } : { ok: true, id: null };
+}
+
+/** Lo mínimo para confirmar visualmente que la película resuelta es la correcta. */
+export interface TmdbMoviePreview {
+  tmdb_id: number;
+  title: string;
+  year: number | null;
+  released: string;
+  poster: string;
+  overview: string;
+}
+
+/**
+ * Datos básicos de una película, sin credits/images/videos.
+ *
+ * Es el `fetchTmdbMovieDetail` liviano: se usa para la previsualización del
+ * modal, que se dispara en cada búsqueda y no necesita el detalle completo.
+ */
+export async function fetchTmdbMoviePreview(tmdbId: number): Promise<TmdbMoviePreview | null> {
+  const es = await tmdbFetch<TmdbMovie>(`/movie/${tmdbId}`);
+  if (!es) return null;
+
+  const title = await fetchTmdbEnglishTitle(tmdbId);
+
+  return {
+    tmdb_id: es.id,
+    title: title || es.title || es.original_title || '',
+    year: es.release_date ? Number(es.release_date.slice(0, 4)) : null,
+    released: es.release_date || '',
+    poster: tmdbImage(es.poster_path, 'w342'),
+    overview: es.overview || '',
+  };
+}
+
+/**
+ * Título en inglés de una película.
+ *
+ * `tmdbFetch` pide todo en es-ES, pero las 481 películas que ya están cacheadas
+ * vinieron de Trakt con el título en inglés. Si un alta manual guardara
+ * "Dune: Parte dos" al lado de "No Time to Die", la lista quedaría mezclada.
+ * La sinopsis sí se deja en español.
+ */
+export async function fetchTmdbEnglishTitle(tmdbId: number): Promise<string> {
+  const movie = await tmdbFetch<{ title?: string; original_title?: string }>(
+    `/movie/${tmdbId}`, '', 'en-US'
+  );
+  return movie?.title || movie?.original_title || '';
 }
 
 interface TmdbFindResult {

@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import MoviesCard from './MoviesCard.vue';
+import MoviesFormModal from './MoviesFormModal.vue';
 import SyncButton from './SyncButton.vue';
 import IconGrid from '../Icons/IconGrid.vue';
 import IconClock from '../Icons/IconClock.vue';
 import IconStar from '../Icons/IconStar.vue';
 
 interface Movie {
-  trakt_id: number;
+  watched_id: number;
+  year_watched: number;
+  platform: string;
+  source: string;
+  trakt_id: number | null;
   tmdb_id: number;
   imdb_id: string;
   title: string;
@@ -18,25 +23,27 @@ interface Movie {
   overview: string;
   rating: number;
   poster: string;
-  list_slug: string;
 }
 
 const movies = ref<Movie[]>([]);
 const loading = ref(true);
 const error = ref('');
+const showForm = ref(false);
+
+// Plataformas ya usadas, para sugerirlas en el modal
+const platforms = computed(() =>
+  [...new Set(movies.value.map(m => m.platform).filter(Boolean))].sort()
+);
 
 const searchQuery = ref('');
 const filterYear = ref(String(new Date().getFullYear()));
 const filterGenre = ref('');
 
-// Extract unique years from list_slug (movies-YYYY → YYYY), sorted desc
+// Unique watched years, sorted desc
 const allYears = computed(() => {
   const years = new Set<string>();
   for (const m of movies.value) {
-    if (m.list_slug) {
-      const year = m.list_slug.replace('movies-', '');
-      if (year) years.add(year);
-    }
+    if (m.year_watched) years.add(String(m.year_watched));
   }
   return [...years].sort((a, b) => Number(b) - Number(a));
 });
@@ -64,8 +71,7 @@ const filteredMovies = computed(() => {
   }
 
   if (filterYear.value) {
-    const slug = `movies-${filterYear.value}`;
-    result = result.filter(m => m.list_slug === slug);
+    result = result.filter(m => String(m.year_watched) === filterYear.value);
   }
 
   if (filterGenre.value) {
@@ -138,6 +144,16 @@ onMounted(fetchMovies);
       <div>
         <div class="flex items-center gap-3">
           <h1 class="text-xl sm:text-2xl font-bold text-neon-emerald neon-glow-emerald leading-tight">movies</h1>
+          <button
+            @click="showForm = true"
+            class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-neon-emerald border border-neon-emerald/30 rounded-lg hover:bg-neon-emerald/10 transition-colors cursor-pointer"
+            aria-label="Agregar película"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Agregar
+          </button>
           <SyncButton endpoint="/api/movies/sync" accent="emerald" label="Sync" @synced="fetchMovies(true)" />
         </div>
         <p class="text-text-secondary text-sm leading-relaxed mt-1">Lista de películas vistas por año</p>
@@ -283,9 +299,16 @@ onMounted(fetchMovies);
 
     <!-- Movies grid -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" role="list" aria-label="Lista de películas">
-      <div v-for="movie in filteredMovies" :key="movie.trakt_id" role="listitem">
+      <div v-for="movie in filteredMovies" :key="movie.watched_id" role="listitem">
         <MoviesCard :movie="movie" />
       </div>
     </div>
+
+    <MoviesFormModal
+      :open="showForm"
+      :platforms="platforms"
+      @close="showForm = false"
+      @saved="fetchMovies(true)"
+    />
   </div>
 </template>

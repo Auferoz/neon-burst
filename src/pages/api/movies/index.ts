@@ -1,32 +1,58 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
+import {
+  getAllMovies,
+  createMovieEntry,
+  CreateMovieFailure,
+  type CreateMovieError,
+} from '../../../services/moviesService';
 
 export const prerender = false;
 
-interface MovieCacheRow {
-  trakt_id: number;
-  tmdb_id: number;
-  imdb_id: string;
-  title: string;
-  year: number;
-  released: string;
-  runtime: number;
-  genres: string;
-  overview: string;
-  rating: number;
-  poster: string;
-  list_slug: string;
-}
-
-export const GET: APIRoute = async () => {
-  const { results } = await env.DB.prepare(
-    'SELECT * FROM movies_cache ORDER BY list_slug DESC, listed_at DESC'
-  ).all<MovieCacheRow>();
-
-  return new Response(JSON.stringify(results || []), {
+const json = (body: unknown, status = 200, cache?: string) =>
+  new Response(JSON.stringify(body), {
+    status,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=300',
+      ...(cache ? { 'Cache-Control': cache } : {}),
     },
   });
+
+export const GET: APIRoute = async () => {
+  const movies = await getAllMovies(env.DB);
+  return json(movies, 200, 'public, max-age=300');
+};
+
+const STATUS_BY_REASON: Record<CreateMovieError, number> = {
+  invalid_query: 400,
+  not_found: 404,
+  duplicate: 409,
+  provider_down: 502,
+};
+
+export const POST: APIRoute = async ({ request }) => {
+  const data = await request.json() as {
+    query?: string;
+    year_watched?: number;
+    platform?: string;
+  };
+
+  if (!data.query || !data.year_watched) {
+    return json({ error: 'query y year_watched son obligatorios' }, 400);
+  }
+
+  try {
+    const entry = await createMovieEntry(env.DB, {
+      query: data.query,
+      year_watched: Number(data.year_watched),
+      platform: data.platform,
+    });
+    return json(entry, 201);
+  } catch (e) {
+    if (e instanceof CreateMovieFailure) {
+      return json({ error: e.message }, STATUS_BY_REASON[e.reason]);
+    }
+    console.error('[api/movies] POST failed:', e);
+    return json({ error: 'Error al crear la película' }, 500);
+  }
 };
