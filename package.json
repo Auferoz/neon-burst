@@ -22,7 +22,9 @@
     "sync-series": "node --env-file=.env db/sync-series.js",
     "sync-series:remote": "node --env-file=.env db/sync-series.js --remote",
     "seed-streaming": "node db/seed-streaming.js",
-    "seed-streaming:remote": "node db/seed-streaming.js --remote"
+    "seed-streaming:remote": "node db/seed-streaming.js --remote",
+    "backfill-library": "node --env-file=.env db/backfill-library.js",
+    "backfill-library:remote": "node --env-file=.env db/backfill-library.js --remote"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.2",
