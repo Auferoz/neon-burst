@@ -26,6 +26,7 @@ interface GameData {
   description: string;
   rating_metacritic: number | '';
   rating_opencritic: number | '';
+  rating_personal: number | '';
   is_demo: boolean;
   is_early_access: boolean;
   is_testing: boolean;
@@ -107,7 +108,7 @@ function emptyForm(): GameData {
     artworks: '', genre: '', estado: 'Jugando',
     logros_obt: '', logros_total: '', console_pc: '', igdb_id: '',
     first_year_played: '', description: '', rating_metacritic: '',
-    rating_opencritic: '', is_demo: false, is_early_access: false, is_testing: false, dates_played: [],
+    rating_opencritic: '', rating_personal: '', is_demo: false, is_early_access: false, is_testing: false, dates_played: [],
   };
 }
 
@@ -123,6 +124,7 @@ watch(() => props.open, (val) => {
         first_year_played: props.game.first_year_played || '',
         rating_metacritic: props.game.rating_metacritic || '',
         rating_opencritic: props.game.rating_opencritic || '',
+        rating_personal: props.game.rating_personal || '',
         is_demo: !!props.game.is_demo,
         is_early_access: !!props.game.is_early_access,
         is_testing: !!props.game.is_testing,
@@ -170,6 +172,7 @@ async function save() {
     first_year_played: Number(form.value.first_year_played) || null,
     rating_metacritic: Number(form.value.rating_metacritic) || null,
     rating_opencritic: Number(form.value.rating_opencritic) || null,
+    rating_personal: Number(form.value.rating_personal) || null,
     is_demo: form.value.is_demo ? 1 : 0,
     is_early_access: form.value.is_early_access ? 1 : 0,
     is_testing: form.value.is_testing ? 1 : 0,
@@ -402,7 +405,7 @@ function onBackdrop(e: MouseEvent) {
           </div>
 
           <!-- Ratings + IGDB -->
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
               <label for="game-mc" class="block text-xs text-text-muted mb-1">Metacritic</label>
               <input id="game-mc" v-model="form.rating_metacritic" type="number" min="0" max="100" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
@@ -410,6 +413,10 @@ function onBackdrop(e: MouseEvent) {
             <div>
               <label for="game-opencritic" class="block text-xs text-text-muted mb-1">OpenCritic</label>
               <input id="game-opencritic" v-model="form.rating_opencritic" type="number" step="0.01" min="0" max="100" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
+            </div>
+            <div>
+              <label for="game-personal" class="block text-xs text-text-muted mb-1">Mi score</label>
+              <input id="game-personal" v-model="form.rating_personal" type="number" min="0" max="100" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
             </div>
             <div>
               <label for="game-igdb" class="block text-xs text-text-muted mb-1">IGDB ID</label>

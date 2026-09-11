@@ -91,12 +91,12 @@ const hasMedia = hasTrailer || hasArtwork;
 					<h1 class="text-2xl sm:text-3xl font-bold text-text-primary leading-tight">{game.title}</h1>
 					<div class="flex items-center gap-2 shrink-0">
 						{game.is_demo === 1 && (
-							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-neon-purple border-neon-purple/30 bg-neon-purple/10">
+							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-neon-indigo border-neon-indigo/30 bg-neon-indigo/10">
 								Demo
 							</span>
 						)}
 						{game.is_early_access === 1 && (
-							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10">
+							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-neon-emerald border-neon-emerald/30 bg-neon-emerald/10">
 								Early Access
 							</span>
 						)}
@@ -151,7 +151,7 @@ const hasMedia = hasTrailer || hasArtwork;
 				</div>
 
 				<!-- Ratings -->
-				{(game.rating_metacritic || game.rating_opencritic) && (
+				{(game.rating_metacritic || game.rating_opencritic || game.rating_personal) && (
 					<div class="flex flex-wrap gap-3 mt-4">
 						{game.rating_metacritic && (
 							<div class="flex items-center gap-2">
@@ -177,6 +177,19 @@ const hasMedia = hasTrailer || hasArtwork;
 									{Math.round(game.rating_opencritic)}
 								</span>
 								<span class="text-xs text-text-muted">OpenCritic</span>
+							</div>
+						)}
+						{game.rating_personal && (
+							<div class="flex items-center gap-2">
+								<span class:list={[
+									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border px-6',
+									game.rating_personal >= 75 ? 'text-neon-green border-neon-green/30 bg-neon-green/10' :
+									game.rating_personal >= 50 ? 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10' :
+									'text-neon-pink border-neon-pink/30 bg-neon-pink/10'
+								]}>
+									{game.rating_personal}
+								</span>
+								<span class="text-xs text-text-muted">Mi score</span>
 							</div>
 						)}
 					</div>
@@ -346,6 +359,16 @@ const hasMedia = hasTrailer || hasArtwork;
 								game.rating_opencritic >= 80 ? 'text-neon-green' :
 								game.rating_opencritic >= 65 ? 'text-neon-yellow' : 'text-neon-pink'
 							]}>{Math.round(game.rating_opencritic)}</dd>
+						</div>
+					)}
+					{game.rating_personal && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Mi score</dt>
+							<dd class:list={[
+								'font-bold',
+								game.rating_personal >= 75 ? 'text-neon-green' :
+								game.rating_personal >= 50 ? 'text-neon-yellow' : 'text-neon-pink'
+							]}>{game.rating_personal}</dd>
 						</div>
 					)}
 					{game.igdb_id && (

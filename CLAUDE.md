@@ -175,6 +175,10 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 
 **Games tables** (defined in `db/schema.sql`):
 - **games** — Main game tracking (title, estado, poster, trailer, artworks, genre, ratings, achievements, etc.) + flags booleanos `is_demo`, `is_early_access`, `is_testing` (0/1), que se muestran como badges en `PlayedGamesCard.vue` y el detalle
+  - **Tres ratings, los tres en escala 0-100**: `rating_metacritic` (INTEGER, vía RAWG),
+    `rating_opencritic` (REAL, `topCriticScore`) y `rating_personal` (INTEGER, **puntuación
+    propia, se carga a mano desde el modal**). Los tres nacen en NULL y el detalle no
+    renderiza el bloque de un rating mientras esté vacío
 - **dates_played** — Play sessions per year (game_id FK, year, fecha_inicio, fecha_final, horas)
 
 **Steam/IGDB cache tables**:
@@ -207,7 +211,8 @@ y se pierde el lote entero de 50.
 **Migraciones** (`db/migrate-*.sql`, se aplican con `wrangler d1 execute`): `add-movies-tables`,
 `add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
 `add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
-`rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`.
+`rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`,
+`add-personal-rating`.
 `drop-movies-list-columns` es **irreversible**: el respaldo de lo que borró
 (`list_slug`, `list_order`, `listed_at` de las 481 filas) es
 `db/backup-movies-list-slug.json`, y es lo único que queda de esos datos.
@@ -348,7 +353,9 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 - **Neon border classes**: `neon-border-blue`, `neon-border-cyan`, etc.
 - **CRT scanline overlay**: subtle 2px repeating gradient
 - **Per-section accent colors**: blue (played games), cyan (Steam), pink (next games), emerald (movies), indigo (series)
-- **Estado colors**: green (Completado), pink (Abandonado), blue (Jugando), yellow (Pausado)
+- **Estado colors**: green (Completado), pink (Abandonado), blue (Jugando), yellow (Pausado), purple (Recurrente)
+- **Badges de flags**: indigo (Demo), emerald (Early Access), cyan (Review/`is_testing`). Van en la **misma fila** que el badge de estado, así que **ningún flag puede repetir un color de estado**: Demo era purple como `Recurrente` y Early Access era yellow como `Pausado`, y se confundían. Regla al agregar un flag nuevo: los estados conservan su color documentado, el flag toma uno libre
+- **Colores de rating** (los tres, 0-100): green `>= 75`, yellow `>= 50`, pink debajo. OpenCritic usa 80/65 porque su media de crítica es más alta
 - Floating bottom nav: icon-only on mobile, icons+labels on desktop
 - Reduced motion support via `prefers-reduced-motion`
 

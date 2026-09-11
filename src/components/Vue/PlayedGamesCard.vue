@@ -111,13 +111,13 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
           <div class="flex items-center gap-1 shrink-0">
             <span
               v-if="game.is_demo"
-              class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-neon-purple border-neon-purple/30 bg-neon-purple/10"
+              class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-neon-indigo border-neon-indigo/30 bg-neon-indigo/10"
             >
               Demo
             </span>
             <span
               v-if="game.is_early_access"
-              class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10"
+              class="text-[10px] font-medium px-2 py-0.5 rounded-md border text-neon-emerald border-neon-emerald/30 bg-neon-emerald/10"
             >
               Early Access
             </span>

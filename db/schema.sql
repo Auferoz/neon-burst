@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS games (
   description TEXT,
   rating_metacritic INTEGER,
   rating_opencritic REAL,
+  rating_personal INTEGER,
   is_demo INTEGER DEFAULT 0,
   is_early_access INTEGER DEFAULT 0,
   is_testing INTEGER DEFAULT 0,
