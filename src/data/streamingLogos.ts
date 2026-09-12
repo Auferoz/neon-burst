@@ -1,5 +1,5 @@
 /**
- * Sprite de logos de streaming: public/Logos_Streaming.png contiene los 7 logos
+ * Sprite de logos de streaming: public/assets/Logos_Streaming.png contiene los 7 logos
  * en una fila sobre fondo negro.
  *
  * Las cajas se midieron sobre los píxeles del PNG (columnas no negras, agrupadas
@@ -9,7 +9,7 @@
  * son coordenadas en píxeles del archivo, no proporciones.
  */
 
-export const SPRITE_SRC = '/Logos_Streaming.png';
+export const SPRITE_SRC = '/assets/Logos_Streaming.png';
 export const SPRITE_WIDTH = 887;
 export const SPRITE_HEIGHT = 90;
 

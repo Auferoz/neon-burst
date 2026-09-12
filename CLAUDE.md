@@ -57,11 +57,22 @@ src/
 │   └── api/         — REST endpoints (games/, steam/, next-games/, movies/, series/)
 ├── services/        — Business logic (see Services section)
 ├── layouts/         — Layout.astro (base HTML, nav, transitions)
-├── styles/          — global.css (Tailwind theme + neon tokens)
-└── assets/          — Static SVGs
+└── styles/          — global.css (Tailwind theme + neon tokens + @font-face)
 db/                  — SQL schema, seed scripts, sync scripts, migrations
 integrations/        — cloudflare-cron.ts (injects scheduled handler post-build)
+brand/               — Archivos maestros del logo. **Fuera de `public/` a propósito**:
+                       son los originales de los que se derivan los assets, no se
+                       sirven, y en `public/` se deployarían sin que nadie los use
+public/
+└── assets/          — Todo lo que el sitio referencia por URL: logo, favicons,
+                       sprite de streaming y la fuente. `public/` se copia tal cual
+                       al build, sin optimizar ni descartar nada
 ```
+
+> No hay `src/assets/`. Esa carpeta es la que Astro usa para imágenes que pasan por
+> su pipeline de optimización (`astro:assets` con `<Image />`), y este proyecto no
+> lo usa: todo se sirve por URL desde `public/`. Si algún día se adopta
+> `astro:assets`, ahí sí corresponde crearla.
 
 ### Vue Components
 

@@ -13,11 +13,22 @@ import IconBoxes from '../components/Icons/IconBoxes.astro';
 ---
 
 <Layout title="Neon Burst | Inicio">
-	<section class="flex flex-col items-center gap-10 sm:gap-14 py-8 sm:py-16">
+	<section class="flex flex-col items-center gap-10 sm:gap-14 py-8 sm:py-2">
 
 		<!-- Hero -->
 		<div class="text-center space-y-4 px-2">
-			<h1 class="text-3xl sm:text-4xl font-bold text-neon-blue neon-glow-blue leading-tight">
+			{/* El símbolo va como imagen decorativa (alt vacío): el nombre ya está
+			    escrito debajo como texto real, así que repetirlo en el alt lo
+			    duplicaría para un lector de pantalla. */}
+			<img
+				src="/assets/nb-logo.webp"
+				alt=""
+				width="512"
+				height="512"
+				class="w-36 sm:w-44 h-auto mx-auto"
+				fetchpriority="high"
+			/>
+			<h1 class="font-display text-3xl sm:text-4xl font-bold text-neon-blue neon-glow-blue leading-tight tracking-widest">
 				NEON_BURST
 			</h1>
 			<p class="text-text-secondary text-sm sm:text-base leading-relaxed max-w-md mx-auto">

@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/*
+ * Orbitron — solo para el wordmark del logo, no para texto corrido.
+ * Es la variable font: un archivo de 38 KB cubre todos los pesos de 400 a 900,
+ * en vez de las seis estáticas. El archivo vive en public/assets/fonts/ junto a su
+ * licencia (OFL exige distribuirla con la fuente).
+ */
+@font-face {
+  font-family: 'Orbitron';
+  src: url('/assets/fonts/Orbitron-Variable.ttf') format('truetype-variations');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   /* Neon accent palette — cyberpunk/hacker aesthetic */
   --color-neon-blue: #1e90ff;
@@ -34,6 +48,8 @@
 
   /* Font stack — monospace for terminal aesthetic */
   --font-mono: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace;
+  /* Display — reservada al wordmark de la marca */
+  --font-display: 'Orbitron', var(--font-mono);
 
   /* Type scale (rem) */
   --text-xs: 0.75rem;

@@ -366,7 +366,7 @@ onMounted(fetchGames);
               >
                 <img
                   v-if="g.poster"
-                  :src="`https://images.igdb.com/igdb/image/upload/t_cover_small/${g.poster}.webp`"
+                  :src="`https://images.igdb.com/igdb/image/upload/t_cover_small/${g.poster}`"
                   :alt="g.title"
                   class="w-8 h-10 rounded object-cover bg-surface-3 shrink-0"
                 />
