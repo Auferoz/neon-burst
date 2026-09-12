@@ -19,11 +19,25 @@ interface Game {
   is_demo: number;
   is_early_access: number;
   is_testing: number;
+  rating_personal: number | null;
 }
 
 const props = defineProps<{
   game: Game;
 }>();
+
+/**
+ * Color del score personal. Cinco bandas propias, más finas que las de
+ * Metacritic u OpenCritic: esta escala es la del usuario, no la de la crítica.
+ *   0-44 rojo · 45-54 naranja · 55-69 amarillo · 70-89 verde · 90-100 azul
+ */
+function personalColor(score: number): string {
+  if (score >= 90) return 'text-neon-blue';
+  if (score >= 70) return 'text-neon-green';
+  if (score >= 55) return 'text-neon-yellow';
+  if (score >= 45) return 'text-neon-orange';
+  return 'text-neon-pink';
+}
 
 const estadoColor: Record<string, string> = {
   Completado: 'text-neon-green border-neon-green/30 bg-neon-green/10',
@@ -143,6 +157,20 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
           <span>{{ game.console_pc }}</span>
           <span class="text-surface-4" aria-hidden="true">&middot;</span>
           <span>{{ game.horas_total }}h</span>
+          <!-- Mi score: si no lo cargué, no aparece ni deja el separador suelto -->
+          <template v-if="game.rating_personal">
+            <span class="text-surface-4" aria-hidden="true">&middot;</span>
+            <span
+              :class="personalColor(game.rating_personal)"
+              class="inline-flex items-center gap-0.5 font-bold"
+              :aria-label="`Mi score: ${game.rating_personal} de 100`"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+                <path d="M12 2l2.9 6.26 6.6.79-4.9 4.62 1.3 6.83L12 17.2l-5.9 3.3 1.3-6.83L2.5 9.05l6.6-.79L12 2z" />
+              </svg>
+              {{ game.rating_personal }}
+            </span>
+          </template>
         </div>
 
         <!-- Genre tags -->

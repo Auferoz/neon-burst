@@ -31,6 +31,7 @@ interface Game {
   years_played: number[];
   description: string;
   latest_fecha_inicio: string;
+  rating_personal: number | null;
 }
 
 const currentYear = new Date().getFullYear();

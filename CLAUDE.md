@@ -69,7 +69,7 @@ integrations/        — cloudflare-cron.ts (injects scheduled handler post-buil
 |---|---|
 | `PlayedGamesMain.vue` | Played games container with filters and dashboard |
 | `PlayedGamesDashboard.vue` | Stats/dashboard display |
-| `PlayedGamesCard.vue` | Individual game card |
+| `PlayedGamesCard.vue` | Individual game card. Muestra `rating_personal` como badge circular sobre la esquina del poster (solo si está cargado) |
 | `PlayedGamesFilter.vue` | Filter controls |
 | `PlayedGamesEditButton.vue` | Edit button |
 | `PlayedGamesFormModal.vue` | Create/edit game modal (con autocompletado desde IGDB) |
@@ -344,7 +344,7 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 
 ### Design System
 
-- **Accent colors**: neon-blue `#1e90ff` (primary), neon-cyan `#00e5ff`, neon-pink `#ff2d95`, neon-purple `#b026ff`, neon-yellow `#e5ff00`, neon-green `#39ff14`, neon-emerald `#34d399`, neon-indigo `#818cf8` (blue/cyan/pink también tienen variante `-dim` con alpha `66`)
+- **Accent colors**: neon-blue `#1e90ff` (primary), neon-cyan `#00e5ff`, neon-pink `#ff2d95`, neon-purple `#b026ff`, neon-orange `#ff7b00`, neon-yellow `#e5ff00`, neon-green `#39ff14`, neon-emerald `#34d399`, neon-indigo `#818cf8` (blue/cyan/pink también tienen variante `-dim` con alpha `66`)
 - **Surfaces**: surface-0 `#06060a` through surface-4 `#222236`
 - **Texto**: text-primary `#e8e8f0`, text-secondary `#9898b0`, text-muted `#5c5c78`
 - **Bordes**: border-default `#1e1e30`, border-hover `#2a2a42`
@@ -355,7 +355,17 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 - **Per-section accent colors**: blue (played games), cyan (Steam), pink (next games), emerald (movies), indigo (series)
 - **Estado colors**: green (Completado), pink (Abandonado), blue (Jugando), yellow (Pausado), purple (Recurrente)
 - **Badges de flags**: indigo (Demo), emerald (Early Access), cyan (Review/`is_testing`). Van en la **misma fila** que el badge de estado, así que **ningún flag puede repetir un color de estado**: Demo era purple como `Recurrente` y Early Access era yellow como `Pausado`, y se confundían. Regla al agregar un flag nuevo: los estados conservan su color documentado, el flag toma uno libre
-- **Colores de rating** (los tres, 0-100): green `>= 75`, yellow `>= 50`, pink debajo. OpenCritic usa 80/65 porque su media de crítica es más alta
+- **Colores de rating**: cada uno usa **la escala de quien lo emite**, no una común. Definidos en `ratingColor` en `src/pages/playedGames/[id].astro`:
+
+  | rating | bandas |
+  |---|---|
+  | Metacritic | green `>= 75`, yellow `>= 50`, pink debajo (cortes fijos y oficiales) |
+  | OpenCritic | green `>= 84` (Mighty), emerald `>= 75` (Strong), yellow `>= 65` (Fair), pink debajo (Weak) |
+  | Mi score | blue `>= 90`, green `>= 70`, yellow `>= 55`, orange `>= 45`, pink debajo |
+
+  **Los tiers de OpenCritic son percentiles, no cortes fijos** (Mighty = 10% superior, Strong = 30% siguiente, Fair = del 30 al 60, Weak = 30% inferior). 84/75/65 es la traducción práctica y puede moverse con el tiempo.
+- **`rating_personal` en la lista**: va en la fila de datos de `PlayedGamesCard.vue`, después de las horas, con una estrella y el número en el color de su banda. Si es NULL no se renderiza **ni el separador `·`**, así que la fila no queda coja — con 58 de 66 juegos sin puntuar, la ausencia tiene que verse deliberada
+- Las clases de color de rating viven en los mapas `badgeClass` / `textClass` de `[id].astro`, escritas literales: Tailwind escanea el código como texto y purga cualquier clase que se arme por interpolación
 - Floating bottom nav: icon-only on mobile, icons+labels on desktop
 - Reduced motion support via `prefers-reduced-motion`
 

@@ -26,6 +26,46 @@ const estadoColor: Record<string, string> = {
 	Pausado: 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10',
 };
 
+/**
+ * Cada rating usa la escala de quien lo emite, no una común:
+ *
+ * - Metacritic publica cortes fijos: 75-100 verde, 50-74 amarillo, 0-49 rojo.
+ * - OpenCritic no usa cortes fijos sino percentiles (Mighty = 10% superior,
+ *   Strong = 30% siguiente, Fair = del 30 al 60, Weak = 30% inferior). 84/75/65
+ *   es la traducción práctica de esos percentiles y puede moverse con el tiempo.
+ * - El score personal tiene cinco bandas propias, más finas que las de la crítica.
+ */
+const ratingColor = {
+  metacritic: (n: number) =>
+    n >= 75 ? 'neon-green' : n >= 50 ? 'neon-yellow' : 'neon-pink',
+  opencritic: (n: number) =>
+    n >= 84 ? 'neon-green' : n >= 75 ? 'neon-emerald' : n >= 65 ? 'neon-yellow' : 'neon-pink',
+  personal: (n: number) =>
+    n >= 90 ? 'neon-blue' : n >= 70 ? 'neon-green' : n >= 55 ? 'neon-yellow' : n >= 45 ? 'neon-orange' : 'neon-pink',
+};
+
+/**
+ * Tailwind escanea el código como texto, así que las clases tienen que existir
+ * literales en algún lado o las purga. Este mapa es ese lugar.
+ */
+const badgeClass: Record<string, string> = {
+  'neon-blue': 'text-neon-blue border-neon-blue/30 bg-neon-blue/10',
+  'neon-green': 'text-neon-green border-neon-green/30 bg-neon-green/10',
+  'neon-emerald': 'text-neon-emerald border-neon-emerald/30 bg-neon-emerald/10',
+  'neon-yellow': 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10',
+  'neon-orange': 'text-neon-orange border-neon-orange/30 bg-neon-orange/10',
+  'neon-pink': 'text-neon-pink border-neon-pink/30 bg-neon-pink/10',
+};
+
+const textClass: Record<string, string> = {
+  'neon-blue': 'text-neon-blue',
+  'neon-green': 'text-neon-green',
+  'neon-emerald': 'text-neon-emerald',
+  'neon-yellow': 'text-neon-yellow',
+  'neon-orange': 'text-neon-orange',
+  'neon-pink': 'text-neon-pink',
+};
+
 const logrosPercent = game.logros_total > 0
 	? Math.round((game.logros_obt / game.logros_total) * 100)
 	: 0;
@@ -157,9 +197,7 @@ const hasMedia = hasTrailer || hasArtwork;
 							<div class="flex items-center gap-2">
 								<span class:list={[
 									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border px-6',
-									game.rating_metacritic >= 75 ? 'text-neon-green border-neon-green/30 bg-neon-green/10' :
-									game.rating_metacritic >= 50 ? 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10' :
-									'text-neon-pink border-neon-pink/30 bg-neon-pink/10'
+									badgeClass[ratingColor.metacritic(game.rating_metacritic)]
 								]}>
 									{game.rating_metacritic}
 								</span>
@@ -170,9 +208,7 @@ const hasMedia = hasTrailer || hasArtwork;
 							<div class="flex items-center gap-2">
 								<span class:list={[
 									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border px-6',
-									game.rating_opencritic >= 80 ? 'text-neon-green border-neon-green/30 bg-neon-green/10' :
-									game.rating_opencritic >= 65 ? 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10' :
-									'text-neon-pink border-neon-pink/30 bg-neon-pink/10'
+									badgeClass[ratingColor.opencritic(game.rating_opencritic)]
 								]}>
 									{Math.round(game.rating_opencritic)}
 								</span>
@@ -183,9 +219,7 @@ const hasMedia = hasTrailer || hasArtwork;
 							<div class="flex items-center gap-2">
 								<span class:list={[
 									'inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-bold border px-6',
-									game.rating_personal >= 75 ? 'text-neon-green border-neon-green/30 bg-neon-green/10' :
-									game.rating_personal >= 50 ? 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10' :
-									'text-neon-pink border-neon-pink/30 bg-neon-pink/10'
+									badgeClass[ratingColor.personal(game.rating_personal)]
 								]}>
 									{game.rating_personal}
 								</span>
@@ -346,8 +380,7 @@ const hasMedia = hasTrailer || hasArtwork;
 							<dt class="text-text-muted">Metacritic</dt>
 							<dd class:list={[
 								'font-bold',
-								game.rating_metacritic >= 75 ? 'text-neon-green' :
-								game.rating_metacritic >= 50 ? 'text-neon-yellow' : 'text-neon-pink'
+								textClass[ratingColor.metacritic(game.rating_metacritic)]
 							]}>{game.rating_metacritic}</dd>
 						</div>
 					)}
@@ -356,8 +389,7 @@ const hasMedia = hasTrailer || hasArtwork;
 							<dt class="text-text-muted">OpenCritic</dt>
 							<dd class:list={[
 								'font-bold',
-								game.rating_opencritic >= 80 ? 'text-neon-green' :
-								game.rating_opencritic >= 65 ? 'text-neon-yellow' : 'text-neon-pink'
+								textClass[ratingColor.opencritic(game.rating_opencritic)]
 							]}>{Math.round(game.rating_opencritic)}</dd>
 						</div>
 					)}
@@ -366,8 +398,7 @@ const hasMedia = hasTrailer || hasArtwork;
 							<dt class="text-text-muted">Mi score</dt>
 							<dd class:list={[
 								'font-bold',
-								game.rating_personal >= 75 ? 'text-neon-green' :
-								game.rating_personal >= 50 ? 'text-neon-yellow' : 'text-neon-pink'
+								textClass[ratingColor.personal(game.rating_personal)]
 							]}>{game.rating_personal}</dd>
 						</div>
 					)}
