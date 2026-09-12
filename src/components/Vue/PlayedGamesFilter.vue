@@ -5,9 +5,12 @@ const props = defineProps<{
   años: number[];
   estados: string[];
   plataformas: string[];
+  /** Demo / Early Access / Review. El value es la columna de la flag. */
+  marcas: readonly { value: string; label: string }[];
   selectedAño: string;
   selectedEstado: string;
   selectedPlataforma: string;
+  selectedMarca: string;
   searchQuery: string;
   totalGames: number;
   filteredCount: number;
@@ -17,11 +20,14 @@ const emit = defineEmits<{
   'update:selectedAño': [value: string];
   'update:selectedEstado': [value: string];
   'update:selectedPlataforma': [value: string];
+  'update:selectedMarca': [value: string];
   'update:searchQuery': [value: string];
 }>();
 
 const hasActiveFilters = computed(() =>
-  props.selectedAño !== '' || props.selectedEstado !== '' || props.selectedPlataforma !== '' || props.searchQuery !== ''
+  props.selectedAño !== '' || props.selectedEstado !== '' ||
+  props.selectedPlataforma !== '' || props.selectedMarca !== '' ||
+  props.searchQuery !== ''
 );
 </script>
 
@@ -81,6 +87,19 @@ const hasActiveFilters = computed(() =>
         >
           <option value="">Todas las plataformas</option>
           <option v-for="p in plataformas" :key="p" :value="p">{{ p }}</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="filter-marca" class="sr-only">Filtrar por marca</label>
+        <select
+          id="filter-marca"
+          :value="selectedMarca"
+          @change="emit('update:selectedMarca', ($event.target as HTMLSelectElement).value)"
+          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors duration-200 cursor-pointer"
+        >
+          <option value="">Todas las marcas</option>
+          <option v-for="m in marcas" :key="m.value" :value="m.value">{{ m.label }}</option>
         </select>
       </div>
 

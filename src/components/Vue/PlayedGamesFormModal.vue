@@ -316,7 +316,8 @@ function onBackdrop(e: MouseEvent) {
                 <option value="Jugando">Jugando</option>
                 <option value="Recurrente">Recurrente</option>
                 <option value="Pausado">Pausado</option>
-                <option value="Completado">Completado</option>
+                <option value="Terminado">Terminado</option>
+                <option value="Completado">Completado (100% logros)</option>
                 <option value="Abandonado">Abandonado</option>
               </select>
             </div>

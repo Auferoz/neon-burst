@@ -158,7 +158,7 @@ onMounted(() => fetchGames());
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-2 mt-4">
+      <div class="flex flex-wrap items-center gap-2 mt-4">
         <a
           href="/playedGames"
           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-neon-blue/10 transition-colors"

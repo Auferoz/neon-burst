@@ -70,7 +70,7 @@ integrations/        — cloudflare-cron.ts (injects scheduled handler post-buil
 | `PlayedGamesMain.vue` | Played games container with filters and dashboard |
 | `PlayedGamesDashboard.vue` | Stats/dashboard display |
 | `PlayedGamesCard.vue` | Individual game card. Muestra `rating_personal` como badge circular sobre la esquina del poster (solo si está cargado) |
-| `PlayedGamesFilter.vue` | Filter controls |
+| `PlayedGamesFilter.vue` | Filtros: año, estado, plataforma y **marca** (Demo / Early Access / Review). Las opciones de año, estado y plataforma se derivan de los datos; las de marca vienen del array `MARCAS` de `PlayedGamesMain.vue`, cuyo `value` es el nombre de la columna de la flag |
 | `PlayedGamesEditButton.vue` | Edit button |
 | `PlayedGamesFormModal.vue` | Create/edit game modal (con autocompletado desde IGDB) |
 | `SteamLibraryMain.vue` | Steam games display |
@@ -212,7 +212,7 @@ y se pierde el lote entero de 50.
 `add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
 `add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
 `rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`,
-`add-personal-rating`.
+`add-personal-rating`, `add-terminado-estado`.
 `drop-movies-list-columns` es **irreversible**: el respaldo de lo que borró
 (`list_slug`, `list_order`, `listed_at` de las 481 filas) es
 `db/backup-movies-list-slug.json`, y es lo único que queda de esos datos.
@@ -344,7 +344,7 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 
 ### Design System
 
-- **Accent colors**: neon-blue `#1e90ff` (primary), neon-cyan `#00e5ff`, neon-pink `#ff2d95`, neon-purple `#b026ff`, neon-orange `#ff7b00`, neon-yellow `#e5ff00`, neon-green `#39ff14`, neon-emerald `#34d399`, neon-indigo `#818cf8` (blue/cyan/pink también tienen variante `-dim` con alpha `66`)
+- **Accent colors**: neon-blue `#1e90ff` (primary), neon-cyan `#00e5ff`, neon-pink `#ff2d95`, neon-purple `#b026ff`, neon-orange `#ff7b00`, neon-gold `#ffd700`, neon-yellow `#e5ff00`, neon-green `#39ff14`, neon-emerald `#34d399`, neon-indigo `#818cf8` (blue/cyan/pink también tienen variante `-dim` con alpha `66`)
 - **Surfaces**: surface-0 `#06060a` through surface-4 `#222236`
 - **Texto**: text-primary `#e8e8f0`, text-secondary `#9898b0`, text-muted `#5c5c78`
 - **Bordes**: border-default `#1e1e30`, border-hover `#2a2a42`
@@ -353,8 +353,13 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 - **Neon border classes**: `neon-border-blue`, `neon-border-cyan`, etc.
 - **CRT scanline overlay**: subtle 2px repeating gradient
 - **Per-section accent colors**: blue (played games), cyan (Steam), pink (next games), emerald (movies), indigo (series)
-- **Estado colors**: green (Completado), pink (Abandonado), blue (Jugando), yellow (Pausado), purple (Recurrente)
-- **Badges de flags**: indigo (Demo), emerald (Early Access), cyan (Review/`is_testing`). Van en la **misma fila** que el badge de estado, así que **ningún flag puede repetir un color de estado**: Demo era purple como `Recurrente` y Early Access era yellow como `Pausado`, y se confundían. Regla al agregar un flag nuevo: los estados conservan su color documentado, el flag toma uno libre
+- **Estado colors**: green (Terminado), gold (Completado), pink (Abandonado), blue (Jugando), yellow (Pausado), purple (Recurrente)
+- **`Terminado` vs `Completado`**: `Terminado` es haber terminado la campaña o historia; `Completado` es tener el **100% de los logros**, y por eso lleva trofeo y color dorado en el dashboard en vez del check. Antes `Completado` significaba las dos cosas, y `migrate-add-terminado-estado.sql` separó los 51 juegos que había: 45 quedaron en Terminado y 6 en Completado por tener `logros_obt >= logros_total`
+- **Badges de flags**: indigo (Demo), emerald (Early Access), cyan (Review/`is_testing`). Regla al agregar un flag nuevo: los estados conservan su color documentado, el flag toma uno libre
+- **El listado y la ficha muestran cosas distintas a propósito**:
+  - En `PlayedGamesCard.vue`, si el juego tiene **alguna** marca (`is_demo`, `is_early_access`, `is_testing`), la marca **reemplaza** al badge de estado — ver `hasFlag`. En una demo o un Early Access, "esto no es el juego final" pesa más que en qué punto se dejó, y la fila de badges deja de amontonarse
+  - En `playedGames/[id].astro` se muestran **todas** juntas, marcas y estado: es donde hay lugar para el detalle completo
+  - El estado sigue en el `aria-label` de la card aunque no se vea, así que un lector de pantalla no lo pierde
 - **Colores de rating**: cada uno usa **la escala de quien lo emite**, no una común. Definidos en `ratingColor` en `src/pages/playedGames/[id].astro`:
 
   | rating | bandas |
@@ -421,7 +426,7 @@ solo exista en local se pierde.
 
 ## Conventions
 
-- **Language**: Spanish throughout — UI text, field names (`estado`, `horasTotal`, `logros_obt`, `fecha_inicio`), status enums (`Jugando`, `Completado`, `Abandonado`, `Pausado`)
+- **Language**: Spanish throughout — UI text, field names (`estado`, `horasTotal`, `logros_obt`, `fecha_inicio`), status enums (`Jugando`, `Recurrente`, `Pausado`, `Terminado`, `Completado`, `Abandonado`)
 - **Node.js** >=22.12.0 required
 - **ESM** (`"type": "module"` in package.json)
 - **Components** always go in their respective subfolder (`Astro/`, `Vue/`, `Icons/`), never directly in `src/components/`

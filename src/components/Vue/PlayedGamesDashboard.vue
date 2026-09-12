@@ -4,6 +4,7 @@ import IconGamepad from '../Icons/IconGamepad.vue';
 import IconRepeat from '../Icons/IconRepeat.vue';
 import IconPauseCircle from '../Icons/IconPauseCircle.vue';
 import IconCheckCircle from '../Icons/IconCheckCircle.vue';
+import IconTrophy from '../Icons/IconTrophy.vue';
 import IconXCircle from '../Icons/IconXCircle.vue';
 
 const props = defineProps<{
@@ -42,12 +43,21 @@ const stats = computed(() => {
       text: 'text-neon-yellow',
     },
     {
-      label: 'Completado',
-      count: counts['Completado'] || 0,
+      label: 'Terminado',
+      count: counts['Terminado'] || 0,
       icon: IconCheckCircle as Component,
       bg: 'bg-neon-green/10',
       border: 'border-neon-green/25',
       text: 'text-neon-green',
+    },
+    {
+      // Completado es el 100% de logros: por eso el trofeo y no el check
+      label: 'Completado',
+      count: counts['Completado'] || 0,
+      icon: IconTrophy as Component,
+      bg: 'bg-neon-gold/10',
+      border: 'border-neon-gold/25',
+      text: 'text-neon-gold',
     },
     {
       label: 'Abandonado',
@@ -62,7 +72,7 @@ const stats = computed(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2" role="list" aria-label="Resumen de estados">
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2" role="list" aria-label="Resumen de estados">
     <div
       v-for="stat in stats"
       :key="stat.label"

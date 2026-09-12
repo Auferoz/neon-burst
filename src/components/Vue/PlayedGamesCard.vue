@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { igdbImage } from '../../utils/igdbImage';
 interface Game {
   id: number;
@@ -40,12 +41,23 @@ function personalColor(score: number): string {
 }
 
 const estadoColor: Record<string, string> = {
-  Completado: 'text-neon-green border-neon-green/30 bg-neon-green/10',
+  Terminado: 'text-neon-green border-neon-green/30 bg-neon-green/10',
+  Completado: 'text-neon-gold border-neon-gold/30 bg-neon-gold/10',
   Abandonado: 'text-neon-pink border-neon-pink/30 bg-neon-pink/10',
   Jugando: 'text-neon-blue border-neon-blue/30 bg-neon-blue/10',
   Recurrente: 'text-neon-purple border-neon-purple/30 bg-neon-purple/10',
   Pausado: 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10',
 };
+
+/**
+ * En el listado, si el juego tiene alguna marca (Demo, Early Access, Review),
+ * esa marca reemplaza al estado en vez de sumarse: son los casos donde "en qué
+ * punto lo dejé" importa menos que "esto no es el juego final". Dentro de la
+ * ficha sí se muestran todas juntas, que es donde hay lugar para el detalle.
+ */
+const hasFlag = computed(() =>
+  !!(props.game.is_demo || props.game.is_early_access || props.game.is_testing)
+);
 
 const logrosPercent = props.game.logros_total > 0
   ? Math.round((props.game.logros_obt / props.game.logros_total) * 100)
@@ -142,6 +154,7 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
               Review
             </span>
             <span
+              v-if="!hasFlag"
               :class="estadoColor[game.estado] || 'text-text-secondary border-border-default bg-surface-2'"
               class="text-[10px] font-medium px-2 py-0.5 rounded-md border"
             >

@@ -32,6 +32,9 @@ interface Game {
   description: string;
   latest_fecha_inicio: string;
   rating_personal: number | null;
+  is_demo: number;
+  is_early_access: number;
+  is_testing: number;
 }
 
 const currentYear = new Date().getFullYear();
@@ -44,6 +47,14 @@ const searchQuery = ref('');
 const selectedAño = ref(String(currentYear));
 const selectedEstado = ref('');
 const selectedPlataforma = ref('');
+const selectedMarca = ref('');
+
+/** El valor del filtro de marcas es la columna de la flag que tiene que estar en 1. */
+const MARCAS = [
+  { value: 'is_demo', label: 'Demo' },
+  { value: 'is_early_access', label: 'Early Access' },
+  { value: 'is_testing', label: 'Review' },
+] as const;
 
 const años = computed(() =>
   [...new Set(games.value.flatMap(g => g.years_played))].sort((a, b) => b - a)
@@ -80,6 +91,11 @@ const filteredGames = computed(() => {
 
   if (selectedPlataforma.value) {
     result = result.filter(g => g.console_pc === selectedPlataforma.value);
+  }
+
+  if (selectedMarca.value) {
+    const flag = selectedMarca.value as 'is_demo' | 'is_early_access' | 'is_testing';
+    result = result.filter(g => g[flag] === 1);
   }
 
   return [...result].sort((a, b) => {
@@ -194,7 +210,7 @@ onMounted(fetchGames);
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center gap-2 mt-4">
+        <div class="flex flex-wrap items-center gap-2 mt-4">
           <button
             @click="showCreateModal = true"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-neon-blue/10 transition-colors cursor-pointer"
@@ -250,10 +266,12 @@ onMounted(fetchGames);
       :años="años"
       :estados="estados"
       :plataformas="plataformas"
+      :marcas="MARCAS"
       v-model:search-query="searchQuery"
       v-model:selected-año="selectedAño"
       v-model:selected-estado="selectedEstado"
       v-model:selected-plataforma="selectedPlataforma"
+      v-model:selected-marca="selectedMarca"
       :total-games="games.length"
       :filtered-count="filteredGames.length"
     />

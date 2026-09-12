@@ -19,7 +19,8 @@ const artworkUrl = igdbImage(game.artworks, 'screenshot_huge');
 const trailerUrl = game.trailer || '';
 
 const estadoColor: Record<string, string> = {
-	Completado: 'text-neon-green border-neon-green/30 bg-neon-green/10',
+	Terminado: 'text-neon-green border-neon-green/30 bg-neon-green/10',
+	Completado: 'text-neon-gold border-neon-gold/30 bg-neon-gold/10',
 	Abandonado: 'text-neon-pink border-neon-pink/30 bg-neon-pink/10',
 	Jugando: 'text-neon-blue border-neon-blue/30 bg-neon-blue/10',
 	Recurrente: 'text-neon-purple border-neon-purple/30 bg-neon-purple/10',
@@ -127,7 +128,7 @@ const hasMedia = hasTrailer || hasArtwork;
 			<!-- Game info -->
 			<div class="flex-1 min-w-0 flex flex-col justify-center">
 				<!-- Title + Estado -->
-				<div class="flex flex-wrap items-start gap-3 mb-3">
+				<div class="flex flex-wrap flex-col items-start gap-3 mb-3">
 					<h1 class="text-2xl sm:text-3xl font-bold text-text-primary leading-tight">{game.title}</h1>
 					<div class="flex items-center gap-2 shrink-0">
 						{game.is_demo === 1 && (
@@ -138,6 +139,11 @@ const hasMedia = hasTrailer || hasArtwork;
 						{game.is_early_access === 1 && (
 							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-neon-emerald border-neon-emerald/30 bg-neon-emerald/10">
 								Early Access
+							</span>
+						)}
+						{game.is_testing === 1 && (
+							<span class="text-xs font-medium px-3 py-1 rounded-lg border text-neon-cyan border-neon-cyan/30 bg-neon-cyan/10">
+								Review
 							</span>
 						)}
 						<span class:list={[
