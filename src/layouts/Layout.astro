@@ -4,6 +4,7 @@ import { ClientRouter } from 'astro:transitions';
 import FloatingNav from '../components/Astro/FloatingNav.astro';
 
 interface Props {
+	/** Solo el nombre de la página; el del sitio lo agrega el Layout. */
 	title?: string;
 	description?: string;
 	noindex?: boolean;
@@ -11,12 +12,21 @@ interface Props {
 }
 
 const {
-	title = 'Neon Burst',
+	title,
 	description,
 	noindex = false,
 	hideMenu = false,
 } = Astro.props;
 const currentPath = Astro.url.pathname;
+
+const SITE_NAME = 'Neon Burst';
+
+/**
+ * El nombre de la página va primero: es lo único que distingue una pestaña de
+ * otra, y en una pestaña angosta el navegador trunca por la derecha. Con el
+ * sitio adelante, veinte pestañas se leen todas "Neon Burst | …".
+ */
+const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
 ---
 <!doctype html>
 <html lang="es">
@@ -30,7 +40,7 @@ const currentPath = Astro.url.pathname;
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet" />
-		<title>{title}</title>
+		<title>{pageTitle}</title>
 		<ClientRouter />
 	</head>
 	<body class="bg-surface-0 text-text-primary font-mono min-h-dvh flex flex-col antialiased">
