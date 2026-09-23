@@ -6,6 +6,10 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.11.1 — 2026-09-23
+- Las peticiones a AniList envían un `User-Agent` propio (intento de fix del 403 en producción)
+- Relaciones, Recomendaciones y Staff del manga usan el mismo scroll fino que el Reparto de películas y series; el estilo vive una sola vez en `global.css`
+
 ## 1.11.0 — 2026-09-23
 - Scores de TMDB e IMDb editables a mano en películas y series; un valor manual no lo pisa el refresco automático ni los backfills
 - Espaciado unificado en todo el sitio: gutter, margen superior y margen inferior que libera el menú flotante (con safe-area de iOS)

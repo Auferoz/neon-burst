@@ -77,3 +77,23 @@
   /* Páginas sin FloatingNav (hideMenu): aire de cierre sin reservar su hueco. */
   --spacing-page-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
 }
+
+/*
+ * Scroll horizontal fino de las filas de tarjetas (reparto, staff, relaciones,
+ * recomendaciones). Definido una sola vez acá: las páginas solo usan la clase.
+ */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-4) var(--color-surface-2);
+}
+.scrollbar-thin::-webkit-scrollbar {
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: var(--color-surface-2);
+  border-radius: 2px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-surface-4);
+  border-radius: 2px;
+}

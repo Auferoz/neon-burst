@@ -11,7 +11,12 @@
  *     `cloudflare:workers` module either.
  */
 
+import { version } from '../../package.json';
+
 const ANILIST_API_URL = 'https://graphql.anilist.co';
+// Workers' fetch sends no User-Agent, and AniList's firewall answers 403 to
+// anonymous requests coming from Cloudflare Workers IPs. Identify the caller.
+const ANILIST_USER_AGENT = `NeonBurst/${version} (+https://neon-burst.adesigns7.workers.dev)`;
 
 export type MangaType = 'Manga' | 'Manhwa' | 'Manhua';
 
@@ -289,7 +294,11 @@ async function anilistFetch<T>(query: string, variables: Record<string, unknown>
   try {
     res = await fetch(ANILIST_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'User-Agent': ANILIST_USER_AGENT,
+      },
       body: JSON.stringify({ query, variables }),
     });
   } catch (e) {

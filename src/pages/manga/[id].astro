@@ -244,7 +244,7 @@ function relationHref(id: number, siteUrl: string): string {
 				<div class="border border-border-default rounded-xl p-5 sm:p-6">
 					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Staff</h2>
 					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
-					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
 						{staff.map((s) => (
 							<div class="shrink-0 w-20 text-center">
 								{s.image ? (
@@ -265,7 +265,7 @@ function relationHref(id: number, siteUrl: string): string {
 				<div class="border border-border-default rounded-xl p-5 sm:p-6">
 					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Relaciones</h2>
 					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
-					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
 						{relations.map((r) => (
 							<a href={relationHref(r.id, r.site_url)} target="_blank" rel="noopener noreferrer" class="shrink-0 w-24 group">
 								{r.cover ? (
@@ -286,7 +286,7 @@ function relationHref(id: number, siteUrl: string): string {
 				<div class="border border-border-default rounded-xl p-5 sm:p-6">
 					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Recomendaciones</h2>
 					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
-					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
 						{recommendations.map((r) => (
 							<a href={`https://anilist.co/${r.type.toLowerCase()}/${r.id}`} target="_blank" rel="noopener noreferrer" class="shrink-0 w-24 group">
 								{r.cover ? (
