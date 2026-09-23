@@ -12,6 +12,8 @@ const props = defineProps<{
   title: string;
   tmdbId: number;
   ratingPersonal: number | null;
+  ratingTmdb: number | null;
+  ratingImdb: number | null;
   entries: MovieWatchedRow[];
 }>();
 
@@ -19,10 +21,21 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-// ── Mi score ──
+// ── Scores (Mi score + overrides manuales de TMDB/IMDb) ──
 const scoreValue = ref<number | ''>('');
+const tmdbValue = ref<number | ''>('');
+const imdbValue = ref<number | ''>('');
 const scoreSaving = ref(false);
 const scoreError = ref('');
+
+// Snapshot al abrir el modal: solo se manda al servidor lo que haya cambiado.
+let initialPersonal: number | null = null;
+let initialTmdb: number | null = null;
+let initialImdb: number | null = null;
+
+function toValueOrNull(v: number | ''): number | null {
+  return v === '' ? null : Number(v);
+}
 
 // ── Viewings list ──
 interface EditableRow extends MovieWatchedRow {
@@ -40,7 +53,12 @@ const platformSuggestions = computed(() =>
 
 watch(() => props.open, (val) => {
   if (!val) return;
-  scoreValue.value = props.ratingPersonal ?? '';
+  initialPersonal = props.ratingPersonal ?? null;
+  initialTmdb = props.ratingTmdb ?? null;
+  initialImdb = props.ratingImdb ?? null;
+  scoreValue.value = initialPersonal ?? '';
+  tmdbValue.value = initialTmdb ?? '';
+  imdbValue.value = initialImdb ?? '';
   scoreError.value = '';
   rows.value = props.entries
     .slice()
@@ -53,10 +71,23 @@ async function saveScore() {
   scoreSaving.value = true;
   scoreError.value = '';
   try {
+    const body: Record<string, number | null> = {};
+    const nextPersonal = toValueOrNull(scoreValue.value);
+    const nextTmdb = toValueOrNull(tmdbValue.value);
+    const nextImdb = toValueOrNull(imdbValue.value);
+    if (nextPersonal !== initialPersonal) body.rating_personal = nextPersonal;
+    if (nextTmdb !== initialTmdb) body.rating_tmdb = nextTmdb;
+    if (nextImdb !== initialImdb) body.rating_imdb = nextImdb;
+
+    if (Object.keys(body).length === 0) {
+      scoreSaving.value = false;
+      return;
+    }
+
     const res = await fetch(`/api/movies/score/${props.tmdbId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rating_personal: scoreValue.value === '' ? null : Number(scoreValue.value) }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -129,7 +160,7 @@ function onKeydown(e: KeyboardEvent) {
     <div
       v-if="open"
       id="movie-entries-modal-backdrop"
-      class="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm overflow-y-auto p-4 sm:p-8"
+      class="fixed inset-0 z-[60] flex items-start justify-center bg-black/60 backdrop-blur-sm overflow-y-auto p-4 sm:p-8"
       @mousedown="onBackdrop"
       @keydown="onKeydown"
     >
@@ -156,26 +187,57 @@ function onKeydown(e: KeyboardEvent) {
         </div>
 
         <div class="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
-          <!-- Mi score -->
+          <!-- Scores -->
           <div>
-            <label for="movie-entries-score" class="block text-xs text-text-muted mb-1">Mi score (0-100)</label>
-            <div class="flex items-center gap-2 flex-wrap">
-              <input
-                id="movie-entries-score"
-                v-model="scoreValue"
-                type="number"
-                min="0"
-                max="100"
-                placeholder="Vacío = sin puntuar"
-                class="w-32 bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
-              />
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label for="movie-entries-score" class="block text-xs text-text-muted mb-1">Mi score (0-100)</label>
+                <input
+                  id="movie-entries-score"
+                  v-model="scoreValue"
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="Sin puntuar"
+                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
+                />
+              </div>
+              <div>
+                <label for="movie-entries-tmdb" class="block text-xs text-text-muted mb-1">TMDB (0-100)</label>
+                <input
+                  id="movie-entries-tmdb"
+                  v-model="tmdbValue"
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="Vacío = automático"
+                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
+                />
+              </div>
+              <div>
+                <label for="movie-entries-imdb" class="block text-xs text-text-muted mb-1">IMDb (0-100)</label>
+                <input
+                  id="movie-entries-imdb"
+                  v-model="imdbValue"
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="Vacío = automático"
+                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
+                />
+              </div>
+            </div>
+            <p class="text-[11px] text-text-muted mt-1">
+              TMDB e IMDb vacíos se siguen actualizando solos; un valor cargado a mano deja de refrescarse.
+            </p>
+            <div class="mt-2">
               <button
                 type="button"
                 @click="saveScore"
                 :disabled="scoreSaving"
                 class="px-3 py-1.5 text-xs font-medium text-neon-emerald border border-neon-emerald/30 rounded-lg hover:bg-neon-emerald/10 transition-colors cursor-pointer disabled:opacity-50"
               >
-                {{ scoreSaving ? 'Guardando...' : 'Guardar score' }}
+                {{ scoreSaving ? 'Guardando...' : 'Guardar scores' }}
               </button>
             </div>
             <p v-if="scoreError" class="text-[11px] text-neon-pink mt-1" role="alert">{{ scoreError }}</p>

@@ -32,7 +32,7 @@ const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
 <html lang="es">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 		{description && <meta name="description" content={description} />}
 		{noindex && <meta name="robots" content="noindex, nofollow" />}
 		<link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32.png" />
@@ -50,12 +50,18 @@ const pageTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
 			Saltar al contenido
 		</a>
 
-		<!-- Main content area with bottom padding for floating nav -->
+		<!--
+			Contrato de spacing único del sitio (ver CLAUDE.md > Design System):
+			gutter horizontal, top y max-width acá; el bottom reserva el alto real
+			de FloatingNav (--nav-clearance) o, sin nav (hideMenu), un cierre más
+			chico (--page-bottom). Ninguna página ni container Vue define su
+			propio padding/margin exterior — heredan este único wrapper.
+		-->
 		<main
 			id="main-content"
 			class:list={[
-				'flex-1 max-w-7xl mx-auto w-full px-4 pt-4 sm:pt-8',
-				hideMenu ? 'pb-12' : 'pb-10',
+				'flex-1 max-w-7xl mx-auto w-full px-gutter pt-4 sm:pt-8',
+				hideMenu ? 'pb-page-bottom' : 'pb-nav-clearance',
 			]}
 		>
 			<slot />

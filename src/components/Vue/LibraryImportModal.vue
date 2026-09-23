@@ -205,7 +205,7 @@ watch(
 <template>
   <div
     v-if="open"
-    class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-surface-0/80 backdrop-blur-sm p-4 sm:p-8"
+    class="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-surface-0/80 backdrop-blur-sm p-4 sm:p-8"
     role="dialog"
     aria-modal="true"
     aria-labelledby="import-modal-title"

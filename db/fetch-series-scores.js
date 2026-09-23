@@ -113,7 +113,7 @@ async function main() {
   const limitClause = LIMIT ? ` LIMIT ${LIMIT}` : '';
 
   const output = execSync(
-    `npx wrangler d1 execute neon-burst-db ${flag} --command "SELECT trakt_slug, tmdb_id, imdb_id, title FROM series_cache ${where}ORDER BY title ASC${limitClause};" --json`,
+    `npx wrangler d1 execute neon-burst-db ${flag} --command "SELECT trakt_slug, tmdb_id, imdb_id, title, rating_tmdb_manual, rating_imdb_manual FROM series_cache ${where}ORDER BY title ASC${limitClause};" --json`,
     { encoding: 'utf-8', cwd: process.cwd() }
   );
 
@@ -143,7 +143,8 @@ async function main() {
       await sleep(200);
     }
 
-    const tmdbScore = tmdbId ? await fetchTmdbTvScore(tmdbId) : null;
+    // Un campo manual no se refetchea: nunca se pisa con lo que traiga la API.
+    const tmdbScore = show.rating_tmdb_manual ? null : (tmdbId ? await fetchTmdbTvScore(tmdbId) : null);
 
     let imdbId = show.imdb_id;
     if (!imdbId && tmdbId) {
@@ -151,7 +152,7 @@ async function main() {
       await sleep(200);
     }
 
-    const imdbScore = imdbId ? await fetchImdbRating(imdbId) : null;
+    const imdbScore = show.rating_imdb_manual ? null : (imdbId ? await fetchImdbRating(imdbId) : null);
 
     if (tmdbScore == null && imdbScore == null) {
       console.log(`✗ ${show.title} → no score found`);

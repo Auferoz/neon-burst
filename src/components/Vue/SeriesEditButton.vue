@@ -15,6 +15,8 @@ defineProps<{
   title: string;
   traktSlug: string;
   ratingPersonal: number | null;
+  ratingTmdb: number | null;
+  ratingImdb: number | null;
   entries: SeriesEntryRow[];
 }>();
 
@@ -29,6 +31,8 @@ const showModal = ref(false);
     :title="title"
     :trakt-slug="traktSlug"
     :rating-personal="ratingPersonal"
+    :rating-tmdb="ratingTmdb"
+    :rating-imdb="ratingImdb"
     :entries="entries"
     @close="showModal = false"
   />

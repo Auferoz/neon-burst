@@ -6,6 +6,7 @@
 import { env } from 'cloudflare:workers';
 import { fetchTmdbShowDetail, fetchTmdbTvImdbId, fetchTmdbTvScore, resolveTmdbTvId, TMDB_SOURCE } from './tmdbSeries';
 import { fetchImdbRating } from './omdb';
+import { mergeFetchedScores } from './movieScores';
 
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -168,6 +169,31 @@ export async function setPersonalRating(db: D1Database, traktSlug: string, ratin
   ).bind(traktSlug, ratingPersonal).run();
 }
 
+/**
+ * Alta/edición/borrado manual de `rating_tmdb` o `rating_imdb` en series_cache.
+ * `value` no nulo guarda el score y prende `*_manual` (el refresco de 30 días
+ * y los backfills dejan de tocar ese campo). `value: null` borra el score,
+ * apaga `*_manual` y resetea `ratings_fetched_at` para que la próxima visita
+ * a la ficha vuelva a pedirlo automáticamente.
+ */
+export async function setManualScore(
+  db: D1Database,
+  traktSlug: string,
+  field: 'rating_tmdb' | 'rating_imdb',
+  value: number | null,
+): Promise<void> {
+  const manualField = field === 'rating_tmdb' ? 'rating_tmdb_manual' : 'rating_imdb_manual';
+  if (value === null) {
+    await db.prepare(
+      `UPDATE series_cache SET ${field} = NULL, ${manualField} = 0, ratings_fetched_at = NULL WHERE trakt_slug = ?`
+    ).bind(traktSlug).run();
+    return;
+  }
+  await db.prepare(
+    `UPDATE series_cache SET ${field} = ?, ${manualField} = 1 WHERE trakt_slug = ?`
+  ).bind(value, traktSlug).run();
+}
+
 // ── Detail interfaces ──
 
 export interface CastMember {
@@ -252,6 +278,8 @@ export interface SeriesDetail {
   rating_tmdb: number | null;
   rating_imdb: number | null;
   rating_personal: number | null;
+  rating_tmdb_manual: boolean;
+  rating_imdb_manual: boolean;
 }
 
 // ── Trakt API types ──
@@ -436,6 +464,8 @@ export async function getSeriesDetail(db: D1Database, slug: string): Promise<Ser
     (row.imdb_id as string) || '',
     (row.rating_tmdb as number | null) ?? null,
     (row.rating_imdb as number | null) ?? null,
+    !!(row.rating_tmdb_manual as number | null),
+    !!(row.rating_imdb_manual as number | null),
     (row.ratings_fetched_at as string | null) ?? null,
   );
   row.rating_tmdb = scores.rating_tmdb;
@@ -475,6 +505,8 @@ async function refreshSeriesScoresIfStale(
   imdbId: string,
   currentTmdb: number | null,
   currentImdb: number | null,
+  currentTmdbManual: boolean,
+  currentImdbManual: boolean,
   ratingsFetchedAt: string | null,
 ): Promise<{ rating_tmdb: number | null; rating_imdb: number | null; tmdb_id: number | null; imdb_id: string | null }> {
   if (!isScoresStale(ratingsFetchedAt)) {
@@ -484,27 +516,31 @@ async function refreshSeriesScoresIfStale(
   const resolvedTmdbId = tmdbId || await resolveTmdbTvId(traktSlug);
   const resolvedImdbId = imdbId || (resolvedTmdbId ? await fetchTmdbTvImdbId(resolvedTmdbId) : null) || '';
 
+  // Un campo manual no se refetchea: se ahorra la llamada y de paso se
+  // garantiza que mergeFetchedScores no tenga nada que pisar.
   const [tmdbScore, imdbScore] = await Promise.all([
-    resolvedTmdbId ? fetchTmdbTvScore(resolvedTmdbId) : Promise.resolve(null),
-    resolvedImdbId && env.OMDB_API_KEY ? fetchImdbRating(resolvedImdbId, env.OMDB_API_KEY) : Promise.resolve(null),
+    !currentTmdbManual && resolvedTmdbId ? fetchTmdbTvScore(resolvedTmdbId) : Promise.resolve(null),
+    !currentImdbManual && resolvedImdbId && env.OMDB_API_KEY ? fetchImdbRating(resolvedImdbId, env.OMDB_API_KEY) : Promise.resolve(null),
   ]);
 
-  const nextTmdb = tmdbScore ?? currentTmdb;
-  const nextImdb = imdbScore ?? currentImdb;
+  const merged = mergeFetchedScores(
+    { rating_tmdb: currentTmdb, rating_imdb: currentImdb, rating_tmdb_manual: currentTmdbManual, rating_imdb_manual: currentImdbManual },
+    { rating_tmdb: tmdbScore, rating_imdb: imdbScore },
+  );
 
   try {
     await db.prepare(
       `UPDATE series_cache SET rating_tmdb = ?, rating_imdb = ?,
         tmdb_id = COALESCE(tmdb_id, ?), imdb_id = CASE WHEN imdb_id IS NULL OR imdb_id = '' THEN ? ELSE imdb_id END,
         ratings_fetched_at = datetime('now') WHERE trakt_slug = ?`
-    ).bind(nextTmdb, nextImdb, resolvedTmdbId, resolvedImdbId || null, traktSlug).run();
+    ).bind(merged.rating_tmdb, merged.rating_imdb, resolvedTmdbId, resolvedImdbId || null, traktSlug).run();
   } catch (e) {
     console.error(`[series] refreshSeriesScoresIfStale ${traktSlug} failed:`, e);
   }
 
   return {
-    rating_tmdb: nextTmdb,
-    rating_imdb: nextImdb,
+    rating_tmdb: merged.rating_tmdb,
+    rating_imdb: merged.rating_imdb,
     tmdb_id: tmdbId ? null : resolvedTmdbId,
     imdb_id: imdbId ? null : (resolvedImdbId || null),
   };
@@ -569,6 +605,8 @@ async function rowToSeriesDetail(db: D1Database, row: Record<string, unknown>, r
     rating_tmdb: (row.rating_tmdb as number | null) ?? null,
     rating_imdb: (row.rating_imdb as number | null) ?? null,
     rating_personal: ratingPersonal,
+    rating_tmdb_manual: !!(row.rating_tmdb_manual as number | null),
+    rating_imdb_manual: !!(row.rating_imdb_manual as number | null),
   };
 }
 

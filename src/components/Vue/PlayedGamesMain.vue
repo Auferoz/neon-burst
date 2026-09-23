@@ -325,7 +325,7 @@ onMounted(fetchGames);
       <div
         v-if="showReplayPicker"
         id="replay-backdrop"
-        class="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-sm overflow-y-auto p-4 sm:p-8"
+        class="fixed inset-0 z-[60] flex items-start justify-center bg-black/60 backdrop-blur-sm overflow-y-auto p-4 sm:p-8"
         @mousedown.self="showReplayPicker = false; replaySearch = ''"
       >
         <div

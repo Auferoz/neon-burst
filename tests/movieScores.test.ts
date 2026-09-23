@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { parseImdbRating } from '../src/services/omdb';
-import { tmdbToScore, validateRatingPersonal, validateMovieWatchedUpdate } from '../src/services/movieScores';
+import {
+  mergeFetchedScores,
+  tmdbToScore,
+  validateMovieWatchedUpdate,
+  validateRatingPersonal,
+  validateScoreUpdateBody,
+} from '../src/services/movieScores';
 import { ratingBands } from '../src/utils/ratingBands';
 
 describe('parseImdbRating', () => {
@@ -101,6 +107,71 @@ describe('validateRatingPersonal', () => {
 
   it('rejects a string', () => {
     expect(validateRatingPersonal('80').ok).toBe(false);
+  });
+});
+
+describe('mergeFetchedScores', () => {
+  const auto = { rating_tmdb: 60, rating_imdb: 65, rating_tmdb_manual: false, rating_imdb_manual: false };
+
+  it('updates both fields when neither is manual', () => {
+    expect(mergeFetchedScores(auto, { rating_tmdb: 70, rating_imdb: 75 }))
+      .toEqual({ rating_tmdb: 70, rating_imdb: 75 });
+  });
+
+  it('keeps the current value when the fetch returns null (a fetch failure never erases an existing score)', () => {
+    expect(mergeFetchedScores(auto, { rating_tmdb: null, rating_imdb: null }))
+      .toEqual({ rating_tmdb: 60, rating_imdb: 65 });
+  });
+
+  it('never overwrites a manual field, even when the fetch returns a value', () => {
+    const current = { rating_tmdb: 82, rating_imdb: 65, rating_tmdb_manual: true, rating_imdb_manual: false };
+    expect(mergeFetchedScores(current, { rating_tmdb: 55, rating_imdb: 75 }))
+      .toEqual({ rating_tmdb: 82, rating_imdb: 75 });
+  });
+
+  it('respects each field independently when both are manual', () => {
+    const current = { rating_tmdb: 82, rating_imdb: 91, rating_tmdb_manual: true, rating_imdb_manual: true };
+    expect(mergeFetchedScores(current, { rating_tmdb: 10, rating_imdb: 10 }))
+      .toEqual({ rating_tmdb: 82, rating_imdb: 91 });
+  });
+});
+
+describe('validateScoreUpdateBody', () => {
+  it('leaves absent keys untouched', () => {
+    expect(validateScoreUpdateBody({})).toEqual({ ok: true, value: {} });
+    expect(validateScoreUpdateBody({ rating_personal: 80 }))
+      .toEqual({ ok: true, value: { rating_personal: 80 } });
+  });
+
+  it('accepts null to clear a field', () => {
+    expect(validateScoreUpdateBody({ rating_tmdb: null }))
+      .toEqual({ ok: true, value: { rating_tmdb: null } });
+  });
+
+  it('accepts the three fields together, at their 0/100 edges', () => {
+    expect(validateScoreUpdateBody({ rating_personal: 0, rating_tmdb: 100, rating_imdb: 0 }))
+      .toEqual({ ok: true, value: { rating_personal: 0, rating_tmdb: 100, rating_imdb: 0 } });
+  });
+
+  it('rejects a value above 100', () => {
+    expect(validateScoreUpdateBody({ rating_tmdb: 101 }).ok).toBe(false);
+  });
+
+  it('rejects a negative value', () => {
+    expect(validateScoreUpdateBody({ rating_imdb: -1 }).ok).toBe(false);
+  });
+
+  it('rejects a non-integer number', () => {
+    expect(validateScoreUpdateBody({ rating_tmdb: 7.5 }).ok).toBe(false);
+  });
+
+  it('rejects a string', () => {
+    expect(validateScoreUpdateBody({ rating_imdb: '80' }).ok).toBe(false);
+  });
+
+  it('rejects a non-object body', () => {
+    expect(validateScoreUpdateBody(null).ok).toBe(false);
+    expect(validateScoreUpdateBody('nope').ok).toBe(false);
   });
 });
 

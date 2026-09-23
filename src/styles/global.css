@@ -59,4 +59,21 @@
   --text-xl: 1.25rem;
   --text-2xl: 1.5rem;
   --text-3xl: 2rem;
+
+  /*
+   * Contrato de spacing del sitio — un solo lugar (ver CLAUDE.md > Design
+   * System). `Layout.astro` es el único que los aplica; ninguna página o
+   * container Vue define su propio padding/margin exterior.
+   */
+  --spacing-gutter: 1rem;                 /* margen horizontal, mobile y desktop */
+  /*
+   * Altura real de FloatingNav.astro: icono 44px (w-11/h-11) + padding del
+   * contenedor 12px (p-1.5 × 2) + borde 1px ≈ 57px, prácticamente igual en
+   * desktop (ícono 24px + sm:py-2.5 ≈ 20px + el mismo padding). 4.5rem (72px)
+   * cubre esa altura más ~15px de aire, y le suma el safe-area del home
+   * indicator en iOS para que el contenido nunca quede tapado.
+   */
+  --spacing-nav-clearance: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  /* Páginas sin FloatingNav (hideMenu): aire de cierre sin reservar su hueco. */
+  --spacing-page-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
 }

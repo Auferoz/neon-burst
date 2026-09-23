@@ -48,6 +48,8 @@ const heroImage = movie.fanart || movie.thumb || '';
 			title={movie.title}
 			tmdbId={movie.tmdb_id}
 			ratingPersonal={movie.rating_personal}
+			ratingTmdb={movie.rating_tmdb}
+			ratingImdb={movie.rating_imdb}
 			entries={watchedEntries}
 		/>
 	</div>
@@ -136,7 +138,9 @@ const heroImage = movie.fanart || movie.thumb || '';
 							]}>
 								{movie.rating_tmdb}
 							</span>
-							<span class="text-xs text-text-muted">TMDB</span>
+							<span class="text-xs text-text-muted">
+								TMDB{movie.rating_tmdb_manual && <span aria-label="cargado a mano"> (manual)</span>}
+							</span>
 						</div>
 					)}
 					{movie.rating_imdb != null && (
@@ -147,7 +151,9 @@ const heroImage = movie.fanart || movie.thumb || '';
 							]}>
 								{movie.rating_imdb}
 							</span>
-							<span class="text-xs text-text-muted">IMDb</span>
+							<span class="text-xs text-text-muted">
+								IMDb{movie.rating_imdb_manual && <span aria-label="cargado a mano"> (manual)</span>}
+							</span>
 						</div>
 					)}
 					{movie.rating_personal != null && (

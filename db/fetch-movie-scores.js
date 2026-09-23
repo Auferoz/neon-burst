@@ -96,7 +96,7 @@ async function main() {
   const limitClause = LIMIT ? ` LIMIT ${LIMIT}` : '';
 
   const output = execSync(
-    `npx wrangler d1 execute neon-burst-db ${flag} --command "SELECT tmdb_id, imdb_id, title FROM movies_cache ${where}ORDER BY title ASC${limitClause};" --json`,
+    `npx wrangler d1 execute neon-burst-db ${flag} --command "SELECT tmdb_id, imdb_id, title, rating_tmdb_manual, rating_imdb_manual FROM movies_cache ${where}ORDER BY title ASC${limitClause};" --json`,
     { encoding: 'utf-8', cwd: process.cwd() }
   );
 
@@ -120,7 +120,8 @@ async function main() {
     // Rate limit: be nice to both APIs.
     await sleep(200);
 
-    const tmdbScore = await fetchTmdbScore(movie.tmdb_id);
+    // Un campo manual no se refetchea: nunca se pisa con lo que traiga la API.
+    const tmdbScore = movie.rating_tmdb_manual ? null : await fetchTmdbScore(movie.tmdb_id);
 
     let imdbId = movie.imdb_id;
     if (!imdbId) {
@@ -128,7 +129,7 @@ async function main() {
       await sleep(200);
     }
 
-    const imdbScore = imdbId ? await fetchImdbRating(imdbId) : null;
+    const imdbScore = movie.rating_imdb_manual ? null : (imdbId ? await fetchImdbRating(imdbId) : null);
 
     if (tmdbScore == null && imdbScore == null) {
       console.log(`✗ ${movie.title} → no score found`);

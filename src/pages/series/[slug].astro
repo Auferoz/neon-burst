@@ -80,6 +80,8 @@ function formatDate(iso: string): string {
 				title={series.title}
 				traktSlug={series.trakt_slug}
 				ratingPersonal={series.rating_personal}
+				ratingTmdb={series.rating_tmdb}
+				ratingImdb={series.rating_imdb}
 				entries={series.watched_entries.map(w => ({
 					id: w.id,
 					season_number: w.season_number,
@@ -180,7 +182,9 @@ function formatDate(iso: string): string {
 							]}>
 								{series.rating_tmdb}
 							</span>
-							<span class="text-xs text-text-muted">TMDB</span>
+							<span class="text-xs text-text-muted">
+								TMDB{series.rating_tmdb_manual && <span aria-label="cargado a mano"> (manual)</span>}
+							</span>
 						</div>
 					)}
 					{series.rating_imdb != null && (
@@ -191,7 +195,9 @@ function formatDate(iso: string): string {
 							]}>
 								{series.rating_imdb}
 							</span>
-							<span class="text-xs text-text-muted">IMDb</span>
+							<span class="text-xs text-text-muted">
+								IMDb{series.rating_imdb_manual && <span aria-label="cargado a mano"> (manual)</span>}
+							</span>
 						</div>
 					)}
 					{series.rating_personal != null && (

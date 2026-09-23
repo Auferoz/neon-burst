@@ -13,6 +13,8 @@ defineProps<{
   title: string;
   tmdbId: number;
   ratingPersonal: number | null;
+  ratingTmdb: number | null;
+  ratingImdb: number | null;
   entries: MovieWatchedRow[];
 }>();
 
@@ -27,6 +29,8 @@ const showModal = ref(false);
     :title="title"
     :tmdb-id="tmdbId"
     :rating-personal="ratingPersonal"
+    :rating-tmdb="ratingTmdb"
+    :rating-imdb="ratingImdb"
     :entries="entries"
     @close="showModal = false"
   />

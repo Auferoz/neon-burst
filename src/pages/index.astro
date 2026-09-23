@@ -11,6 +11,8 @@ import IconTv from '../components/Icons/IconTv.astro';
 import IconMonitorPlay from '../components/Icons/IconMonitorPlay.astro';
 import IconBoxes from '../components/Icons/IconBoxes.astro';
 import IconBook from '../components/Icons/IconBook.astro';
+// Única fuente de la versión: package.json (ver "Versionado" en CLAUDE.md).
+import { version } from '../../package.json';
 ---
 
 <Layout title="Inicio">
@@ -35,10 +37,13 @@ import IconBook from '../components/Icons/IconBook.astro';
 			<p class="text-text-secondary text-sm sm:text-base leading-relaxed max-w-md mx-auto">
 				Gaming tracker personal — juegos jugados, biblioteca Steam y próximos lanzamientos.
 			</p>
+			<p class="text-xs text-text-muted tracking-wider">
+				<span aria-hidden="true">$ </span><span class="sr-only">Versión </span>v{version}
+			</p>
 		</div>
 
 		<!-- Navigation cards -->
-		<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5 w-full max-w-2xl">
+		<div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 w-full max-w-2xl">
 			<NavCard href="/playedGames" title="Played Games" subtitle="Terminados y más" accentColor="blue">
 				<IconGamepad size={22} />
 			</NavCard>

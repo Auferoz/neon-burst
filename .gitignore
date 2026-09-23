@@ -30,3 +30,5 @@ src/data/SSAccounts.js
 .wrangler/
 # Local AI runtime state
 .atl/
+#índice local.
+.codegraph/

@@ -104,13 +104,13 @@ public/
 | `MoviesCard.vue` | Individual movie card (linkea a `/movies/{tmdb_id}`). Muestra un único badge de **promedio** (`averageScore()` de `rating_tmdb`/`rating_imdb`/`rating_personal`, los que existan), coloreado con `tmdbImdbBand` de `src/utils/ratingBands.ts` |
 | `MoviesFormModal.vue` | Alta manual de película, con previsualización antes de guardar. Incluye un campo opcional "Mi score (0-100)" |
 | `MoviesEditButton.vue` | Envuelve `EditButton` (accent `emerald`) + `MoviesEntriesModal`, en la ficha de película |
-| `MoviesEntriesModal.vue` | Modal de edición de la ficha: "Mi score" (`PUT /api/movies/score/[tmdbId]`) + lista de visionados (`movies_watched`, uno por rewatch en otro año), cada uno editable y borrable (`PUT`/`DELETE /api/movies/[id]` por `watched_id`). Recarga al guardar; si se borra el último visionado, redirige a `/ListMovies` sin tocar el score personal |
+| `MoviesEntriesModal.vue` | Modal de edición de la ficha: "Mi score" + overrides manuales de "TMDB"/"IMDb" (`PUT /api/movies/score/[tmdbId]`, solo manda los campos que cambiaron) + lista de visionados (`movies_watched`, uno por rewatch en otro año), cada uno editable y borrable (`PUT`/`DELETE /api/movies/[id]` por `watched_id`). Recarga al guardar; si se borra el último visionado, redirige a `/ListMovies` sin tocar los scores |
 | `SeriesMain.vue` | Series container with year tabs + botón Agregar (alta únicamente: editar vive en la ficha) |
 | `SeriesCard.vue` | Individual series card (sin botón de editar: eso vive en la ficha de la serie) |
 | `SeriesFormModal.vue` | Create/edit series entry modal. Las opciones de estado salen de `src/utils/seriesFormOptions.ts`, compartidas con `SeriesEntriesModal.vue` |
 | `SeriesSeasons.vue` | Expandable seasons/episodes accordion |
 | `SeriesEditButton.vue` | Envuelve `EditButton` (accent `indigo`) + `SeriesEntriesModal`, en la ficha de la serie |
-| `SeriesEntriesModal.vue` | Modal de edición de la ficha: campo "Mi score" (0-100, uno por serie, `PUT /api/series/score/[slug]`) + una fila por temporada registrada en `series_watched`, cada una editable y borrable (`PUT`/`DELETE /api/series/[id]`). Recarga al guardar; si se borra la última temporada, redirige a `/ListSeries` |
+| `SeriesEntriesModal.vue` | Modal de edición de la ficha: "Mi score" (uno por serie) + overrides manuales de "TMDB"/"IMDb" (`PUT /api/series/score/[slug]`, solo manda los campos que cambiaron) + una fila por temporada registrada en `series_watched`, cada una editable y borrable (`PUT`/`DELETE /api/series/[id]`). Recarga al guardar; si se borra la última temporada, redirige a `/ListSeries` |
 | `SyncButton.vue` | Botón de sync manual reutilizable (Movies/Series/Next Games) |
 | `MangaMain.vue` | Manga container: filtros (tipo, estado, formato, género, búsqueda), stats, botón Agregar (alta únicamente: editar vive en la ficha) |
 | `MangaCard.vue` | Tarjeta de manga: portada, badge de tipo (Manga/Manhwa/Manhua), estado, progreso `cap/total`, score personal (sin botón de editar: eso vive en la ficha) |
@@ -195,11 +195,11 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/movies/lookup` | GET | `?q=<slug\|url de Trakt\|id de TMDB>` → previsualización sin guardar, con `watched_years` |
 | `/api/movies/sync` | GET | Trigger Trakt movies sync (requires auth) |
 | `/api/movies/lists` | GET | Movie lists metadata |
-| `/api/movies/score/[tmdbId]` | PUT | `{ rating_personal: number\|null }` → alta/edición (0-100 entero) o borrado (`null`) del score personal en `movies_personal` |
+| `/api/movies/score/[tmdbId]` | PUT | `{ rating_personal?, rating_tmdb?, rating_imdb? }` (cada uno `number\|null`, opcional e independiente): clave ausente no toca ese campo; `null` lo borra (y para `rating_tmdb`/`rating_imdb` apaga su flag `*_manual` y resetea `ratings_fetched_at`, así el próximo visit a la ficha lo vuelve a pedir solo); un entero 0-100 lo guarda (y para `rating_tmdb`/`rating_imdb` prende `*_manual`) |
 | `/api/series` | GET, POST | List all series / Create series entry |
 | `/api/series/[id]` | GET, PUT, DELETE | Series entry CRUD by ID |
 | `/api/series/sync` | GET | Trigger Trakt series sync (requires auth) |
-| `/api/series/score/[slug]` | PUT | `{ rating_personal: number\|null }` → alta/edición (0-100 entero) o borrado (`null`) del score personal en `series_personal`, keyed por `trakt_slug` (una fila por serie, no por temporada) |
+| `/api/series/score/[slug]` | PUT | Mismo body y semántica que `/api/movies/score/[tmdbId]`, keyed por `trakt_slug` (`rating_personal` es una fila por serie, no por temporada) |
 | `/api/streaming/unlock` | POST | `{ pin }` → valida el PIN y emite la cookie de sesión |
 | `/api/streaming/lock` | POST | Borra la cookie de sesión de streaming |
 | `/api/series/detail/[slug]` | GET | Series full detail (on-demand fetch) |
@@ -263,7 +263,7 @@ y se pierde el lote entero de 50.
 `add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
 `rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`,
 `add-personal-rating`, `add-terminado-estado`, `add-manga-tables`, `add-movie-scores`,
-`add-series-scores`.
+`add-series-scores`, `add-manual-score-flags`.
 `drop-movies-list-columns` es **irreversible**: el respaldo de lo que borró
 (`list_slug`, `list_order`, `listed_at` de las 481 filas) es
 `db/backup-movies-list-slug.json`, y es lo único que queda de esos datos.
@@ -451,12 +451,59 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
   diferencia del score personal de películas (por `tmdb_id`, una fila por película), el de
   series es **por serie completa**, no por temporada: se edita en `SeriesEntriesModal.vue`
   vía `PUT /api/series/score/[slug]`, keyed por `trakt_slug`.
+- **Override manual de `rating_tmdb` / `rating_imdb`.** A veces TMDB/OMDb no tienen el dato
+  (OMDb devuelve `N/A`) o no cargan; `movies_cache`/`series_cache` tienen
+  `rating_tmdb_manual` / `rating_imdb_manual` (0/1, `db/migrate-add-manual-score-flags.sql`)
+  para cargarlo a mano desde `MoviesEntriesModal.vue`/`SeriesEntriesModal.vue` (inputs "TMDB"
+  e "IMDb" junto a "Mi score", vacío = automático). **Manual gana sobre el refresco**: tanto
+  el refresco de 30 días (`refreshMovieScoresIfStale`/`refreshSeriesScoresIfStale`) como los
+  backfills (`db/fetch-movie-scores.js`/`db/fetch-series-scores.js`) leen el flag y, si está
+  prendido, ni siquiera piden ese campo a la API — la decisión de qué valor persistir vive en
+  la función pura `mergeFetchedScores` (`src/services/movieScores.ts`), compartida por ambos
+  servicios. Borrar el valor a mano (mandar `null`) apaga el flag y resetea
+  `ratings_fetched_at`, así el próximo visit a la ficha lo vuelve a pedir solo. El detalle
+  (`movies/[id].astro`/`series/[slug].astro`) muestra un discreto "(manual)" junto al badge
+  cuando el flag está prendido.
 
   **Los tiers de OpenCritic son percentiles, no cortes fijos** (Mighty = 10% superior, Strong = 30% siguiente, Fair = del 30 al 60, Weak = 30% inferior). 84/75/65 es la traducción práctica y puede moverse con el tiempo.
 - **`rating_personal` en la lista**: va en la fila de datos de `PlayedGamesCard.vue`/`MoviesCard.vue`, con una estrella y el número en el color de su banda. Si es NULL no se renderiza **ni el separador `·`**, así que la fila no queda coja — con 58 de 66 juegos sin puntuar, la ausencia tiene que verse deliberada
 - Las clases de color de rating viven en los mapas `badgeClass` / `textClass` de `src/utils/ratingBands.ts`, escritas literales: Tailwind escanea el código como texto y purga cualquier clase que se arme por interpolación. `playedGames/[id].astro`, `PlayedGamesCard.vue`, `movies/[id].astro` y `MoviesCard.vue` los importan de ahí en vez de duplicarlos
 - Floating bottom nav: icon-only on mobile, icons+labels on desktop
+- **Contrato único de spacing de página** (`src/layouts/Layout.astro` + tokens en
+  `src/styles/global.css` `@theme`): gutter horizontal `--spacing-gutter` (1rem, `px-gutter`,
+  mobile y desktop); top `pt-4 sm:pt-8`; ancho `max-w-7xl mx-auto`; cierre inferior
+  `--spacing-nav-clearance` (4.5rem + `env(safe-area-inset-bottom)`, `pb-nav-clearance`) para
+  reservar el alto real de `FloatingNav.astro` en toda página con nav, o
+  `--spacing-page-bottom` (2rem + safe-area, `pb-page-bottom`) en las que la ocultan
+  (`hideMenu`). `FloatingNav.astro` empuja su propia píldora con el mismo `safe-area-inset-bottom`
+  para no quedar bajo el home indicator de iOS. **Ninguna página ni container Vue define su
+  propio padding/margin exterior**: heredan el único `<main>` de `Layout.astro`. Todo
+  overlay fijo que pueda coincidir con la barra (modales, el toast de `streaming.astro`) usa
+  `z-[60]`, por encima del `z-50` de `FloatingNav.astro`
 - Reduced motion support via `prefers-reduced-motion`
+
+### Versionado (SemVer)
+
+El sitio sigue `MAJOR.MINOR.PATCH`. **Única fuente de verdad: `"version"` en
+`package.json`**; `src/pages/index.astro` la importa y la muestra bajo el hero (`$ v1.11.0`).
+No escribas el número a mano en ningún otro archivo de código.
+
+**Todo cambio que se vaya a pushear sube la versión en el mismo commit**, junto con una
+entrada nueva arriba de todo en `CHANGELOG.md` (fecha `YYYY-MM-DD` + viñetas en español
+de lo que cambió para el usuario, no de archivos). Qué número subir:
+
+| Sube | Cuándo | Ejemplos |
+|---|---|---|
+| **MAJOR** (`x.0.0`) | Rediseño completo, o se elimina/rompe una sección o una URL pública | Cambiar toda la estética; sacar `/streaming`; renombrar `/ListMovies` |
+| **MINOR** (`1.x.0`) | Funcionalidad o sección nueva visible, o columna/tabla nueva que la habilita | Sección Manga; scores TMDB/IMDb; botón Editar homologado |
+| **PATCH** (`1.11.x`) | Fix, ajuste visual, texto, refactor o docs sin comportamiento nuevo | Padding; título de página; bug en un filtro |
+
+- Al subir MINOR el PATCH vuelve a 0; al subir MAJOR, MINOR y PATCH vuelven a 0
+- Varios cambios en el mismo push: se sube **una** vez, por el cambio de mayor rango
+- Cambios que solo tocan tooling interno (scripts de `db/`, tests, CLAUDE.md) sin efecto en
+  el sitio: PATCH, o ninguna subida si no se deployan junto con otra cosa
+- Las versiones ≤ 1.10.0 se reconstruyeron del historial de git (1.0.0 = sitio completo en
+  producción, 06/04/2026); ver `CHANGELOG.md`
 
 ### Deployment
 

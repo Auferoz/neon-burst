@@ -25,7 +25,17 @@ function isActive(href: string) {
 }
 ---
 
-<nav class="w-full md:max-w-fit fixed bottom-0 left-1/2 -translate-x-1/2 z-50" aria-label="Navegación principal">
+<!--
+	El padding-bottom empuja la píldora visible por encima del home indicator
+	de iOS: el <nav> en sí llega hasta bottom-0 (transparente), pero el
+	contenido queda arriba del safe-area. Mismo criterio que --nav-clearance
+	en global.css: ambos existen para que el contenido nunca quede debajo de
+	esta barra.
+-->
+<nav
+	class="w-full md:max-w-fit fixed bottom-0 left-1/2 -translate-x-1/2 z-50 pb-[max(0.375rem,env(safe-area-inset-bottom,0px))]"
+	aria-label="Navegación principal"
+>
 	<div class="flex items-center justify-center gap-11 p-1.5 opacity-95 lg:gap-2 bg-surface-1/70 backdrop-blur-xl border border-border-default rounded-t-2xl shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
 		{navLinks.map(link => (
 			<a

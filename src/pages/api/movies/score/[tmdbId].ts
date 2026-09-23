@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { setPersonalRating } from '../../../../services/moviesService';
-import { validateRatingPersonal } from '../../../../services/movieScores';
+import { setManualScore, setPersonalRating } from '../../../../services/moviesService';
+import { validateScoreUpdateBody } from '../../../../services/movieScores';
 
 export const prerender = false;
 
@@ -12,9 +12,12 @@ const json = (body: unknown, status = 200) =>
   });
 
 /**
- * Alta/edición/borrado del score personal de una película, por tmdb_id.
- * `{ rating_personal: null }` borra la fila de movies_personal: la película
- * vuelve a mostrarse como "sin puntuar".
+ * Alta/edición/borrado de los scores de una película, por tmdb_id.
+ * Body: `{ rating_personal?, rating_tmdb?, rating_imdb? }`, los tres
+ * opcionales e independientes. Una clave ausente no se toca; `null` borra
+ * ese score (y, para tmdb/imdb, vuelve a dejarlo en manos del refresco
+ * automático); un entero 0-100 lo guarda (y, para tmdb/imdb, lo marca manual
+ * para que el refresco de 30 días y los backfills dejen de pisarlo).
  */
 export const PUT: APIRoute = async ({ params, request }) => {
   const tmdbId = Number(params.tmdbId);
@@ -22,12 +25,16 @@ export const PUT: APIRoute = async ({ params, request }) => {
     return json({ error: 'tmdbId inválido' }, 400);
   }
 
-  const data = await request.json() as { rating_personal?: unknown };
-  const validation = validateRatingPersonal(data.rating_personal ?? null);
+  const data = await request.json();
+  const validation = validateScoreUpdateBody(data);
   if (!validation.ok) {
     return json({ error: validation.error }, 400);
   }
 
-  await setPersonalRating(env.DB, tmdbId, validation.value);
-  return json({ ok: true, rating_personal: validation.value });
+  const { rating_personal, rating_tmdb, rating_imdb } = validation.value;
+  if ('rating_personal' in validation.value) await setPersonalRating(env.DB, tmdbId, rating_personal ?? null);
+  if ('rating_tmdb' in validation.value) await setManualScore(env.DB, tmdbId, 'rating_tmdb', rating_tmdb ?? null);
+  if ('rating_imdb' in validation.value) await setManualScore(env.DB, tmdbId, 'rating_imdb', rating_imdb ?? null);
+
+  return json({ ok: true, ...validation.value });
 };

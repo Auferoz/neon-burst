@@ -120,6 +120,8 @@ CREATE TABLE IF NOT EXISTS movies_cache (
   votes INTEGER DEFAULT 0,
   rating_tmdb INTEGER,       -- vote_average * 10 (0-100)
   rating_imdb INTEGER,       -- imdbRating * 10 (0-100), vía OMDb
+  rating_tmdb_manual INTEGER DEFAULT 0,   -- 1 = cargado a mano, el refresco no lo pisa
+  rating_imdb_manual INTEGER DEFAULT 0,
   ratings_fetched_at TEXT,
   detail_fetched_at TEXT,
   updated_at TEXT DEFAULT (datetime('now'))
@@ -195,6 +197,8 @@ CREATE TABLE IF NOT EXISTS series_cache (
   votes INTEGER DEFAULT 0,
   rating_tmdb INTEGER,       -- vote_average * 10 (0-100)
   rating_imdb INTEGER,       -- imdbRating * 10 (0-100), vía OMDb
+  rating_tmdb_manual INTEGER DEFAULT 0,   -- 1 = cargado a mano, el refresco no lo pisa
+  rating_imdb_manual INTEGER DEFAULT 0,
   ratings_fetched_at TEXT,
   detail_fetched_at TEXT,
   updated_at TEXT DEFAULT (datetime('now'))

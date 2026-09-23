@@ -6,7 +6,7 @@ import { env } from 'cloudflare:workers';
 import { fetchTmdbEnglishTitle, fetchTmdbMovieDetail, fetchTmdbScore, lookupTmdbMovieId, resolveTmdbMovieIdByImdb, TMDB_SOURCE } from './tmdbMovies';
 import { parseMediaQuery } from '../utils/mediaQuery';
 import { fetchImdbRating } from './omdb';
-import { validateRatingPersonal } from './movieScores';
+import { mergeFetchedScores, validateRatingPersonal } from './movieScores';
 
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -81,6 +81,8 @@ export interface MovieDetail {
   rating_tmdb: number | null;
   rating_imdb: number | null;
   rating_personal: number | null;
+  rating_tmdb_manual: boolean;
+  rating_imdb_manual: boolean;
 }
 
 /** Una película vista: la fila de movies_watched + su metadata de movies_cache. */
@@ -147,6 +149,31 @@ export async function setPersonalRating(db: D1Database, tmdbId: number, ratingPe
      VALUES (?, ?, datetime('now'))
      ON CONFLICT(tmdb_id) DO UPDATE SET rating_personal = excluded.rating_personal, updated_at = datetime('now')`
   ).bind(tmdbId, ratingPersonal).run();
+}
+
+/**
+ * Alta/edición/borrado manual de `rating_tmdb` o `rating_imdb` en movies_cache.
+ * `value` no nulo guarda el score y prende `*_manual` (el refresco de 30 días
+ * y los backfills dejan de tocar ese campo). `value: null` borra el score,
+ * apaga `*_manual` y resetea `ratings_fetched_at` para que la próxima visita
+ * a la ficha vuelva a pedirlo automáticamente.
+ */
+export async function setManualScore(
+  db: D1Database,
+  tmdbId: number,
+  field: 'rating_tmdb' | 'rating_imdb',
+  value: number | null,
+): Promise<void> {
+  const manualField = field === 'rating_tmdb' ? 'rating_tmdb_manual' : 'rating_imdb_manual';
+  if (value === null) {
+    await db.prepare(
+      `UPDATE movies_cache SET ${field} = NULL, ${manualField} = 0, ratings_fetched_at = NULL WHERE tmdb_id = ?`
+    ).bind(tmdbId).run();
+    return;
+  }
+  await db.prepare(
+    `UPDATE movies_cache SET ${field} = ?, ${manualField} = 1 WHERE tmdb_id = ?`
+  ).bind(value, tmdbId).run();
 }
 
 /** Motivos por los que un alta manual puede fallar, mapeados a HTTP en la API. */
@@ -502,6 +529,8 @@ export async function getMovieById(db: D1Database, id: number): Promise<MovieDet
     (row.imdb_id as string) || '',
     (row.rating_tmdb as number | null) ?? null,
     (row.rating_imdb as number | null) ?? null,
+    !!(row.rating_tmdb_manual as number | null),
+    !!(row.rating_imdb_manual as number | null),
     (row.ratings_fetched_at as string | null) ?? null,
   );
   row.rating_tmdb = scores.rating_tmdb;
@@ -536,29 +565,35 @@ async function refreshMovieScoresIfStale(
   imdbId: string,
   currentTmdb: number | null,
   currentImdb: number | null,
+  currentTmdbManual: boolean,
+  currentImdbManual: boolean,
   ratingsFetchedAt: string | null,
 ): Promise<{ rating_tmdb: number | null; rating_imdb: number | null }> {
   if (!isScoresStale(ratingsFetchedAt)) {
     return { rating_tmdb: currentTmdb, rating_imdb: currentImdb };
   }
 
+  // Un campo manual no se refetchea: se ahorra la llamada y de paso se
+  // garantiza que mergeFetchedScores no tenga nada que pisar.
   const [tmdbScore, imdbScore] = await Promise.all([
-    fetchTmdbScore(tmdbId),
-    imdbId && env.OMDB_API_KEY ? fetchImdbRating(imdbId, env.OMDB_API_KEY) : Promise.resolve(null),
+    currentTmdbManual ? Promise.resolve(null) : fetchTmdbScore(tmdbId),
+    !currentImdbManual && imdbId && env.OMDB_API_KEY ? fetchImdbRating(imdbId, env.OMDB_API_KEY) : Promise.resolve(null),
   ]);
 
-  const nextTmdb = tmdbScore ?? currentTmdb;
-  const nextImdb = imdbScore ?? currentImdb;
+  const merged = mergeFetchedScores(
+    { rating_tmdb: currentTmdb, rating_imdb: currentImdb, rating_tmdb_manual: currentTmdbManual, rating_imdb_manual: currentImdbManual },
+    { rating_tmdb: tmdbScore, rating_imdb: imdbScore },
+  );
 
   try {
     await db.prepare(
       `UPDATE movies_cache SET rating_tmdb = ?, rating_imdb = ?, ratings_fetched_at = datetime('now') WHERE tmdb_id = ?`
-    ).bind(nextTmdb, nextImdb, tmdbId).run();
+    ).bind(merged.rating_tmdb, merged.rating_imdb, tmdbId).run();
   } catch (e) {
     console.error(`[movies] refreshMovieScoresIfStale ${tmdbId} failed:`, e);
   }
 
-  return { rating_tmdb: nextTmdb, rating_imdb: nextImdb };
+  return merged;
 }
 
 function rowToMovieDetail(row: Record<string, unknown>, ratingPersonal: number | null): MovieDetail {
@@ -600,6 +635,8 @@ function rowToMovieDetail(row: Record<string, unknown>, ratingPersonal: number |
     rating_tmdb: (row.rating_tmdb as number | null) ?? null,
     rating_imdb: (row.rating_imdb as number | null) ?? null,
     rating_personal: ratingPersonal,
+    rating_tmdb_manual: !!(row.rating_tmdb_manual as number | null),
+    rating_imdb_manual: !!(row.rating_imdb_manual as number | null),
   };
 }
 
