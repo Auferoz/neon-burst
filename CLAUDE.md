@@ -114,8 +114,9 @@ public/
 | `SyncButton.vue` | Botón de sync manual reutilizable (Movies/Series/Next Games) |
 | `MangaMain.vue` | Manga container: filtros (tipo, estado, formato, género, búsqueda), stats, botón Agregar (alta únicamente: editar vive en la ficha) |
 | `MangaCard.vue` | Tarjeta de manga: portada, badge de tipo (Manga/Manhwa/Manhua), estado, progreso `cap/total`, score personal (sin botón de editar: eso vive en la ficha) |
-| `MangaFormModal.vue` | Alta/edición de manga, con lookup a AniList (URL o id) → previsualización → confirmar, mismo flujo que `MoviesFormModal.vue`. En modo edición suma un botón "Eliminar" con confirmación dentro del propio modal (no `window.confirm`); emite `deleted` |
+| `MangaFormModal.vue` | Alta/edición de manga. Lookup a AniList (URL o id) → previsualización → confirmar, mismo flujo que `MoviesFormModal.vue`, pero acá el `fetch` a AniList lo hace el propio navegador (`fetchAnilistPreview`/`fetchAnilistMedia` de `anilist.ts`): el servidor solo confirma con `/api/manga/lookup?id=` si ya está agregado. En modo edición suma un botón "Eliminar" con confirmación dentro del propio modal (no `window.confirm`); emite `deleted` |
 | `MangaEditButton.vue` | Envuelve `EditButton` (accent `orange`) + `MangaFormModal` en modo edición, en la ficha del manga; redirige a `/ListManga` si se elimina |
+| `MangaRefresher.vue` | Isla `client:idle` en `manga/[id].astro`, montada solo si `getMangaDetail()` marcó `needs_refresh`. Trae el detalle de AniList del lado del navegador y lo sube por `PUT /api/manga/cache/[anilistId]`; si funciona, recarga la página una vez (con guard en `sessionStorage` contra loops); si falla, no hay nada visible que romper — el caché queda como estaba |
 
 **`SyncButton.vue`** — llama a un endpoint `/api/*/sync` con `?secret=`. Pide el
 `CRON_SECRET` por `window.prompt` y lo guarda en `localStorage` (clave `nb_sync_secret`);
@@ -204,9 +205,10 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/streaming/lock` | POST | Borra la cookie de sesión de streaming |
 | `/api/series/detail/[slug]` | GET | Series full detail (on-demand fetch) |
 | `/api/igdb/lookup` | GET | `?q=<url\|slug\|id>` → datos de un juego de IGDB para autocompletar el modal |
-| `/api/manga` | GET, POST | Lista de manga leído (JOIN `manga_read` ↔ `manga_cache`) / alta (URL o id de AniList) |
+| `/api/manga` | GET, POST | Lista de manga leído (JOIN `manga_read` ↔ `manga_cache`) / alta. El navegador ya resolvió y trajo el `media` de AniList; el POST manda `{ anilist_id, media, ...tracking }` y el servidor solo valida y guarda |
 | `/api/manga/[id]` | PUT, DELETE | CRUD de una entrada de `manga_read` por su `id` |
-| `/api/manga/lookup` | GET | `?q=<url\|id de AniList>` → previsualización sin guardar, con `already_added` |
+| `/api/manga/lookup` | GET | Solo D1: `?id=<anilist_id>` → `{ already_added }`. La previsualización de AniList la trae el navegador directo, no este endpoint |
+| `/api/manga/cache/[anilistId]` | PUT | Refresco client-driven de `manga_cache`: recibe `{ media }` ya traído de AniList por el navegador, valida y persiste. Lo llama `MangaRefresher.vue` |
 
 ### Database Schema (Cloudflare D1)
 
@@ -301,15 +303,22 @@ npx wrangler d1 execute neon-burst-db --remote --command "ALTER TABLE ...; CREAT
 - `src/services/seriesService.ts` — D1 CRUD for series_watched + series_cache + on-demand detail fetch from Trakt (cast, seasons, episodes, videos). `getAllSeries()`/`getSeriesDetail()` hacen LEFT JOIN con `series_personal`; `setPersonalRating()` es el alta/edición/borrado del score personal. `getSeriesDetail()` refresca `rating_tmdb`/`rating_imdb` (y completa `tmdb_id`/`imdb_id` si faltaban) si pasaron más de 30 días, igual que `getMovieById()` en `moviesService.ts`
 - `src/services/seriesSync.ts` — Refreshes series_cache metadata from Trakt for current year / ongoing shows; `syncSingleShow` cae a TMDB y lanza `TraktRequestError` (→ HTTP 502) si ambas APIs fallan. También intenta `rating_tmdb`/`rating_imdb` al dar de alta (best-effort, no bloquea si TMDB/OMDb fallan)
 - `src/services/tmdbSeries.ts` — Proveedor TMDB de series (fallback temporal, ver abajo): resuelve el slug de Trakt a un id de TMDB por búsqueda y devuelve los datos con la misma forma que las funciones de Trakt. `fetchTmdbTvScore()` y `fetchTmdbTvImdbId()` son los equivalentes de `tmdbMovies.ts#fetchTmdbScore` para el refresh de scores
-- `src/services/anilist.ts` — Proveedor AniList (GraphQL público, sin auth). Funciones puras
-  (`parseAnilistQuery`, `countryToType`, `mapAnilistToCacheRow`) separadas de las que hacen
-  fetch (`fetchAnilistPreview`, `fetchAnilistMedia`) para que Vitest pueda testear las
-  primeras sin `cloudflare:workers`. Errores de red/HTTP/429 se tipan como `AnilistRequestError`
-  (→ HTTP 502/404), igual que `TraktRequestError` en `seriesSync.ts`
-- `src/services/mangaService.ts` — D1 CRUD de `manga_read` + `manga_cache` y detalle on-demand
-  desde AniList. `getMangaDetail()` re-fetchea si nunca se cargó, o si el manga sigue
-  `RELEASING` y el detalle tiene más de 7 días (para que el conteo de capítulos no quede
-  desactualizado sin necesidad de un cron)
+- `src/services/anilist.ts` — Proveedor AniList (GraphQL público, sin auth). **AniList bloquea
+  las IPs de salida de Cloudflare Workers con un 403** (confirmado en su foro; un `User-Agent`
+  propio no lo arregló — ver CHANGELOG 1.11.1), así que `fetchAnilistPreview` y
+  `fetchAnilistMedia` están pensadas para correr en el navegador (se importan desde
+  `MangaFormModal.vue` y `MangaRefresher.vue`), nunca desde el servidor. Funciones puras
+  (`parseAnilistQuery`, `countryToType`, `mapAnilistToCacheRow`, `validateAnilistMediaPayload`)
+  no tienen import de `cloudflare:workers`, así que Vitest las testea directo y el Worker las usa
+  para validar lo que sube el navegador. Errores de red/HTTP/429 se tipan como `AnilistRequestError`
+  (mensajes en español), igual que `TraktRequestError` en `seriesSync.ts`
+- `src/services/mangaService.ts` — D1 CRUD de `manga_read` + `manga_cache`. **Nunca llama a
+  AniList** (ver arriba): `createMangaEntry()` recibe el `media` que ya trajo el navegador,
+  lo valida el endpoint (`validateAnilistMediaPayload`) y acá solo se mapea y persiste.
+  `getMangaDetail()` lee de D1 y devuelve `needs_refresh: true` cuando nunca se cargó el
+  detalle, o cuando el manga sigue `RELEASING` y el caché tiene más de 7 días — la página de
+  detalle decide ahí si monta `MangaRefresher.vue`. `refreshMangaCache()` es lo que ese
+  refresco client-driven llama para persistir el nuevo `media`
 
 ### Streaming (puerta de PIN)
 
@@ -354,6 +363,12 @@ Movies and series use a lazy-loading pattern for detailed data:
 4. Stores everything in JSON columns (`cast_json`, `videos_json`, `images_json`, `seasons_json`) and sets `detail_fetched_at`
 5. Subsequent visits use cached data from D1
 
+**Manga es la excepción: el refresco es client-driven, no server-side.** El servidor no
+puede llamar a AniList (bloquea las IPs de Cloudflare Workers, ver `anilist.ts`), así que
+`getMangaDetail()` solo lee D1 y devuelve `needs_refresh`; si es `true`, `manga/[id].astro`
+monta `MangaRefresher.vue` (`client:idle`), que hace el fetch a AniList desde el navegador y
+sube el resultado por `PUT /api/manga/cache/[anilistId]`.
+
 ### External APIs
 
 - **Trakt API** — Movies and series data, cast, seasons/episodes. All images come from Trakt (poster, fanart, thumb, headshots). Uses `?extended=full` for images.
@@ -365,7 +380,9 @@ Movies and series use a lazy-loading pattern for detailed data:
 - **OMDb API** — Fuente de `rating_imdb`, buscando por `imdb_id` (`movies_cache.imdb_id`). Free tier: 1000 requests/día. `src/services/omdb.ts`
 - **AniList API** — Metadata de manga/manhwa/manhua vía GraphQL público (`https://graphql.anilist.co`).
   **No requiere autenticación** para lecturas: el Client ID/Secret no se usan. Neon Burst es la
-  única fuente de verdad para lo leído — no hay sync con la lista de AniList del usuario ni OAuth
+  única fuente de verdad para lo leído — no hay sync con la lista de AniList del usuario ni OAuth.
+  **Se consulta solo desde el navegador**: AniList bloquea las IPs de salida de Cloudflare Workers
+  con un 403 (confirmado en su foro), así que el servidor nunca la llama — ver `anilist.ts` arriba
 
 ### Fallback temporal a TMDB (series y películas)
 

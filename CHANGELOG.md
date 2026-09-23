@@ -6,6 +6,10 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.11.2 — 2026-09-23
+- AniList se consulta desde el navegador (el `User-Agent` de 1.11.1 no arregló el 403: AniList bloquea las IPs de Cloudflare Workers, confirmado en su foro); el servidor ya no llama a AniList, solo valida y guarda lo que el navegador trae
+- El detalle de un manga desactualizado se refresca solo, del lado del cliente, y recarga la página cuando termina
+
 ## 1.11.1 — 2026-09-23
 - Las peticiones a AniList envían un `User-Agent` propio (intento de fix del 403 en producción)
 - Relaciones, Recomendaciones y Staff del manga usan el mismo scroll fino que el Reparto de películas y series; el estilo vive una sola vez en `global.css`

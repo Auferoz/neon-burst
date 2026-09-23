@@ -1,7 +1,6 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { lookupManga, AnilistRequestError } from '../../../services/mangaService';
-import { parseAnilistQuery } from '../../../services/anilist';
+import { isMangaAlreadyAdded } from '../../../services/mangaService';
 
 export const prerender = false;
 
@@ -12,25 +11,18 @@ const json = (body: unknown, status = 200) =>
   });
 
 /**
- * Resuelve una URL o id de AniList a una previsualización, sin guardar nada.
- * Mismo flujo que /api/movies/lookup: buscar → previsualizar → confirmar.
+ * Solo D1: la previsualización de AniList la trae el navegador directamente
+ * (AniList bloquea las IPs de Cloudflare Workers, ver anilist.ts). Esto
+ * responde lo único que necesita el servidor: si ya está en la lista.
  */
 export const GET: APIRoute = async ({ url }) => {
-  const q = url.searchParams.get('q') || '';
+  const idParam = url.searchParams.get('id');
+  const anilistId = Number(idParam);
 
-  const anilistId = parseAnilistQuery(q);
-  if (!anilistId) {
-    return json({ error: 'Pegá la URL o el id de AniList' }, 400);
+  if (!idParam || !Number.isInteger(anilistId) || anilistId <= 0) {
+    return json({ error: 'Id de AniList inválido' }, 400);
   }
 
-  try {
-    const preview = await lookupManga(env.DB, anilistId);
-    return json(preview);
-  } catch (e) {
-    if (e instanceof AnilistRequestError) {
-      return json({ error: e.message }, e.status === 404 ? 404 : 502);
-    }
-    console.error('[api/manga/lookup] failed:', e);
-    return json({ error: 'Error al consultar AniList' }, 500);
-  }
+  const already_added = await isMangaAlreadyAdded(env.DB, anilistId);
+  return json({ already_added });
 };

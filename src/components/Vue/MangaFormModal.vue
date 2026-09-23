@@ -1,16 +1,8 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
+import { parseAnilistQuery, fetchAnilistPreview, fetchAnilistMedia, type AnilistPreview } from '../../services/anilist';
 
-interface MangaPreview {
-  anilist_id: number;
-  title: string;
-  type: string;
-  format: string;
-  status: string;
-  chapters: number | null;
-  cover: string;
-  already_added: boolean;
-}
+type MangaPreview = AnilistPreview & { already_added: boolean };
 
 interface MangaEditEntry {
   id: number;
@@ -95,7 +87,14 @@ watch(() => props.open, (val) => {
 watch(query, () => { preview.value = null; });
 
 async function lookup() {
-  if (!query.value.trim()) {
+  const trimmed = query.value.trim();
+  if (!trimmed) {
+    error.value = 'Pegá la URL o el id de AniList';
+    return;
+  }
+
+  const anilistId = parseAnilistQuery(trimmed);
+  if (!anilistId) {
     error.value = 'Pegá la URL o el id de AniList';
     return;
   }
@@ -105,10 +104,16 @@ async function lookup() {
   preview.value = null;
 
   try {
-    const res = await fetch(`/api/manga/lookup?q=${encodeURIComponent(query.value.trim())}`);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
-    preview.value = data as MangaPreview;
+    // AniList se consulta desde el navegador (bloquea las IPs de Cloudflare
+    // Workers); el servidor solo sabe si ya está en la lista.
+    const [anilistPreview, alreadyAdded] = await Promise.all([
+      fetchAnilistPreview(anilistId),
+      fetch(`/api/manga/lookup?id=${anilistId}`)
+        .then(res => res.json())
+        .then(data => !!data.already_added)
+        .catch(() => false),
+    ]);
+    preview.value = { ...anilistPreview, already_added: alreadyAdded };
   } catch (e) {
     error.value = (e as Error).message;
   } finally {
@@ -135,9 +140,23 @@ async function save() {
   };
 
   try {
-    const url = isEdit.value ? `/api/manga/${props.entry!.id}` : '/api/manga';
-    const method = isEdit.value ? 'PUT' : 'POST';
-    const body = isEdit.value ? payload : { query: query.value.trim(), ...payload };
+    let url: string;
+    let method: string;
+    let body: Record<string, unknown>;
+
+    if (isEdit.value) {
+      url = `/api/manga/${props.entry!.id}`;
+      method = 'PUT';
+      body = payload;
+    } else {
+      // Query completa recién acá (no en la previsualización): trae characters/
+      // staff/relations/recomendaciones, que el servidor va a guardar en el caché.
+      const anilistId = preview.value!.id;
+      const media = await fetchAnilistMedia(anilistId);
+      url = '/api/manga';
+      method = 'POST';
+      body = { anilist_id: anilistId, media, ...payload };
+    }
 
     const res = await fetch(url, {
       method,

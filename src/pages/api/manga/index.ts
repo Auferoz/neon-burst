@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { getAllManga, createMangaEntry, AnilistRequestError } from '../../../services/mangaService';
-import { parseAnilistQuery } from '../../../services/anilist';
+import { getAllManga, createMangaEntry } from '../../../services/mangaService';
+import { validateAnilistMediaPayload } from '../../../services/anilist';
 
 export const prerender = false;
 
@@ -19,25 +19,37 @@ export const GET: APIRoute = async () => {
   return json(manga, 200, 'public, max-age=300');
 };
 
+/**
+ * El navegador ya resolvió `query` a un id y ya trajo el `media` completo
+ * desde AniList (el servidor no puede: AniList bloquea las IPs de Cloudflare
+ * Workers, ver anilist.ts). Acá solo se valida y persiste.
+ */
 export const POST: APIRoute = async ({ request }) => {
-  const data = await request.json() as {
-    query?: string;
+  const data = await request.json().catch(() => null) as {
+    anilist_id?: number;
+    media?: unknown;
     estado?: string;
     capitulo_actual?: number;
     platform?: string;
     fecha_inicio?: string;
     fecha_final?: string;
     rating_personal?: number | null;
-  };
+  } | null;
 
-  const anilistId = parseAnilistQuery(data.query || '');
-  if (!anilistId) {
-    return json({ error: 'Pegá la URL o el id de AniList' }, 400);
+  const anilistId = Number(data?.anilist_id);
+  if (!data || !Number.isInteger(anilistId) || anilistId <= 0) {
+    return json({ error: 'Id de AniList inválido' }, 400);
+  }
+
+  const validation = validateAnilistMediaPayload(data.media, anilistId);
+  if (!validation.ok) {
+    return json({ error: validation.error }, 400);
   }
 
   try {
     const entry = await createMangaEntry(env.DB, {
       anilist_id: anilistId,
+      media: validation.media,
       estado: data.estado || 'Leyendo',
       capitulo_actual: Number(data.capitulo_actual) || 0,
       platform: data.platform || '',
@@ -47,9 +59,6 @@ export const POST: APIRoute = async ({ request }) => {
     });
     return json(entry, 201);
   } catch (e) {
-    if (e instanceof AnilistRequestError) {
-      return json({ error: e.message }, e.status === 404 ? 404 : 502);
-    }
     const msg = (e as Error).message;
     if (msg.includes('UNIQUE')) {
       return json({ error: 'Ya agregaste este manga' }, 409);

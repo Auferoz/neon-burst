@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseAnilistQuery, countryToType, mapAnilistToCacheRow } from '../src/services/anilist';
+import { parseAnilistQuery, countryToType, mapAnilistToCacheRow, validateAnilistMediaPayload } from '../src/services/anilist';
 import fixture from './fixtures/anilist-media.json';
 
 describe('parseAnilistQuery', () => {
@@ -102,5 +102,62 @@ describe('mapAnilistToCacheRow', () => {
     expect(row.site_url).toBe('https://anilist.co/manga/30013');
     expect(row.cover).toContain('bx30013.jpg');
     expect(row.cover_color).toBe('#e4a015');
+  });
+});
+
+describe('validateAnilistMediaPayload', () => {
+  it('accepts a valid media payload matching the expected id', () => {
+    const result = validateAnilistMediaPayload(fixture, 30013);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.media.id).toBe(30013);
+    }
+  });
+
+  it('rejects when the id does not match', () => {
+    const result = validateAnilistMediaPayload(fixture, 999);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/id/i);
+    }
+  });
+
+  it('rejects when type is not MANGA', () => {
+    const result = validateAnilistMediaPayload({ ...fixture, type: 'ANIME' }, 30013);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/manga/i);
+    }
+  });
+
+  it('rejects when the title is missing', () => {
+    const { title, ...withoutTitle } = fixture as any;
+    const result = validateAnilistMediaPayload(withoutTitle, 30013);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/título/i);
+    }
+  });
+
+  it('rejects when title.romaji is missing or not a string', () => {
+    const result = validateAnilistMediaPayload({ ...fixture, title: { romaji: null } }, 30013);
+    expect(result.ok).toBe(false);
+  });
+
+  it('rejects non-object input', () => {
+    expect(validateAnilistMediaPayload(null, 30013).ok).toBe(false);
+    expect(validateAnilistMediaPayload(undefined, 30013).ok).toBe(false);
+    expect(validateAnilistMediaPayload('not an object', 30013).ok).toBe(false);
+    expect(validateAnilistMediaPayload(42, 30013).ok).toBe(false);
+    expect(validateAnilistMediaPayload([fixture], 30013).ok).toBe(false);
+  });
+
+  it('rejects an oversized payload', () => {
+    const huge = { ...fixture, description: 'x'.repeat(600_000) };
+    const result = validateAnilistMediaPayload(huge, 30013);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/grandes/i);
+    }
   });
 });

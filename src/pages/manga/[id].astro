@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
 import { getMangaDetail } from '../../services/mangaService';
 import MangaEditButton from '../../components/Vue/MangaEditButton.vue';
+import MangaRefresher from '../../components/Vue/MangaRefresher.vue';
 
 export const prerender = false;
 
@@ -165,6 +166,10 @@ function relationHref(id: number, siteUrl: string): string {
 					{manga.volumes && <span class="text-border-hover">&middot;</span>}
 					{manga.volumes && <span>{manga.volumes} vols</span>}
 				</div>
+
+				{manga.needs_refresh && (
+					<MangaRefresher client:idle anilistId={manga.anilist_id} />
+				)}
 
 				<!-- Genre tags -->
 				{genres.length > 0 && (

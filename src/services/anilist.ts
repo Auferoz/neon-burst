@@ -2,21 +2,25 @@
  * AniList provider — public GraphQL API (https://graphql.anilist.co).
  * No auth needed for reads, so no Client ID/Secret are used here.
  *
+ * AniList's firewall answers 403 to every request coming from a Cloudflare
+ * Workers egress IP (confirmed on their forum; a custom User-Agent did not
+ * change that — see CHANGELOG 1.11.1). A normal IP works fine, and AniList
+ * supports CORS for browser calls, so the fetch functions below are meant to
+ * run in the browser (from Vue components), not on the server. The server
+ * only validates and stores what the browser already fetched — see
+ * `validateAnilistMediaPayload` and `mangaService.ts`.
+ *
  * This module is split on purpose:
- *   - Pure functions (parseAnilistQuery, countryToType, mapAnilistToCacheRow)
- *     have no side effects and no `cloudflare:workers` import, so Vitest can
- *     import them directly in plain Node.
- *   - fetchAnilistPreview / fetchAnilistMedia use global `fetch` (available in
- *     both the Cloudflare Worker runtime and Node 22+), so they don't need the
- *     `cloudflare:workers` module either.
+ *   - Pure functions (parseAnilistQuery, countryToType, mapAnilistToCacheRow,
+ *     validateAnilistMediaPayload) have no side effects and no
+ *     `cloudflare:workers` import, so Vitest can import them directly in
+ *     plain Node, and the Worker can safely validate payloads with them.
+ *   - fetchAnilistPreview / fetchAnilistMedia use global `fetch` (available
+ *     in the browser and in Node 22+ for tests), and no Node/Worker-only API,
+ *     so this file is safely importable from a Vue component.
  */
 
-import { version } from '../../package.json';
-
 const ANILIST_API_URL = 'https://graphql.anilist.co';
-// Workers' fetch sends no User-Agent, and AniList's firewall answers 403 to
-// anonymous requests coming from Cloudflare Workers IPs. Identify the caller.
-const ANILIST_USER_AGENT = `NeonBurst/${version} (+https://neon-burst.adesigns7.workers.dev)`;
 
 export type MangaType = 'Manga' | 'Manhwa' | 'Manhua';
 
@@ -297,7 +301,6 @@ async function anilistFetch<T>(query: string, variables: Record<string, unknown>
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'User-Agent': ANILIST_USER_AGENT,
       },
       body: JSON.stringify({ query, variables }),
     });
@@ -423,4 +426,52 @@ const FULL_QUERY = `
 export async function fetchAnilistMedia(id: number): Promise<AnilistMediaResponse> {
   const data = await anilistFetch<{ Media: AnilistMediaResponse }>(FULL_QUERY, { id });
   return data.Media;
+}
+
+export type AnilistValidationResult =
+  | { ok: true; media: AnilistMediaResponse }
+  | { ok: false; error: string };
+
+// AniList's full Media response is a few KB; anything past this is either a
+// mistake or an attempt to stuff the server with garbage — reject it outright.
+const MAX_MEDIA_PAYLOAD_CHARS = 500_000;
+
+/**
+ * Guards the shape of a `media` payload the browser POSTs after fetching it
+ * from AniList directly (the server can't fetch AniList itself — see the
+ * module comment above). Never trust it further than this: it must be a
+ * plain object, its `id` must match what the caller expects, it must be a
+ * MANGA, and it must carry at least a romaji title.
+ */
+export function validateAnilistMediaPayload(media: unknown, expectedId: number): AnilistValidationResult {
+  if (media === null || typeof media !== 'object' || Array.isArray(media)) {
+    return { ok: false, error: 'Datos de AniList inválidos' };
+  }
+
+  let serialized: string;
+  try {
+    serialized = JSON.stringify(media);
+  } catch {
+    return { ok: false, error: 'Datos de AniList inválidos' };
+  }
+  if (serialized.length > MAX_MEDIA_PAYLOAD_CHARS) {
+    return { ok: false, error: 'Datos de AniList demasiado grandes' };
+  }
+
+  const m = media as Record<string, unknown>;
+
+  if (m.id !== expectedId) {
+    return { ok: false, error: 'El id de AniList no coincide' };
+  }
+
+  if (m.type !== 'MANGA') {
+    return { ok: false, error: 'El contenido de AniList no es un manga' };
+  }
+
+  const title = m.title as Record<string, unknown> | null | undefined;
+  if (!title || typeof title !== 'object' || typeof title.romaji !== 'string' || !title.romaji) {
+    return { ok: false, error: 'Datos de AniList incompletos (falta el título)' };
+  }
+
+  return { ok: true, media: media as AnilistMediaResponse };
 }
