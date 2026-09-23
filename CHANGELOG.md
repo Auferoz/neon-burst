@@ -6,6 +6,31 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.13.0 — 2026-09-23
+- Tarjetas de tarea rediseñadas en `/myTodoist`: barra de acento por prioridad, chip
+  de vencimiento, recurrencia, etiquetas y proyecto (en vistas que abarcan varios),
+  y una barra de progreso de subtareas que se pone verde al llegar al 100%
+- Las subtareas ahora viven **dentro** de la tarjeta del padre en todas las vistas
+  (bandeja, proyecto, etiqueta, hoy, próximos, búsqueda): checklist con checkbox
+  propio, tachado al completar, colapsar/expandir y "Ocultar/Mostrar completadas",
+  con el estado de cada tarjeta persistido en `localStorage`. Ya no aparecen como
+  filas propias — una búsqueda que matchea una subtarea muestra la tarjeta del padre
+- Alta de subtareas inline ("+ Subtarea") con soporte para pegar varias líneas de
+  una vez (una subtarea por línea no vacía)
+- Renombrar subtareas con doble click o el lápiz, tanto en la tarjeta como en el
+  detalle
+- Arreglado: crear una etiqueta (o proyecto) desde el "+" del sidebar no hacía nada
+  si se escribía justo después de abrir el formulario — el input nunca recibía el
+  foco, así que las teclas se las comían los atajos globales de teclado en vez de
+  llegar al campo. Ahora el campo se enfoca solo al abrir el formulario
+- Arreglado (hallado durante lo anterior): Enter dentro del renombrado o del alta
+  de subtarea en la tarjeta reabría el panel de detalle, porque el evento de
+  teclado subía hasta el atajo `Enter` de la tarjeta completa
+- Arreglado: "Próximos" incluía subtareas con fecha como filas sueltas, en vez de
+  quedarse solo con las tareas de primer nivel
+- Arreglado: los contadores del sidebar (Bandeja, Hoy, proyectos) sumaban las subtareas
+  abiertas y no coincidían con el total de la lista
+
 ## 1.12.0 — 2026-09-23
 - Nueva sección **Todo** (`/myTodoist`): gestor de tareas personal con proyectos, secciones,
   etiquetas, subtareas (un nivel), prioridades, fechas/horas y recurrencia

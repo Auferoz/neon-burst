@@ -11,6 +11,7 @@ import { TODO_STORE_KEY } from './useTodoStore';
 import { describeRecurrence } from '../../../utils/todo/recurrence';
 import { isoWeekday, dayOfMonth } from '../../../utils/todo/dateUtil';
 import { PRIORITY_OPTIONS, PRIORITY_STYLES } from '../../../utils/todo/priorityStyles';
+import { splitPastedLines } from '../../../utils/todo/subtasks';
 import { localToday } from './clientDate';
 import type { Task, Priority } from '../../../utils/todo/types';
 
@@ -150,16 +151,38 @@ async function addLabelAndAttach() {
 }
 
 async function addSubtask() {
-  const t = newSubtaskTitle.value.trim();
-  if (!t || !props.task) return;
-  await store.createTask({
-    project_id: props.task.project_id,
-    section_id: props.task.section_id,
-    parent_id: props.task.id,
-    title: t,
-    priority: 4,
-  });
+  if (!props.task) return;
+  const lines = splitPastedLines(newSubtaskTitle.value);
+  if (!lines.length) return;
   newSubtaskTitle.value = '';
+  for (const title of lines) {
+    await store.createTask({
+      project_id: props.task.project_id,
+      section_id: props.task.section_id,
+      parent_id: props.task.id,
+      title,
+      priority: 4,
+    });
+  }
+}
+
+function onSubtaskPaste(e: ClipboardEvent) {
+  const text = e.clipboardData?.getData('text') ?? '';
+  const lines = splitPastedLines(text);
+  if (lines.length <= 1 || !props.task) return;
+  e.preventDefault();
+  newSubtaskTitle.value = '';
+  (async () => {
+    for (const title of lines) {
+      await store.createTask({
+        project_id: props.task!.project_id,
+        section_id: props.task!.section_id,
+        parent_id: props.task!.id,
+        title,
+        priority: 4,
+      });
+    }
+  })();
 }
 
 function toggleSubtask(sub: Task) {
@@ -168,6 +191,32 @@ function toggleSubtask(sub: Task) {
 
 function deleteSubtask(sub: Task) {
   store.deleteTask(sub.id);
+}
+
+const renamingSubtaskId = ref<number | null>(null);
+const renameSubtaskText = ref('');
+let renameSubtaskInputEl: HTMLInputElement | null = null;
+
+function setRenameSubtaskInputEl(el: Element | null) {
+  renameSubtaskInputEl = el as HTMLInputElement | null;
+}
+
+function startRenameSubtask(sub: Task) {
+  renamingSubtaskId.value = sub.id;
+  renameSubtaskText.value = sub.title;
+  nextTick(() => renameSubtaskInputEl?.focus());
+}
+
+function saveRenameSubtask(sub: Task) {
+  if (renamingSubtaskId.value !== sub.id) return;
+  const trimmed = renameSubtaskText.value.trim();
+  renamingSubtaskId.value = null;
+  if (!trimmed || trimmed === sub.title) return;
+  store.patchTask(sub.id, { title: trimmed });
+}
+
+function cancelRenameSubtask() {
+  renamingSubtaskId.value = null;
 }
 
 async function deleteThisTask() {
@@ -324,7 +373,7 @@ function onKeydown(e: KeyboardEvent) {
           <div v-if="!isSubtask">
             <p class="text-xs text-text-muted mb-1.5">Subtareas</p>
             <div class="space-y-1">
-              <div v-for="sub in subtasks" :key="sub.id" class="flex items-center gap-2">
+              <div v-for="sub in subtasks" :key="sub.id" class="group/sub flex items-center gap-2">
                 <button
                   type="button"
                   class="shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center"
@@ -332,12 +381,37 @@ function onKeydown(e: KeyboardEvent) {
                   :aria-label="sub.completed_at ? `Marcar como pendiente: ${sub.title}` : `Completar: ${sub.title}`"
                   @click="toggleSubtask(sub)"
                 ></button>
-                <span class="flex-1 text-sm text-text-secondary" :class="{ 'line-through text-text-muted': sub.completed_at }">{{ sub.title }}</span>
+                <input
+                  v-if="renamingSubtaskId === sub.id"
+                  :ref="setRenameSubtaskInputEl"
+                  v-model="renameSubtaskText"
+                  type="text"
+                  :aria-label="`Renombrar subtarea: ${sub.title}`"
+                  class="flex-1 min-w-0 bg-surface-2 border border-neon-green/40 rounded px-1.5 py-0.5 text-sm text-text-primary focus:outline-none"
+                  @blur="saveRenameSubtask(sub)"
+                  @keydown.enter="saveRenameSubtask(sub)"
+                  @keydown.esc="cancelRenameSubtask"
+                />
+                <span
+                  v-else
+                  class="flex-1 text-sm text-text-secondary"
+                  :class="{ 'line-through text-text-muted': sub.completed_at }"
+                  @dblclick="startRenameSubtask(sub)"
+                >{{ sub.title }}</span>
+                <button
+                  v-if="renamingSubtaskId !== sub.id"
+                  type="button"
+                  class="opacity-0 group-hover/sub:opacity-100 text-text-muted hover:text-text-primary text-[11px] cursor-pointer"
+                  :aria-label="`Renombrar subtarea: ${sub.title}`"
+                  @click="startRenameSubtask(sub)"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
+                </button>
                 <button type="button" class="text-text-muted hover:text-neon-pink text-[11px] cursor-pointer" :aria-label="`Eliminar subtarea ${sub.title}`" @click="deleteSubtask(sub)">✕</button>
               </div>
             </div>
             <form class="flex items-center gap-1.5 mt-2" @submit.prevent="addSubtask">
-              <input v-model="newSubtaskTitle" type="text" placeholder="Nueva subtarea" aria-label="Nueva subtarea" class="flex-1 bg-surface-2 border border-border-default rounded-lg px-2.5 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
+              <input v-model="newSubtaskTitle" type="text" placeholder="Nueva subtarea" aria-label="Nueva subtarea" class="flex-1 bg-surface-2 border border-border-default rounded-lg px-2.5 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" @paste="onSubtaskPaste" />
               <button type="submit" class="text-xs text-neon-green cursor-pointer">Agregar</button>
             </form>
           </div>

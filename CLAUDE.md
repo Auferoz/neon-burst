@@ -122,8 +122,8 @@ public/
 | `Todo/TodoSidebar.vue` / `TodoSidebarNav.vue` | Columna fija en desktop, drawer en mobile (mismo contenido, `TodoSidebarNav`): vistas, proyectos (alta/borrado inline) y etiquetas |
 | `Todo/TodoQuickAdd.vue` | Alta rápida con preview en vivo de los chips que devuelve `parseQuickAdd`. Abierta con `q` o el botón flotante "+" (mobile), ambos solo hacen `focus()` sobre el input |
 | `Todo/TodoTaskList.vue` | Lista con toolbar (buscar/filtrar/ordenar) y arrastre (SortableJS) entre secciones de un mismo proyecto cuando el orden es "Manual" y no hay búsqueda/filtro activo |
-| `Todo/TodoTaskItem.vue` | Fila de tarea: checkbox real con `aria-label`, chip de fecha (rojo si vencida, verde si es hoy), ícono de recurrencia, etiquetas, progreso de subtareas |
-| `Todo/TodoTaskDetail.vue` | Panel lateral en desktop / modal de pantalla completa en mobile (mismo patrón a11y que `SeriesEntriesModal.vue`): edita todos los campos, subtareas y el selector de recurrencia con preview de `describeRecurrence` |
+| `Todo/TodoTaskItem.vue` | Tarjeta de tarea: barra de acento por prioridad, checkbox real con `aria-label`, chip de fecha (rojo si vencida, verde si es hoy), ícono de recurrencia, etiquetas, chip de proyecto (en vistas que abarcan varios) y, si tiene subtareas, barra de progreso + checklist embebido (colapsar, ocultar completadas, alta inline con paste multilínea, renombrar con doble click) — estado de la tarjeta persistido en `localStorage` |
+| `Todo/TodoTaskDetail.vue` | Panel lateral en desktop / modal de pantalla completa en mobile (mismo patrón a11y que `SeriesEntriesModal.vue`): edita todos los campos, subtareas (con renombrado y paste multilínea) y el selector de recurrencia con preview de `describeRecurrence` |
 | `Todo/TodoDashboard.vue` | Tiles de stats + barras de 28 días como SVG inline (cada barra con `title`/`aria-label` de fecha y cantidad) + desglose por proyecto y prioridad |
 | `Todo/TodoUpcoming.vue` | Próximos 7 días agrupados, con vencidas arriba |
 | `Todo/TodoCompleted.vue` | Vista "Completadas": historial paginado vía `GET /api/todo/completed` |

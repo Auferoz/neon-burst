@@ -9,7 +9,7 @@
 import { ref, computed, inject, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import Sortable from 'sortablejs';
 import { TODO_STORE_KEY } from './useTodoStore';
-import { applyFilters, searchTasks, sortTasks, groupForToday } from '../../../utils/todo/taskQueries';
+import { applyFilters, searchTasksWithSubtasks, sortTasks, groupForToday } from '../../../utils/todo/taskQueries';
 import { between } from '../../../utils/todo/fractionalOrder';
 import { PRIORITY_OPTIONS, PRIORITY_STYLES } from '../../../utils/todo/priorityStyles';
 import { localToday, formatDateLong } from './clientDate';
@@ -56,13 +56,15 @@ const filtered = computed(() => {
     { priority: hasPriority ? priorityFilter.value : undefined, labels: hasLabels ? labelFilter.value : undefined },
     today,
   );
-  list = searchTasks(list, search.value);
+  list = searchTasksWithSubtasks(list, store.tasks.value, search.value);
   return list;
 });
 
 const filtersActive = computed(() => priorityFilter.value.length > 0 || labelFilter.value.length > 0 || search.value.trim() !== '');
 
 const dragEnabled = computed(() => props.projectId != null && sortMode.value === 'manual' && !filtersActive.value);
+
+const showProject = computed(() => props.projectId == null);
 
 const sections = computed(() => store.sections.value.filter((s) => s.project_id === props.projectId));
 
@@ -237,12 +239,12 @@ function toggleLabel(id: number) {
     <template v-if="todayGroups">
       <div v-if="todayGroups.overdue.length" class="space-y-1">
         <p class="text-xs font-semibold text-neon-pink uppercase tracking-wide">Vencidas</p>
-        <TodoTaskItem v-for="t in todayGroups.overdue" :key="t.id" :task="t" @select="emit('selectTask', $event)" />
+        <TodoTaskItem v-for="t in todayGroups.overdue" :key="t.id" :task="t" show-project @select="emit('selectTask', $event)" />
       </div>
       <div class="space-y-1">
         <p class="text-xs font-semibold text-text-secondary uppercase tracking-wide">Hoy</p>
         <p v-if="!todayGroups.today.length" class="text-xs text-text-muted py-2">Sin tareas para hoy.</p>
-        <TodoTaskItem v-for="t in todayGroups.today" :key="t.id" :task="t" @select="emit('selectTask', $event)" />
+        <TodoTaskItem v-for="t in todayGroups.today" :key="t.id" :task="t" show-project @select="emit('selectTask', $event)" />
       </div>
     </template>
 
@@ -257,6 +259,7 @@ function toggleLabel(id: number) {
             :key="t.id"
             :task="t"
             :draggable="dragEnabled"
+            :show-project="showProject"
             @select="emit('selectTask', $event)"
           />
         </div>

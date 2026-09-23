@@ -86,3 +86,22 @@ export function searchTasks(tasks: Task[], q: string): Task[] {
     return haystack.includes(needle);
   });
 }
+
+/**
+ * Like searchTasks, but a match on a subtask's title/description surfaces
+ * its top-level parent card instead of the subtask itself — subtasks never
+ * render as their own row in list views.
+ */
+export function searchTasksWithSubtasks(topLevel: Task[], allTasks: Task[], q: string): Task[] {
+  const needle = normalize(q.trim());
+  if (!needle) return [...topLevel];
+
+  const matchesDirectly = new Set(searchTasks(topLevel, q).map((t) => t.id));
+  const parentsWithMatchingSubtask = new Set(
+    allTasks
+      .filter((t) => t.parent_id != null && normalize(`${t.title} ${t.description ?? ''}`).includes(needle))
+      .map((t) => t.parent_id as number),
+  );
+
+  return topLevel.filter((t) => matchesDirectly.has(t.id) || parentsWithMatchingSubtask.has(t.id));
+}

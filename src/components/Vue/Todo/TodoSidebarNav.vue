@@ -3,7 +3,7 @@
  * The actual navigation content (views + projects + labels). Rendered both
  * in the desktop column and inside the mobile drawer by TodoSidebar.vue.
  */
-import { ref, computed, inject } from 'vue';
+import { ref, computed, inject, nextTick } from 'vue';
 import { TODO_STORE_KEY } from './useTodoStore';
 import { groupForToday } from '../../../utils/todo/taskQueries';
 import { projectColorDot, PROJECT_COLOR_OPTIONS } from '../../../utils/todo/priorityStyles';
@@ -15,7 +15,9 @@ const emit = defineEmits<{ navigate: [string] }>();
 const store = inject(TODO_STORE_KEY)!;
 const today = localToday();
 
-const openTasks = computed(() => store.tasks.value.filter((t) => t.completed_at == null));
+// Top-level only: subtasks live inside their parent's card, so counting them
+// would disagree with the list views ("Bandeja 3" vs "2 tareas").
+const openTasks = computed(() => store.tasks.value.filter((t) => t.completed_at == null && t.parent_id == null));
 const inboxCount = computed(() => openTasks.value.filter((t) => t.project_id === store.inbox.value?.id).length);
 const todayGroup = computed(() => groupForToday(openTasks.value, today));
 const todayCount = computed(() => todayGroup.value.overdue.length + todayGroup.value.today.length);
@@ -41,6 +43,12 @@ function go(view: string) {
 const newProjectOpen = ref(false);
 const newProjectName = ref('');
 const newProjectColor = ref('green');
+const newProjectInput = ref<HTMLInputElement | null>(null);
+
+function openNewProject() {
+  newProjectOpen.value = !newProjectOpen.value;
+  if (newProjectOpen.value) nextTick(() => newProjectInput.value?.focus());
+}
 
 async function addProject() {
   const name = newProjectName.value.trim();
@@ -55,6 +63,12 @@ async function addProject() {
 
 const newLabelOpen = ref(false);
 const newLabelName = ref('');
+const newLabelInput = ref<HTMLInputElement | null>(null);
+
+function openNewLabel() {
+  newLabelOpen.value = !newLabelOpen.value;
+  if (newLabelOpen.value) nextTick(() => newLabelInput.value?.focus());
+}
 
 async function addLabel() {
   const name = newLabelName.value.trim();
@@ -101,14 +115,14 @@ async function removeLabel(id: number) {
     <div class="space-y-1.5">
       <div class="flex items-center justify-between px-1">
         <p class="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Proyectos</p>
-        <button type="button" class="text-text-muted hover:text-neon-green cursor-pointer" aria-label="Agregar proyecto" @click="newProjectOpen = !newProjectOpen">+</button>
+        <button type="button" class="text-text-muted hover:text-neon-green cursor-pointer" aria-label="Agregar proyecto" @click="openNewProject">+</button>
       </div>
 
       <form v-if="newProjectOpen" class="flex items-center gap-1.5 px-1" @submit.prevent="addProject">
         <select v-model="newProjectColor" aria-label="Color del proyecto" class="bg-surface-2 border border-border-default rounded-lg px-1 py-1 text-xs cursor-pointer">
           <option v-for="c in PROJECT_COLOR_OPTIONS" :key="c" :value="c">●</option>
         </select>
-        <input v-model="newProjectName" type="text" placeholder="Nombre" aria-label="Nombre del proyecto" class="flex-1 min-w-0 bg-surface-2 border border-border-default rounded-lg px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
+        <input ref="newProjectInput" v-model="newProjectName" type="text" placeholder="Nombre" aria-label="Nombre del proyecto" class="flex-1 min-w-0 bg-surface-2 border border-border-default rounded-lg px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
         <button type="submit" class="text-xs text-neon-green cursor-pointer">OK</button>
       </form>
 
@@ -127,11 +141,11 @@ async function removeLabel(id: number) {
     <div class="space-y-1.5">
       <div class="flex items-center justify-between px-1">
         <p class="text-[11px] font-semibold uppercase tracking-wide text-text-muted">Etiquetas</p>
-        <button type="button" class="text-text-muted hover:text-neon-green cursor-pointer" aria-label="Agregar etiqueta" @click="newLabelOpen = !newLabelOpen">+</button>
+        <button type="button" class="text-text-muted hover:text-neon-green cursor-pointer" aria-label="Agregar etiqueta" @click="openNewLabel">+</button>
       </div>
 
       <form v-if="newLabelOpen" class="flex items-center gap-1.5 px-1" @submit.prevent="addLabel">
-        <input v-model="newLabelName" type="text" placeholder="Nombre" aria-label="Nombre de la etiqueta" class="flex-1 min-w-0 bg-surface-2 border border-border-default rounded-lg px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
+        <input ref="newLabelInput" v-model="newLabelName" type="text" placeholder="Nombre" aria-label="Nombre de la etiqueta" class="flex-1 min-w-0 bg-surface-2 border border-border-default rounded-lg px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
         <button type="submit" class="text-xs text-neon-green cursor-pointer">OK</button>
       </form>
 

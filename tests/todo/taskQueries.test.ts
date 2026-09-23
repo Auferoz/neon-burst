@@ -6,6 +6,7 @@ import {
   applyFilters,
   sortTasks,
   searchTasks,
+  searchTasksWithSubtasks,
 } from '../../src/utils/todo/taskQueries';
 import type { Task } from '../../src/utils/todo/types';
 
@@ -206,5 +207,40 @@ describe('searchTasks', () => {
 
   it('returns nothing when nothing matches', () => {
     expect(searchTasks(tasks, 'zzz')).toEqual([]);
+  });
+});
+
+describe('searchTasksWithSubtasks', () => {
+  const topLevel = [
+    task({ id: 1, title: 'Comprar comida' }),
+    task({ id: 2, title: 'Limpiar casa' }),
+  ];
+  const allTasks = [
+    ...topLevel,
+    task({ id: 10, parent_id: 1, title: 'Leche' }),
+    task({ id: 11, parent_id: 1, title: 'Pan' }),
+    task({ id: 12, parent_id: 2, title: 'Aspirar' }),
+  ];
+
+  it('matches a top-level task by its own title', () => {
+    expect(searchTasksWithSubtasks(topLevel, allTasks, 'comprar').map((t) => t.id)).toEqual([1]);
+  });
+
+  it('surfaces the parent card when only a subtask title matches', () => {
+    expect(searchTasksWithSubtasks(topLevel, allTasks, 'leche').map((t) => t.id)).toEqual([1]);
+  });
+
+  it('does not duplicate the parent when both it and a subtask match', () => {
+    const tasks = [task({ id: 1, title: 'pan casero' }), ...topLevel.slice(1)];
+    const all = [...tasks, task({ id: 10, parent_id: 1, title: 'pan integral' })];
+    expect(searchTasksWithSubtasks(tasks, all, 'pan').map((t) => t.id)).toEqual([1]);
+  });
+
+  it('returns all top-level tasks for an empty query', () => {
+    expect(searchTasksWithSubtasks(topLevel, allTasks, '').map((t) => t.id)).toEqual([1, 2]);
+  });
+
+  it('returns nothing when neither the task nor its subtasks match', () => {
+    expect(searchTasksWithSubtasks(topLevel, allTasks, 'zzz')).toEqual([]);
   });
 });
