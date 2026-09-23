@@ -6,6 +6,23 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.12.0 — 2026-09-23
+- Nueva sección **Todo** (`/myTodoist`): gestor de tareas personal con proyectos, secciones,
+  etiquetas, subtareas (un nivel), prioridades, fechas/horas y recurrencia
+- Alta rápida con parser en español (`pagar luz mañana 18:00 p1 #Casa @urgente cada mes`),
+  con previsualización de los tokens reconocidos a medida que se escribe
+- Vistas Hoy (vencidas + hoy), Próximos (7 días), Completadas (paginado) y Dashboard
+  (racha actual/mejor, vencidas, gráfico de los últimos 28 días, desglose por proyecto
+  y prioridad)
+- Arrastrar y soltar para reordenar (SortableJS), con orden fraccionario para no
+  renumerar toda la lista en cada movimiento
+- Deshacer (5 s) al completar o borrar una tarea; atajos de teclado (`q`, `/`, `g i/t/u`,
+  `e`, `1`-`4`, `Esc`, `?`)
+- Reutiliza el PIN y la cookie de sesión de Streaming: desbloquear una sección desbloquea
+  la otra. `src/middleware.ts` protege `/api/todo/*`
+- Se entra desde la tarjeta del home (igual que Streaming, no está en el menú flotante), pero
+  la página sí muestra el menú flotante para moverse al resto del sitio
+
 ## 1.11.2 — 2026-09-23
 - AniList se consulta desde el navegador (el `User-Agent` de 1.11.1 no arregló el 403: AniList bloquea las IPs de Cloudflare Workers, confirmado en su foro); el servidor ya no llama a AniList, solo valida y guarda lo que el navegador trae
 - El detalle de un manga desactualizado se refresca solo, del lado del cliente, y recarga la página cuando termina

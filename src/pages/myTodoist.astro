@@ -1,0 +1,59 @@
+---
+import Layout from '../layouts/Layout.astro';
+import StreamingPinGate from '../components/Astro/StreamingPinGate.astro';
+import IconLock from '../components/Icons/IconLock.astro';
+import TodoApp from '../components/Vue/Todo/TodoApp.vue';
+import { PIN_LENGTH, SESSION_COOKIE, isValidSessionToken } from '../services/streamingAuth';
+
+// SSR obligatorio: decide qué renderizar según la cookie de sesión, la misma
+// que /streaming (un único PIN desbloquea las dos secciones).
+export const prerender = false;
+
+const unlocked = await isValidSessionToken(Astro.cookies.get(SESSION_COOKIE)?.value);
+---
+
+<Layout title="Todo" description="Gestor de tareas personal." noindex>
+	{!unlocked && <StreamingPinGate length={PIN_LENGTH} />}
+
+	{unlocked && (
+		<div class="space-y-6">
+			<header class="space-y-3 mb-8">
+				<div class="flex items-start justify-between gap-4">
+					<div class="space-y-3">
+						<p class="text-xs font-semibold uppercase tracking-[0.2em] text-neon-green/80">Todo</p>
+						<h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-text-primary">Todo</h1>
+					</div>
+					<button
+						id="lock-session"
+						type="button"
+						class="shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-text-muted border border-border-default hover:text-neon-green hover:border-neon-green/30 hover:bg-neon-green/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-green"
+					>
+						<IconLock width={14} height={14} />
+						<span class="hidden sm:inline">Bloquear</span>
+					</button>
+				</div>
+				<div class="h-px bg-linear-to-r from-neon-green/40 via-border-hover to-transparent"></div>
+			</header>
+
+			<div id="todo-root">
+				<TodoApp client:load />
+			</div>
+		</div>
+	)}
+</Layout>
+
+<script>
+	document.addEventListener('astro:page-load', () => {
+		const lockBtn = document.getElementById('lock-session');
+		if (!lockBtn) return;
+
+		const controller = new AbortController();
+		const { signal } = controller;
+		document.addEventListener('astro:before-swap', () => controller.abort(), { once: true });
+
+		lockBtn.addEventListener('click', async () => {
+			await fetch('/api/streaming/lock', { method: 'POST' });
+			window.location.reload();
+		}, { signal });
+	});
+</script>

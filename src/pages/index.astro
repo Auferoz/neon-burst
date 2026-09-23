@@ -11,6 +11,7 @@ import IconTv from '../components/Icons/IconTv.astro';
 import IconMonitorPlay from '../components/Icons/IconMonitorPlay.astro';
 import IconBoxes from '../components/Icons/IconBoxes.astro';
 import IconBook from '../components/Icons/IconBook.astro';
+import IconCheckSquare from '../components/Icons/IconCheckSquare.astro';
 // Única fuente de la versión: package.json (ver "Versionado" en CLAUDE.md).
 import { version } from '../../package.json';
 ---
@@ -43,7 +44,7 @@ import { version } from '../../package.json';
 		</div>
 
 		<!-- Navigation cards -->
-		<div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 w-full max-w-2xl">
+		<div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 xxl:grid-cols-5 gap-4 sm:gap-5 w-full max-w-2xl">
 			<NavCard href="/playedGames" title="Played Games" subtitle="Terminados y más" accentColor="blue">
 				<IconGamepad size={22} />
 			</NavCard>
@@ -74,6 +75,10 @@ import { version } from '../../package.json';
 
 			<NavCard href="/streaming" title="Streaming" subtitle="Cuentas y accesos" accentColor="purple">
 				<IconMonitorPlay size={22} />
+			</NavCard>
+
+			<NavCard href="/myTodoist" title="Todo" subtitle="Tareas, proyectos y hábitos" accentColor="green">
+				<IconCheckSquare size={22} />
 			</NavCard>
 
 			<NavCard href="https://serviceswebporfolio.adesigns7.workers.dev/" title="Services Web" subtitle="Página de servicios web" accentColor="white">

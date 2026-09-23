@@ -117,6 +117,18 @@ public/
 | `MangaFormModal.vue` | Alta/edición de manga. Lookup a AniList (URL o id) → previsualización → confirmar, mismo flujo que `MoviesFormModal.vue`, pero acá el `fetch` a AniList lo hace el propio navegador (`fetchAnilistPreview`/`fetchAnilistMedia` de `anilist.ts`): el servidor solo confirma con `/api/manga/lookup?id=` si ya está agregado. En modo edición suma un botón "Eliminar" con confirmación dentro del propio modal (no `window.confirm`); emite `deleted` |
 | `MangaEditButton.vue` | Envuelve `EditButton` (accent `orange`) + `MangaFormModal` en modo edición, en la ficha del manga; redirige a `/ListManga` si se elimina |
 | `MangaRefresher.vue` | Isla `client:idle` en `manga/[id].astro`, montada solo si `getMangaDetail()` marcó `needs_refresh`. Trae el detalle de AniList del lado del navegador y lo sube por `PUT /api/manga/cache/[anilistId]`; si funciona, recarga la página una vez (con guard en `sessionStorage` contra loops); si falla, no hay nada visible que romper — el caché queda como estaba |
+| `Todo/TodoApp.vue` | Container de `/myTodoist`: crea el store (`useTodoStore.ts`, provisto por `provide`/`inject`), carga `GET /api/todo/bootstrap`, enruta las vistas vía `?view=` (`inbox`, `today`, `upcoming`, `project:ID`, `label:ID`, `completed`, `dashboard`, `search`) con `history.replaceState`, y registra los atajos de teclado |
+| `Todo/useTodoStore.ts` | Composable (no componente): estado reactivo compartido + updates optimistas con rollback y toast de error; ofrece "Deshacer" (5 s) al completar/borrar |
+| `Todo/TodoSidebar.vue` / `TodoSidebarNav.vue` | Columna fija en desktop, drawer en mobile (mismo contenido, `TodoSidebarNav`): vistas, proyectos (alta/borrado inline) y etiquetas |
+| `Todo/TodoQuickAdd.vue` | Alta rápida con preview en vivo de los chips que devuelve `parseQuickAdd`. Abierta con `q` o el botón flotante "+" (mobile), ambos solo hacen `focus()` sobre el input |
+| `Todo/TodoTaskList.vue` | Lista con toolbar (buscar/filtrar/ordenar) y arrastre (SortableJS) entre secciones de un mismo proyecto cuando el orden es "Manual" y no hay búsqueda/filtro activo |
+| `Todo/TodoTaskItem.vue` | Fila de tarea: checkbox real con `aria-label`, chip de fecha (rojo si vencida, verde si es hoy), ícono de recurrencia, etiquetas, progreso de subtareas |
+| `Todo/TodoTaskDetail.vue` | Panel lateral en desktop / modal de pantalla completa en mobile (mismo patrón a11y que `SeriesEntriesModal.vue`): edita todos los campos, subtareas y el selector de recurrencia con preview de `describeRecurrence` |
+| `Todo/TodoDashboard.vue` | Tiles de stats + barras de 28 días como SVG inline (cada barra con `title`/`aria-label` de fecha y cantidad) + desglose por proyecto y prioridad |
+| `Todo/TodoUpcoming.vue` | Próximos 7 días agrupados, con vencidas arriba |
+| `Todo/TodoCompleted.vue` | Vista "Completadas": historial paginado vía `GET /api/todo/completed` |
+| `Todo/TodoShortcutsModal.vue` | Modal de ayuda de atajos (`?`) |
+| `Todo/TodoToasts.vue` | Toast de error + toast de "Deshacer", flotantes sobre el menú (`z-[60]`) |
 
 **`SyncButton.vue`** — llama a un endpoint `/api/*/sync` con `?secret=`. Pide el
 `CRON_SECRET` por `window.prompt` y lo guarda en `localStorage` (clave `nb_sync_secret`);
@@ -209,6 +221,15 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/manga/[id]` | PUT, DELETE | CRUD de una entrada de `manga_read` por su `id` |
 | `/api/manga/lookup` | GET | Solo D1: `?id=<anilist_id>` → `{ already_added }`. La previsualización de AniList la trae el navegador directo, no este endpoint |
 | `/api/manga/cache/[anilistId]` | PUT | Refresco client-driven de `manga_cache`: recibe `{ media }` ya traído de AniList por el navegador, valida y persiste. Lo llama `MangaRefresher.vue` |
+| `/api/todo/bootstrap` | GET | `{ projects, sections, labels, tasks, completions }` en un solo round-trip: `tasks` = abiertas + completadas en los últimos 30 días, `completions` = últimos 90 días (para el dashboard) |
+| `/api/todo/tasks` | POST | Crea una tarea. `labels: string[]` crea las etiquetas que falten |
+| `/api/todo/tasks/[id]` | PATCH, DELETE | PATCH parcial (columnas permitidas; `labels` reemplaza el set completo) |
+| `/api/todo/tasks/[id]/complete` | POST | `{ done, today? }` — `today` obligatorio si `done: true` (lo manda el cliente, en su hora local). Si la tarea es recurrente no la marca terminada: registra la finalización y mueve `due_date` a la próxima ocurrencia |
+| `/api/todo/tasks/reorder` | POST | `{ id, project_id, section_id, sort_order }`. `sort_order` se calcula en el cliente con `between()` (orden fraccionario) |
+| `/api/todo/projects`, `/[id]` | POST, PATCH, DELETE | La Bandeja de entrada no se puede renombrar/archivar/borrar; borrar un proyecto mueve sus tareas a la Bandeja |
+| `/api/todo/sections`, `/[id]` | POST, PATCH, DELETE | Borrar una sección deja sus tareas sin sección (`ON DELETE SET NULL`) |
+| `/api/todo/labels`, `/[id]` | POST, PATCH, DELETE | Nombre único, case-insensitive |
+| `/api/todo/completed` | GET | `?before=&limit=` (máx 200) — historial paginado para la vista Completadas |
 
 ### Database Schema (Cloudflare D1)
 
@@ -265,7 +286,9 @@ y se pierde el lote entero de 50.
 `add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
 `rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`,
 `add-personal-rating`, `add-terminado-estado`, `add-manga-tables`, `add-movie-scores`,
-`add-series-scores`, `add-manual-score-flags`.
+`add-series-scores`, `add-manual-score-flags`, `add-todo-tables`.
+`add-todo-tables` está aplicada solo en local; el remoto queda pendiente de un `OK`
+explícito del usuario (ver "Todo" más abajo).
 `drop-movies-list-columns` es **irreversible**: el respaldo de lo que borró
 (`list_slug`, `list_order`, `listed_at` de las 481 filas) es
 `db/backup-movies-list-slug.json`, y es lo único que queda de esos datos.
@@ -349,10 +372,70 @@ que no esté en el mapa cae a la URL de `streaming_accounts.logo`.
 fallos por IP (`CF-Connecting-IP`) y bloquea 15 min tras 8 fallos consecutivos. Con la IP
 bloqueada, ni siquiera un PIN correcto pasa. Un acierto borra la fila.
 
+**Sesión compartida con Todo.** El mismo PIN y la misma cookie `nb_streaming` desbloquean
+`/streaming` y `/myTodoist`: no hay un PIN separado para Todo. `src/middleware.ts` exige
+`isValidSessionToken()` para **todo** `/api/todo/*` (`isTodoApiPath()` en
+`src/utils/todo/routeMatch.ts`), devolviendo **403** (no 401, mismo motivo que el punto
+siguiente) con `{ "error": "Sesión requerida" }`. Para desarrollar Todo en local hace
+falta `STREAMING_PIN` y `STREAMING_SESSION_SECRET` en `.dev.vars` o `.env` (ver
+"Environment Variables"); sin esas dos variables, `/myTodoist` se queda en el gate del PIN
+para siempre, incluso con el PIN correcto.
+
 **Ojo con el 401 en POST:** el dev server de Astro con el adaptador de Cloudflare convierte
 cualquier respuesta 401 a un POST en un `500 fetch failed` al reenviarla por el proxy de
 vite (GET 401 y POST 403/429 funcionan bien). Por eso `unlock` devuelve **403** para el PIN
 incorrecto y 429 para el bloqueo. No lo cambies a 401.
+
+### Todo (gestor de tareas, `/myTodoist`)
+
+Gestor de tareas personal, privado (misma puerta de PIN que Streaming, ver arriba).
+Fase 1 + Fase 2 del plan original: sin kanban, calendario ni push, a propósito.
+
+**Navegación**: se entra solo desde su `NavCard` del home (verde), como Streaming — ninguna de
+las dos secciones privadas está en los links de `FloatingNav.astro`. A diferencia de
+`/streaming` (única página aislada, con `hideMenu`), `/myTodoist` **sí muestra** el menú
+flotante; sus elementos fijos (botón "+", toasts, drawer) ya reservan `--spacing-nav-clearance`.
+
+**Modelo** (`db/migrate-add-todo-tables.sql`): `todo_projects` (una fila `is_inbox=1`,
+la Bandeja de entrada, seedeada, no se puede borrar/renombrar/archivar), `todo_sections`
+(por proyecto), `todo_tasks` (`priority` 1-4, 1 = más urgente; `due_date`/`due_time` como
+texto plano sin timezone; `recurrence`; un solo nivel de subtareas vía `parent_id`),
+`todo_labels` (nombre único case-insensitive), `todo_task_labels` (N:M) y
+`todo_completions` (una fila por finalización, incluidas las recurrentes — así el
+dashboard cuenta bien las tareas que se repiten). `sort_order` es `REAL` con indexado
+fraccionario (`src/utils/todo/fractionalOrder.ts`: `between(a, b)`), así un reorder es un
+solo `UPDATE` en vez de renumerar la lista entera.
+
+**"Hoy" se calcula siempre en el cliente**, en hora local (`localToday()` en
+`src/components/Vue/Todo/clientDate.ts`), nunca en el servidor: así una tarea con
+vencimiento hoy no pasa a "vencida" a las 21h por un desfasaje UTC. Se manda al servidor
+donde hace falta (completar una tarea recurrente: `POST /api/todo/tasks/[id]/complete`
+exige `today` cuando `done: true`).
+
+**Sintaxis de alta rápida** (`parseQuickAdd()` en `src/utils/todo/quickAdd.ts`, usada por
+`TodoQuickAdd.vue`): `p1`-`p4` (prioridad), `#proyecto` (si no existe, warning + Bandeja
+de entrada), `@etiqueta` (repetible, crea la etiqueta si no existe), fechas (`hoy`,
+`mañana`, `pasado mañana`, nombre de día `lunes`/`el viernes` → próxima ocurrencia,
+`25/12`, `25/12/2026`, `en 3 días`, `en 2 semanas`, `próxima semana`), hora (`a las 18`,
+`18:30`, `6pm`) y recurrencia (`todos los días`/`cada día`, `cada semana`, `cada lunes`,
+`cada mes`, `cada 15` → mensual día 15, `cada 3 días`). Los tokens reconocidos se sacan
+del título; uno inválido (`31/02`) se queda en el título tal cual.
+
+**Reglas de recurrencia**, guardadas como texto plano en `todo_tasks.recurrence`
+(`src/utils/todo/recurrence.ts`): `daily`, `every:N:days`, `weekly:1,4` (ISO, 1 = lunes),
+`monthly:15` (clampeado a fin de mes: `monthly:31` en febrero da 28 o 29).
+`nextOccurrence(rule, fromDate)` calcula la próxima fecha; `describeRecurrence(rule)` da
+la etiqueta en español que usa el preview de la alta rápida y el selector del detalle.
+**Completar una tarea recurrente no la marca terminada**: registra una fila en
+`todo_completions` y mueve `due_date` a la próxima ocurrencia; deshacerlo borra esa fila
+pero no restaura la fecha anterior (limitación conocida, la recurrencia es de ida).
+
+**UI** (`src/components/Vue/Todo/*`, patrón container-presentational): `TodoApp.vue` es
+el container — crea el store (`useTodoStore.ts`) y lo provee por `provide`/`inject` a
+todo el árbol, en vez de pasarlo por props. Ver la tabla de componentes más arriba para
+el resto. Acento neon-green para toda la sección; colores de prioridad en un mapa
+literal (`src/utils/todo/priorityStyles.ts`: P1 pink, P2 orange, P3 blue, P4 muted),
+mismo patrón que los mapas de acento de `EditButton.vue`/`SyncButton.vue`.
 
 ### On-Demand Detail Fetch Pattern
 
@@ -441,7 +524,7 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 - **Neon glow classes**: `neon-glow-blue`, `neon-glow-cyan`, `neon-glow-pink` (defined in global.css)
 - **Neon border classes**: `neon-border-blue`, `neon-border-cyan`, etc.
 - **CRT scanline overlay**: subtle 2px repeating gradient
-- **Per-section accent colors**: blue (played games), cyan (Steam), pink (next games), emerald (movies), indigo (series), orange (manga)
+- **Per-section accent colors**: blue (played games), cyan (Steam), pink (next games), emerald (movies), indigo (series), orange (manga), green (Todo)
 - **Editar solo desde la ficha**: juegos, películas, series y manga se editan únicamente desde un botón "Editar" en su página de detalle — nunca desde la tarjeta del listado, que solo agrega. El botón es siempre `EditButton.vue` con el acento de la sección (blue/indigo/emerald/orange); en juegos y manga abre el mismo form modal en modo edición, en series y películas abre un modal con la lista de entradas (una por temporada vista o por año visto), porque puede haber más de una
 - **Estado colors**: green (Terminado), gold (Completado), pink (Abandonado), blue (Jugando), yellow (Pausado), purple (Recurrente)
 - **`Terminado` vs `Completado`**: `Terminado` es haber terminado la campaña o historia; `Completado` es tener el **100% de los logros**, y por eso lleva trofeo y color dorado en el dashboard en vez del check. Antes `Completado` significaba las dos cosas, y `migrate-add-terminado-estado.sql` separó los 51 juegos que había: 45 quedaron en Terminado y 6 en Completado por tener `logros_obt >= logros_total`
@@ -544,8 +627,11 @@ Required in `.env` locally and as Cloudflare secrets for the worker:
 - `TMDB_API_KEY` — TMDB API key (trailers + fallback temporal de series + `rating_tmdb`)
 - `OMDB_API_KEY` — OMDb API key, para `rating_imdb` (en `.env` local **y** `wrangler secret put OMDB_API_KEY` para el worker; sin ella, `rating_imdb` se deja en `NULL` sin bloquear nada)
 - `CRON_SECRET` — Authenticates cron/sync requests
-- `STREAMING_PIN` — PIN de 6 dígitos que abre `/streaming`
-- `STREAMING_SESSION_SECRET` — Clave HMAC que firma la cookie de sesión de streaming
+- `STREAMING_PIN` — PIN de 6 dígitos que abre `/streaming` **y** `/myTodoist` (misma
+  sesión). En local, sin esta variable (en `.dev.vars` o `.env`) ninguna de las dos
+  páginas se puede desbloquear
+- `STREAMING_SESSION_SECRET` — Clave HMAC que firma la cookie de sesión compartida de
+  Streaming/Todo. Igual que la de arriba, hace falta en local para desarrollar Todo
 - `STEAM_SYNC_URL` / `NEXT_GAMES_SYNC_URL` / `MOVIES_SYNC_URL` / `SERIES_SYNC_URL` — Remote worker sync endpoint URLs (las cuatro se leen en build time por `integrations/cloudflare-cron.ts` y quedan inlineadas en el handler `scheduled`; si faltan al buildear, el cron apunta a URLs vacías)
 
 ### DB Sync Scripts (Windows Shell Notes)
