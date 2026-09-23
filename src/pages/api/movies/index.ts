@@ -6,6 +6,7 @@ import {
   CreateMovieFailure,
   type CreateMovieError,
 } from '../../../services/moviesService';
+import { validateRatingPersonal } from '../../../services/movieScores';
 
 export const prerender = false;
 
@@ -35,10 +36,18 @@ export const POST: APIRoute = async ({ request }) => {
     query?: string;
     year_watched?: number;
     platform?: string;
+    rating_personal?: number | null;
   };
 
   if (!data.query || !data.year_watched) {
     return json({ error: 'query y year_watched son obligatorios' }, 400);
+  }
+
+  let ratingPersonal: number | null = null;
+  if (data.rating_personal !== undefined && data.rating_personal !== null) {
+    const validation = validateRatingPersonal(data.rating_personal);
+    if (!validation.ok) return json({ error: validation.error }, 400);
+    ratingPersonal = validation.value;
   }
 
   try {
@@ -46,6 +55,7 @@ export const POST: APIRoute = async ({ request }) => {
       query: data.query,
       year_watched: Number(data.year_watched),
       platform: data.platform,
+      rating_personal: ratingPersonal,
     });
     return json(entry, 201);
   } catch (e) {

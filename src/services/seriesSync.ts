@@ -7,7 +7,8 @@
  */
 
 import { env } from 'cloudflare:workers';
-import { fetchTmdbShowBySlug, TMDB_SOURCE } from './tmdbSeries';
+import { fetchTmdbShowBySlug, fetchTmdbTvScore, TMDB_SOURCE } from './tmdbSeries';
+import { fetchImdbRating } from './omdb';
 
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -86,6 +87,21 @@ async function upsertShowBasic(db: D1Database, slug: string, row: {
     row.genres, row.network, row.status, row.runtime,
     row.poster, row.thumb, row.data_source,
   ).run();
+
+  // Best-effort: no bloquea el alta si TMDB/OMDb fallan o no hay tmdb_id/imdb_id todavía.
+  try {
+    const [tmdbScore, imdbScore] = await Promise.all([
+      row.tmdb_id ? fetchTmdbTvScore(row.tmdb_id) : Promise.resolve(null),
+      row.imdb_id && env.OMDB_API_KEY ? fetchImdbRating(row.imdb_id, env.OMDB_API_KEY) : Promise.resolve(null),
+    ]);
+    if (tmdbScore != null || imdbScore != null) {
+      await db.prepare(
+        `UPDATE series_cache SET rating_tmdb = ?, rating_imdb = ?, ratings_fetched_at = datetime('now') WHERE trakt_slug = ?`
+      ).bind(tmdbScore, imdbScore, slug).run();
+    }
+  } catch (e) {
+    console.error(`[series] upsertShowBasic scores for ${slug} failed:`, e);
+  }
 }
 
 /**

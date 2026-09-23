@@ -118,6 +118,9 @@ CREATE TABLE IF NOT EXISTS movies_cache (
   after_credits INTEGER DEFAULT 0,
   during_credits INTEGER DEFAULT 0,
   votes INTEGER DEFAULT 0,
+  rating_tmdb INTEGER,       -- vote_average * 10 (0-100)
+  rating_imdb INTEGER,       -- imdbRating * 10 (0-100), vía OMDb
+  ratings_fetched_at TEXT,
   detail_fetched_at TEXT,
   updated_at TEXT DEFAULT (datetime('now'))
 );
@@ -148,6 +151,15 @@ CREATE TABLE IF NOT EXISTS movies_watched (
 CREATE INDEX IF NOT EXISTS idx_movies_watched_year ON movies_watched(year_watched);
 CREATE INDEX IF NOT EXISTS idx_movies_watched_tmdb ON movies_watched(tmdb_id);
 CREATE INDEX IF NOT EXISTS idx_movies_watched_source ON movies_watched(source);
+
+-- Score personal de una película, una fila por película (no por año visto): un
+-- rewatch en otro año muestra el mismo score. Separada de movies_cache, que es
+-- solo metadata, para que sobreviva a cualquier rebuild del caché.
+CREATE TABLE IF NOT EXISTS movies_personal (
+  tmdb_id INTEGER PRIMARY KEY,
+  rating_personal INTEGER NOT NULL,          -- 0-100
+  updated_at TEXT DEFAULT (datetime('now'))
+);
 
 CREATE TABLE IF NOT EXISTS series_cache (
   trakt_slug TEXT PRIMARY KEY,
@@ -181,7 +193,20 @@ CREATE TABLE IF NOT EXISTS series_cache (
   images_json TEXT DEFAULT '{}',
   seasons_json TEXT DEFAULT '[]',
   votes INTEGER DEFAULT 0,
+  rating_tmdb INTEGER,       -- vote_average * 10 (0-100)
+  rating_imdb INTEGER,       -- imdbRating * 10 (0-100), vía OMDb
+  ratings_fetched_at TEXT,
   detail_fetched_at TEXT,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+-- Score personal de una serie, una fila por serie (no por temporada): las
+-- distintas temporadas de un mismo show comparten el mismo score. Keyed por
+-- trakt_slug, la PK de series_cache, a diferencia de movies_personal que usa
+-- tmdb_id porque el trakt_id de una película cargada a mano es provisional.
+CREATE TABLE IF NOT EXISTS series_personal (
+  trakt_slug TEXT PRIMARY KEY,
+  rating_personal INTEGER NOT NULL,          -- 0-100
   updated_at TEXT DEFAULT (datetime('now'))
 );
 
@@ -225,3 +250,56 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_library_store_title
   ON library_games (store, title COLLATE NOCASE);
 
 CREATE INDEX IF NOT EXISTS idx_library_store ON library_games (store);
+
+CREATE TABLE IF NOT EXISTS manga_cache (
+  anilist_id INTEGER PRIMARY KEY,
+  id_mal INTEGER,
+  title_romaji TEXT NOT NULL,
+  title_english TEXT DEFAULT '',
+  title_native TEXT DEFAULT '',
+  synonyms_json TEXT DEFAULT '[]',
+  type TEXT NOT NULL DEFAULT 'Manga',
+  format TEXT DEFAULT '',
+  country TEXT DEFAULT '',
+  status TEXT DEFAULT '',
+  description TEXT DEFAULT '',
+  cover TEXT DEFAULT '',
+  cover_color TEXT DEFAULT '',
+  banner TEXT DEFAULT '',
+  start_date TEXT DEFAULT '',
+  end_date TEXT DEFAULT '',
+  chapters INTEGER,
+  volumes INTEGER,
+  average_score INTEGER,
+  mean_score INTEGER,
+  popularity INTEGER,
+  favourites INTEGER,
+  source TEXT DEFAULT '',
+  genres_json TEXT DEFAULT '[]',
+  is_adult INTEGER DEFAULT 0,
+  site_url TEXT DEFAULT '',
+  tags_json TEXT DEFAULT '[]',
+  staff_json TEXT DEFAULT '[]',
+  characters_json TEXT DEFAULT '[]',
+  relations_json TEXT DEFAULT '[]',
+  recommendations_json TEXT DEFAULT '[]',
+  external_links_json TEXT DEFAULT '[]',
+  detail_fetched_at TEXT,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS manga_read (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  anilist_id INTEGER NOT NULL UNIQUE,
+  estado TEXT NOT NULL DEFAULT 'Leyendo',
+  capitulo_actual INTEGER DEFAULT 0,
+  platform TEXT,
+  fecha_inicio TEXT,
+  fecha_final TEXT,
+  rating_personal INTEGER,
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_manga_read_estado ON manga_read(estado);
+CREATE INDEX IF NOT EXISTS idx_manga_cache_type ON manga_cache(type);

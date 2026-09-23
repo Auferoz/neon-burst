@@ -1,7 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
-import { getMovieById } from '../../services/moviesService';
+import { getMovieById, getMovieWatchedEntries } from '../../services/moviesService';
+import { badgeClass, ratingBands } from '../../utils/ratingBands';
+import MoviesEditButton from '../../components/Vue/MoviesEditButton.vue';
 
 export const prerender = false;
 
@@ -12,18 +14,14 @@ if (!movie) {
 	return Astro.redirect('/ListMovies');
 }
 
+const watchedEntries = await getMovieWatchedEntries(env.DB, movie.tmdb_id);
+
 function formatRuntime(minutes: number): string {
 	if (!minutes) return '';
 	const h = Math.floor(minutes / 60);
 	const m = minutes % 60;
 	if (h === 0) return `${m}m`;
 	return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
-
-function ratingColor(rating: number): string {
-	if (rating >= 7) return 'text-neon-green border-neon-green/30 bg-neon-green/10';
-	if (rating >= 5) return 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10';
-	return 'text-neon-pink border-neon-pink/30 bg-neon-pink/10';
 }
 
 const genres = movie.genres ? movie.genres.split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -45,6 +43,13 @@ const heroImage = movie.fanart || movie.thumb || '';
 			</svg>
 			Volver a la lista
 		</a>
+		<MoviesEditButton
+			client:load
+			title={movie.title}
+			tmdbId={movie.tmdb_id}
+			ratingPersonal={movie.rating_personal}
+			entries={watchedEntries}
+		/>
 	</div>
 
 	<!-- Hero section -->
@@ -121,20 +126,42 @@ const heroImage = movie.fanart || movie.thumb || '';
 					</div>
 				)}
 
-				<!-- Rating -->
-				{movie.rating > 0 && (
-					<div class="flex flex-wrap gap-3">
+				<!-- Scores: TMDB, IMDb, Mi score + editor -->
+				<div class="flex flex-wrap items-center gap-3">
+					{movie.rating_tmdb != null && (
 						<div class="flex items-center gap-2">
 							<span class:list={[
 								'inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4',
-								ratingColor(movie.rating)
+								badgeClass[ratingBands.tmdb(movie.rating_tmdb)]
 							]}>
-								{movie.rating.toFixed(1)}
+								{movie.rating_tmdb}
 							</span>
-							<span class="text-xs text-text-muted">Trakt ({movie.votes.toLocaleString()} votos)</span>
+							<span class="text-xs text-text-muted">TMDB</span>
 						</div>
-					</div>
-				)}
+					)}
+					{movie.rating_imdb != null && (
+						<div class="flex items-center gap-2">
+							<span class:list={[
+								'inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4',
+								badgeClass[ratingBands.imdb(movie.rating_imdb)]
+							]}>
+								{movie.rating_imdb}
+							</span>
+							<span class="text-xs text-text-muted">IMDb</span>
+						</div>
+					)}
+					{movie.rating_personal != null && (
+						<div class="flex items-center gap-2">
+							<span class:list={[
+								'inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4',
+								badgeClass[ratingBands.personal(movie.rating_personal)]
+							]}>
+								{movie.rating_personal}
+							</span>
+							<span class="text-xs text-text-muted">Mi score</span>
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	</div>

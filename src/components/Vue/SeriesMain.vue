@@ -17,7 +17,6 @@ interface SeriesEntry {
   title: string;
   year: number;
   overview: string;
-  rating: number;
   genres: string;
   network: string;
   runtime: number;
@@ -25,6 +24,9 @@ interface SeriesEntry {
   tmdb_id: number;
   imdb_id: string;
   season_poster: string;
+  rating_tmdb: number | null;
+  rating_imdb: number | null;
+  rating_personal: number | null;
 }
 
 const series = ref<SeriesEntry[]>([]);
@@ -36,9 +38,8 @@ const filterYear = ref(String(new Date().getFullYear()));
 const filterPlatform = ref('');
 const filterStatus = ref('');
 
-// Modal state
+// Modal state (Agregar only — editing happens from the series detail page)
 const showModal = ref(false);
-const editEntry = ref<any>(null);
 
 // Unique years from year_watched, sorted desc
 const allYears = computed(() => {
@@ -112,20 +113,22 @@ const filteredSeries = computed(() => {
 // Global stats
 const totalSeasons = computed(() => series.value.length);
 const uniqueShows = computed(() => new Set(series.value.map(s => s.trakt_slug)).size);
-const avgRating = computed(() => {
-  const rated = series.value.filter(s => s.rating > 0);
-  if (!rated.length) return 0;
-  return Math.round((rated.reduce((sum, s) => sum + s.rating, 0) / rated.length) * 10) / 10;
+// "Mi promedio": el score personal, no el rating de Trakt/TMDB. Se oculta si
+// todavía no se puntuó ninguna serie.
+const avgPersonalRating = computed(() => {
+  const scored = series.value.filter(s => s.rating_personal != null);
+  if (!scored.length) return null;
+  return Math.round(scored.reduce((s, m) => s + (m.rating_personal as number), 0) / scored.length);
 });
 const totalPlatforms = computed(() => allPlatforms.value.length);
 
 // Filtered stats
 const filteredTotalSeasons = computed(() => filteredSeries.value.length);
 const filteredUniqueShows = computed(() => new Set(filteredSeries.value.map(s => s.trakt_slug)).size);
-const filteredAvgRating = computed(() => {
-  const rated = filteredSeries.value.filter(s => s.rating > 0);
-  if (!rated.length) return 0;
-  return Math.round((rated.reduce((sum, s) => sum + s.rating, 0) / rated.length) * 10) / 10;
+const filteredAvgPersonalRating = computed(() => {
+  const scored = filteredSeries.value.filter(s => s.rating_personal != null);
+  if (!scored.length) return null;
+  return Math.round(scored.reduce((s, m) => s + (m.rating_personal as number), 0) / scored.length);
 });
 const filteredTotalPlatforms = computed(() => {
   const platforms = new Set<string>();
@@ -155,19 +158,6 @@ async function fetchSeries(force = false) {
 }
 
 function openAdd() {
-  editEntry.value = null;
-  showModal.value = true;
-}
-
-function openEdit(entry: SeriesEntry) {
-  editEntry.value = {
-    id: entry.id,
-    trakt_slug: entry.trakt_slug,
-    season_number: entry.season_number,
-    year_watched: entry.year_watched,
-    platform: entry.platform,
-    status_viewed: entry.status_viewed,
-  };
   showModal.value = true;
 }
 
@@ -209,11 +199,13 @@ onMounted(fetchSeries);
             <IconClock :size="14" class="text-neon-indigo" />
             <span class="text-neon-indigo font-semibold">{{ uniqueShows }}</span> series
           </span>
-          <span class="text-border-default">&middot;</span>
-          <span class="inline-flex items-center gap-1">
-            <IconStar :size="14" class="text-neon-indigo" />
-            <span class="text-neon-indigo font-semibold">{{ avgRating }}</span> rating
-          </span>
+          <template v-if="avgPersonalRating !== null">
+            <span class="text-border-default">&middot;</span>
+            <span class="inline-flex items-center gap-1">
+              <IconStar :size="14" class="text-neon-indigo" />
+              <span class="text-neon-indigo font-semibold">{{ avgPersonalRating }}</span> mi promedio
+            </span>
+          </template>
           <span class="text-border-default">&middot;</span>
           <span class="inline-flex items-center gap-1">
             <span class="text-neon-indigo font-semibold">{{ totalPlatforms }}</span> plataformas
@@ -246,13 +238,13 @@ onMounted(fetchSeries);
             <div class="text-[11px] lg:text-xs text-text-secondary truncate">Series</div>
           </div>
         </div>
-        <div role="listitem" :aria-label="`Rating promedio ${filteredAvgRating}`" class="bg-neon-yellow/10 border-neon-yellow/25 relative border rounded-lg px-3 py-2 flex items-center gap-2 transition-colors duration-200 overflow-hidden">
+        <div v-if="filteredAvgPersonalRating !== null" role="listitem" :aria-label="`Mi promedio ${filteredAvgPersonalRating}`" class="bg-neon-yellow/10 border-neon-yellow/25 relative border rounded-lg px-3 py-2 flex items-center gap-2 transition-colors duration-200 overflow-hidden">
           <div class="text-neon-yellow shrink-0" aria-hidden="true">
             <IconStar :size="20" />
           </div>
           <div class="min-w-0">
-            <div class="text-neon-yellow text-lg lg:text-xl font-bold leading-none mb-0.5">{{ filteredAvgRating }}</div>
-            <div class="text-[11px] lg:text-xs text-text-secondary truncate">Rating</div>
+            <div class="text-neon-yellow text-lg lg:text-xl font-bold leading-none mb-0.5">{{ filteredAvgPersonalRating }}</div>
+            <div class="text-[11px] lg:text-xs text-text-secondary truncate">Mi promedio</div>
           </div>
         </div>
         <div role="listitem" :aria-label="`${filteredTotalPlatforms} plataformas`" class="bg-neon-pink/10 border-neon-pink/25 relative border rounded-lg px-3 py-2 flex items-center gap-2 transition-colors duration-200 overflow-hidden">
@@ -348,14 +340,14 @@ onMounted(fetchSeries);
     <!-- Series grid -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" role="list" aria-label="Lista de series">
       <div v-for="s in filteredSeries" :key="s.id" role="listitem">
-        <SeriesCard :series="s" @edit="openEdit" />
+        <SeriesCard :series="s" />
       </div>
     </div>
 
-    <!-- Form Modal -->
+    <!-- Form Modal (Agregar only) -->
     <SeriesFormModal
       :open="showModal"
-      :entry="editEntry"
+      :entry="null"
       :platforms="platformSuggestions"
       @close="showModal = false"
       @saved="onSaved"

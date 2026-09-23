@@ -1,0 +1,468 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+import { getMangaDetail } from '../../services/mangaService';
+import MangaEditButton from '../../components/Vue/MangaEditButton.vue';
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const anilistId = Number(id);
+
+if (!Number.isInteger(anilistId)) {
+	return Astro.redirect('/ListManga');
+}
+
+const manga = await getMangaDetail(env.DB, anilistId).catch(() => null);
+
+if (!manga) {
+	return Astro.redirect('/ListManga');
+}
+
+const title = manga.title_english || manga.title_romaji;
+
+/**
+ * Mismas cinco bandas que rating_personal en playedGames/[id].astro: escala
+ * propia del usuario, más fina que la de una crítica externa.
+ */
+const ratingColor = {
+	personal: (n: number) =>
+		n >= 90 ? 'neon-blue' : n >= 70 ? 'neon-green' : n >= 55 ? 'neon-yellow' : n >= 45 ? 'neon-orange' : 'neon-pink',
+};
+
+/** Tailwind escanea el código como texto: estas clases tienen que existir literales. */
+const badgeClass: Record<string, string> = {
+	'neon-blue': 'text-neon-blue border-neon-blue/30 bg-neon-blue/10',
+	'neon-green': 'text-neon-green border-neon-green/30 bg-neon-green/10',
+	'neon-yellow': 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10',
+	'neon-orange': 'text-neon-orange border-neon-orange/30 bg-neon-orange/10',
+	'neon-pink': 'text-neon-pink border-neon-pink/30 bg-neon-pink/10',
+};
+
+const typeClass: Record<string, string> = {
+	Manga: 'text-neon-orange border-neon-orange/30 bg-neon-orange/10',
+	Manhwa: 'text-neon-cyan border-neon-cyan/30 bg-neon-cyan/10',
+	Manhua: 'text-neon-purple border-neon-purple/30 bg-neon-purple/10',
+};
+
+const estadoClass: Record<string, string> = {
+	Leyendo: 'text-neon-blue border-neon-blue/30 bg-neon-blue/10',
+	Completado: 'text-neon-gold border-neon-gold/30 bg-neon-gold/10',
+	Pausado: 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10',
+	Abandonado: 'text-neon-pink border-neon-pink/30 bg-neon-pink/10',
+	Pendiente: 'text-text-secondary border-border-default bg-surface-2',
+};
+
+function parseJson<T>(json: string, fallback: T): T {
+	try { return JSON.parse(json) as T; } catch { return fallback; }
+}
+
+const genres = parseJson<string[]>(manga.genres_json, []);
+const synonyms = parseJson<string[]>(manga.synonyms_json, []);
+const tags = parseJson<Array<{ name: string; rank: number; isMediaSpoiler: boolean; isGeneralSpoiler: boolean }>>(manga.tags_json, []);
+const staff = parseJson<Array<{ role: string; name: string; image: string }>>(manga.staff_json, []);
+const characters = parseJson<Array<{ role: string; name: string; image: string }>>(manga.characters_json, []);
+const relations = parseJson<Array<{ relation_type: string; id: number; type: string; format: string; title: string; cover: string; site_url: string }>>(manga.relations_json, []);
+const recommendations = parseJson<Array<{ id: number; type: string; format: string; country: string; title: string; cover: string }>>(manga.recommendations_json, []);
+const externalLinks = parseJson<Array<{ url: string; site: string; type: string; language: string }>>(manga.external_links_json, []);
+
+const visibleTags = tags.filter(t => !t.isMediaSpoiler && !t.isGeneralSpoiler);
+
+const readEntry = manga.read_entry;
+const progressPercent = readEntry && manga.chapters
+	? Math.min(100, Math.round((readEntry.capitulo_actual / manga.chapters) * 100))
+	: 0;
+
+/** Manga leído en Neon Burst → link interno; si no, al sitio de AniList. */
+function relationHref(id: number, siteUrl: string): string {
+	return siteUrl || `https://anilist.co/manga/${id}`;
+}
+---
+
+<Layout title={title}>
+	<!-- Top bar -->
+	<div class="flex items-center justify-between mb-6">
+		<a
+			href="/ListManga"
+			class="inline-flex items-center gap-2 text-sm text-text-muted hover:text-neon-orange transition-colors duration-200 group"
+		>
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-0.5 transition-transform duration-200">
+				<polyline points="15 18 9 12 15 6" />
+			</svg>
+			Volver a la lista
+		</a>
+		{readEntry && (
+			<MangaEditButton
+				client:load
+				entry={{
+					id: readEntry.id,
+					anilist_id: manga.anilist_id,
+					estado: readEntry.estado,
+					capitulo_actual: readEntry.capitulo_actual,
+					platform: readEntry.platform,
+					fecha_inicio: readEntry.fecha_inicio,
+					fecha_final: readEntry.fecha_final,
+					rating_personal: readEntry.rating_personal,
+					title_romaji: manga.title_romaji,
+					title_english: manga.title_english,
+					cover: manga.cover,
+				}}
+			/>
+		)}
+	</div>
+
+	<!-- Hero section -->
+	<div class="relative rounded-2xl overflow-hidden mb-8">
+		{manga.banner && (
+			<div class="absolute inset-0 z-0">
+				<img src={manga.banner} alt="" class="w-full h-full object-cover object-top opacity-40" />
+				<div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/85 to-surface-0/50" />
+			</div>
+		)}
+
+		<div class="relative z-10 flex flex-col sm:flex-row gap-6 p-6 sm:p-8">
+			<!-- Cover -->
+			<div class="shrink-0 self-center sm:self-start">
+				{manga.cover ? (
+					<img
+						src={manga.cover}
+						alt={title}
+						class="w-36 sm:w-44 rounded-xl object-cover aspect-[2/3] bg-surface-3 shadow-lg shadow-black/30"
+						style={`view-transition-name: manga-cover-${manga.anilist_id};`}
+						width="176"
+						height="264"
+					/>
+				) : (
+					<div class="w-36 sm:w-44 rounded-xl aspect-[2/3] bg-surface-3 flex items-center justify-center text-text-muted text-sm">?</div>
+				)}
+			</div>
+
+			<!-- Info -->
+			<div class="flex-1 min-w-0 flex flex-col justify-center">
+				<div class="flex flex-wrap items-start gap-3 mb-1">
+					<h1 class="text-2xl sm:text-3xl font-bold text-text-primary leading-tight">{title}</h1>
+					<div class="flex items-center gap-2 shrink-0">
+						<span class:list={['text-xs font-medium px-3 py-1 rounded-lg border', typeClass[manga.type] || typeClass.Manga]}>
+							{manga.type}
+						</span>
+					</div>
+				</div>
+
+				{manga.title_romaji && manga.title_romaji !== title && (
+					<p class="text-sm text-text-secondary mb-0.5">{manga.title_romaji}</p>
+				)}
+				{manga.title_native && (
+					<p class="text-sm text-text-muted mb-3">{manga.title_native}</p>
+				)}
+
+				<!-- Meta row -->
+				<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary mb-4">
+					{manga.format && <span>{manga.format}</span>}
+					{manga.format && manga.status && <span class="text-border-hover">&middot;</span>}
+					{manga.status && <span>{manga.status}</span>}
+					{manga.chapters && <span class="text-border-hover">&middot;</span>}
+					{manga.chapters && <span>{manga.chapters} caps</span>}
+					{manga.volumes && <span class="text-border-hover">&middot;</span>}
+					{manga.volumes && <span>{manga.volumes} vols</span>}
+				</div>
+
+				<!-- Genre tags -->
+				{genres.length > 0 && (
+					<div class="flex flex-wrap gap-1.5 mb-4">
+						{genres.map((g: string) => (
+							<span class="text-xs text-text-muted bg-surface-3/80 border border-border-default px-2.5 py-1 rounded-md">
+								{g}
+							</span>
+						))}
+					</div>
+				)}
+
+				<!-- AniList score -->
+				{manga.average_score && (
+					<div class="flex items-center gap-2">
+						<span class="inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4 text-neon-orange border-neon-orange/30 bg-neon-orange/10">
+							{manga.average_score}
+						</span>
+						<span class="text-xs text-text-muted">AniList ({(manga.popularity || 0).toLocaleString()} lectores)</span>
+					</div>
+				)}
+			</div>
+		</div>
+	</div>
+
+	<!-- Content grid -->
+	<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+		<!-- Left column (2/3) -->
+		<div class="lg:col-span-2 space-y-6">
+			<!-- Descripción -->
+			{manga.description && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Descripción</h2>
+					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
+					<p class="text-sm text-text-secondary leading-relaxed whitespace-pre-line">{manga.description}</p>
+				</div>
+			)}
+
+			<!-- Tags -->
+			{visibleTags.length > 0 && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Tags</h2>
+					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
+					<div class="flex flex-wrap gap-1.5">
+						{visibleTags.map(t => (
+							<span class="text-xs text-text-muted bg-surface-3/80 border border-border-default px-2.5 py-1 rounded-md">
+								{t.name}
+							</span>
+						))}
+					</div>
+				</div>
+			)}
+
+			<!-- Personajes -->
+			{characters.length > 0 && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Personajes</h2>
+					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
+					<div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+						{characters.map((c) => (
+							<div class="text-center">
+								{c.image ? (
+									<img src={c.image} alt={c.name} class="w-16 h-16 rounded-full object-cover mx-auto mb-2 bg-surface-3 border border-border-default" loading="lazy" />
+								) : (
+									<div class="w-16 h-16 rounded-full bg-surface-3 border border-border-default mx-auto mb-2 flex items-center justify-center text-text-muted text-xl">?</div>
+								)}
+								<p class="text-xs font-medium text-text-primary leading-tight line-clamp-2">{c.name}</p>
+								<p class="text-[10px] text-text-muted leading-tight mt-0.5 capitalize">{c.role.toLowerCase()}</p>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			<!-- Staff -->
+			{staff.length > 0 && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Staff</h2>
+					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
+					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+						{staff.map((s) => (
+							<div class="shrink-0 w-20 text-center">
+								{s.image ? (
+									<img src={s.image} alt={s.name} class="w-16 h-16 rounded-full object-cover mx-auto mb-2 bg-surface-3 border border-border-default" loading="lazy" />
+								) : (
+									<div class="w-16 h-16 rounded-full bg-surface-3 border border-border-default mx-auto mb-2 flex items-center justify-center text-text-muted text-xl">?</div>
+								)}
+								<p class="text-[11px] font-medium text-text-primary leading-tight line-clamp-2">{s.name}</p>
+								<p class="text-[10px] text-text-muted leading-tight mt-0.5">{s.role}</p>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			<!-- Relaciones -->
+			{relations.length > 0 && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Relaciones</h2>
+					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
+					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+						{relations.map((r) => (
+							<a href={relationHref(r.id, r.site_url)} target="_blank" rel="noopener noreferrer" class="shrink-0 w-24 group">
+								{r.cover ? (
+									<img src={r.cover} alt={r.title} class="w-24 rounded-lg object-cover aspect-[2/3] bg-surface-3 mb-1.5 group-hover:opacity-80 transition-opacity" loading="lazy" />
+								) : (
+									<div class="w-24 rounded-lg aspect-[2/3] bg-surface-3 mb-1.5 flex items-center justify-center text-text-muted">?</div>
+								)}
+								<p class="text-[10px] text-text-muted capitalize mb-0.5">{r.relation_type.toLowerCase().replace(/_/g, ' ')}</p>
+								<p class="text-[11px] text-text-primary leading-tight line-clamp-2 group-hover:text-neon-orange transition-colors">{r.title}</p>
+							</a>
+						))}
+					</div>
+				</div>
+			)}
+
+			<!-- Recomendaciones -->
+			{recommendations.length > 0 && (
+				<div class="border border-border-default rounded-xl p-5 sm:p-6">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Recomendaciones</h2>
+					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
+					<div class="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+						{recommendations.map((r) => (
+							<a href={`https://anilist.co/${r.type.toLowerCase()}/${r.id}`} target="_blank" rel="noopener noreferrer" class="shrink-0 w-24 group">
+								{r.cover ? (
+									<img src={r.cover} alt={r.title} class="w-24 rounded-lg object-cover aspect-[2/3] bg-surface-3 mb-1.5 group-hover:opacity-80 transition-opacity" loading="lazy" />
+								) : (
+									<div class="w-24 rounded-lg aspect-[2/3] bg-surface-3 mb-1.5 flex items-center justify-center text-text-muted">?</div>
+								)}
+								<p class="text-[11px] text-text-primary leading-tight line-clamp-2 group-hover:text-neon-orange transition-colors">{r.title}</p>
+							</a>
+						))}
+					</div>
+				</div>
+			)}
+		</div>
+
+		<!-- Right column (1/3) -->
+		<div class="space-y-6">
+			<!-- Detalles -->
+			<div class="border border-border-default rounded-xl p-5">
+				<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Detalles</h2>
+				<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
+				<dl class="space-y-3 text-sm">
+					<div class="flex justify-between">
+						<dt class="text-text-muted">Formato</dt>
+						<dd class="text-text-primary font-medium">{manga.format || '—'}</dd>
+					</div>
+					<div class="flex justify-between">
+						<dt class="text-text-muted">Tipo</dt>
+						<dd class="text-text-primary font-medium">{manga.type}</dd>
+					</div>
+					<div class="flex justify-between">
+						<dt class="text-text-muted">Estado</dt>
+						<dd class="text-text-primary font-medium">{manga.status || '—'}</dd>
+					</div>
+					{manga.chapters && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Capítulos</dt>
+							<dd class="text-text-primary font-medium">{manga.chapters}</dd>
+						</div>
+					)}
+					{manga.volumes && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Volúmenes</dt>
+							<dd class="text-text-primary font-medium">{manga.volumes}</dd>
+						</div>
+					)}
+					{manga.start_date && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Inicio</dt>
+							<dd class="text-text-primary font-medium">{manga.start_date}</dd>
+						</div>
+					)}
+					{manga.end_date && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Fin</dt>
+							<dd class="text-text-primary font-medium">{manga.end_date}</dd>
+						</div>
+					)}
+					{manga.average_score && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Score promedio</dt>
+							<dd class="text-text-primary font-medium">{manga.average_score}</dd>
+						</div>
+					)}
+					{manga.mean_score && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Score medio</dt>
+							<dd class="text-text-primary font-medium">{manga.mean_score}</dd>
+						</div>
+					)}
+					{manga.popularity && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Popularidad</dt>
+							<dd class="text-text-primary font-medium">{manga.popularity.toLocaleString()}</dd>
+						</div>
+					)}
+					{manga.favourites && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Favoritos</dt>
+							<dd class="text-text-primary font-medium">{manga.favourites.toLocaleString()}</dd>
+						</div>
+					)}
+					{manga.source && (
+						<div class="flex justify-between">
+							<dt class="text-text-muted">Fuente</dt>
+							<dd class="text-text-primary font-medium capitalize">{manga.source.toLowerCase().replace(/_/g, ' ')}</dd>
+						</div>
+					)}
+					{synonyms.length > 0 && (
+						<div>
+							<dt class="text-text-muted mb-1">Sinónimos</dt>
+							<dd class="text-text-primary text-xs leading-relaxed">{synonyms.join(', ')}</dd>
+						</div>
+					)}
+				</dl>
+			</div>
+
+			<!-- Mi lectura -->
+			{readEntry && (
+				<div class="border border-border-default rounded-xl p-5">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Mi lectura</h2>
+					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
+					<div class="flex items-center justify-between mb-3">
+						<span class:list={['text-xs font-medium px-3 py-1 rounded-lg border', estadoClass[readEntry.estado] || estadoClass.Pendiente]}>
+							{readEntry.estado}
+						</span>
+						{readEntry.rating_personal && (
+							<span class:list={['inline-flex items-center justify-center h-8 rounded-lg text-sm font-bold border px-3', badgeClass[ratingColor.personal(readEntry.rating_personal)]]}>
+								{readEntry.rating_personal}
+							</span>
+						)}
+					</div>
+
+					{manga.chapters && (
+						<div class="mb-3">
+							<div class="flex justify-between text-[11px] text-text-secondary mb-1">
+								<span>Progreso</span>
+								<span>{readEntry.capitulo_actual}/{manga.chapters} ({progressPercent}%)</span>
+							</div>
+							<div class="h-1.5 bg-surface-3 rounded-full overflow-hidden">
+								<div class="h-full bg-neon-orange rounded-full transition-all duration-500" style={`width: ${progressPercent}%;`} />
+							</div>
+						</div>
+					)}
+					{!manga.chapters && (
+						<p class="text-xs text-text-secondary mb-3">Capítulo {readEntry.capitulo_actual} / ?</p>
+					)}
+
+					<dl class="space-y-2 text-xs">
+						{readEntry.platform && (
+							<div class="flex justify-between">
+								<dt class="text-text-muted">Plataforma</dt>
+								<dd class="text-text-primary font-medium">{readEntry.platform}</dd>
+							</div>
+						)}
+						{readEntry.fecha_inicio && (
+							<div class="flex justify-between">
+								<dt class="text-text-muted">Inicio</dt>
+								<dd class="text-text-primary font-medium">{readEntry.fecha_inicio}</dd>
+							</div>
+						)}
+						{readEntry.fecha_final && (
+							<div class="flex justify-between">
+								<dt class="text-text-muted">Final</dt>
+								<dd class="text-text-primary font-medium">{readEntry.fecha_final}</dd>
+							</div>
+						)}
+					</dl>
+				</div>
+			)}
+
+			<!-- Dónde leer -->
+			{(externalLinks.length > 0 || manga.site_url) && (
+				<div class="border border-border-default rounded-xl p-5">
+					<h2 class="text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">Dónde leer</h2>
+					<div class="h-px bg-linear-to-r from-neon-orange/30 via-neon-orange/15 to-transparent mb-4"></div>
+					<div class="space-y-2">
+						{externalLinks.map((l) => (
+							<a href={l.url} target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm text-text-secondary hover:text-neon-orange transition-colors">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+								</svg>
+								{l.site}
+							</a>
+						))}
+						{manga.site_url && (
+							<a href={manga.site_url} target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-sm text-text-secondary hover:text-neon-orange transition-colors">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+								</svg>
+								AniList
+							</a>
+						)}
+					</div>
+				</div>
+			)}
+		</div>
+	</div>
+</Layout>

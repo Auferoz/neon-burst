@@ -1,3 +1,6 @@
+claude --resume 93c8d500-639f-4ebb-af16-fdc65feeb358
+
+
 # Neon Burst
 
 Tracker personal de entretenimiento con estética neon/cyberpunk dark mode y terminal retro.

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { igdbImage } from '../../utils/igdbImage';
+import { textClass, personalBand } from '../../utils/ratingBands';
 interface Game {
   id: number;
   title: string;
@@ -27,17 +28,10 @@ const props = defineProps<{
   game: Game;
 }>();
 
-/**
- * Color del score personal. Cinco bandas propias, más finas que las de
- * Metacritic u OpenCritic: esta escala es la del usuario, no la de la crítica.
- *   0-44 rojo · 45-54 naranja · 55-69 amarillo · 70-89 verde · 90-100 azul
- */
+// Color del score personal: bandas compartidas con el score personal de
+// películas, vía utils/ratingBands.ts (misma escala 0-100, mismas clases).
 function personalColor(score: number): string {
-  if (score >= 90) return 'text-neon-blue';
-  if (score >= 70) return 'text-neon-green';
-  if (score >= 55) return 'text-neon-yellow';
-  if (score >= 45) return 'text-neon-orange';
-  return 'text-neon-pink';
+  return textClass[personalBand(score)];
 }
 
 const estadoColor: Record<string, string> = {

@@ -15,6 +15,10 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 - `npm run sync-local` — Sobrescribe la D1 local con un export del remoto (dropea todas las tablas de usuario primero)
 - `npm run fetch-ratings` — Fetch game ratings from external sources
 - `npm run fetch-ratings:missing` — Idem, pero solo los ratings que siguen en NULL (ahorra cuota de OpenCritic)
+- `npm run fetch-movie-scores` — Fetch TMDB + IMDb (OMDb) scores para películas y actualiza D1 local
+- `npm run fetch-movie-scores:remote` — Idem contra D1 remoto (usa `--command`, ver Migraciones)
+- `npm run fetch-series-scores` — Fetch TMDB + IMDb (OMDb) scores para series y actualiza D1 local
+- `npm run fetch-series-scores:remote` — Idem contra D1 remoto (usa `--command`, ver Migraciones)
 - `npm run sync-steam` — Run Steam library sync locally
 - `npm run sync-steam:remote` — Trigger Steam sync on remote worker
 - `npm run sync-movies` — Sync movies from Trakt locally
@@ -26,7 +30,13 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 - `npm run sync-series` — Refresh series cache from Trakt locally
 - `npm run sync-series:remote` — Refresh series cache on remote D1
 
-No test framework is configured.
+`npm test` runs Vitest (`vitest run`) — scoped to pure functions only (currently
+`src/services/anilist.ts`: `parseAnilistQuery`, `countryToType`, the AniList → `manga_cache`
+row mapper; and `src/services/omdb.ts`, `src/services/movieScores.ts`, `src/utils/ratingBands.ts`
+for the movie/series scores, shared by both — plus `db/scoreBackfillUtils.js`, the plain-JS
+helpers used by `db/fetch-movie-scores.js` and `db/fetch-series-scores.js`), so it can run in
+plain Node without the Astro/Cloudflare toolchain. Its config (`vitest.config.ts`) is
+independent of `astro.config.mjs` on purpose.
 
 ## Architecture
 
@@ -54,7 +64,9 @@ src/
 │   ├── movies/[id].astro — Movie detail (cast, trailer, fanart, videos)
 │   ├── ListSeries.astro — Series list page
 │   ├── series/[slug].astro — Series detail (cast, seasons, episodes, trailer)
-│   └── api/         — REST endpoints (games/, steam/, next-games/, movies/, series/)
+│   ├── ListManga.astro — Manga list page
+│   ├── manga/[id].astro — Manga detail (AniList id: characters, staff, relations, recs)
+│   └── api/         — REST endpoints (games/, steam/, next-games/, movies/, series/, manga/)
 ├── services/        — Business logic (see Services section)
 ├── layouts/         — Layout.astro (base HTML, nav, transitions)
 └── styles/          — global.css (Tailwind theme + neon tokens + @font-face)
@@ -82,19 +94,28 @@ public/
 | `PlayedGamesDashboard.vue` | Stats/dashboard display |
 | `PlayedGamesCard.vue` | Individual game card. Muestra `rating_personal` como badge circular sobre la esquina del poster (solo si está cargado) |
 | `PlayedGamesFilter.vue` | Filtros: año, estado, plataforma y **marca** (Demo / Early Access / Review). Las opciones de año, estado y plataforma se derivan de los datos; las de marca vienen del array `MARCAS` de `PlayedGamesMain.vue`, cuyo `value` es el nombre de la columna de la flag |
-| `PlayedGamesEditButton.vue` | Edit button |
+| `EditButton.vue` | Botón "Editar" presentacional compartido (lápiz + texto), usado en las cuatro fichas de detalle. Prop `accent` (`blue \| indigo \| emerald \| orange`, uno por sección) con clases literales para que Tailwind no las purgue; emite `click`, no sabe nada del modal que abre |
+| `PlayedGamesEditButton.vue` | Envuelve `EditButton` (accent `blue`) + `PlayedGamesFormModal`; recarga la página al guardar |
 | `PlayedGamesFormModal.vue` | Create/edit game modal (con autocompletado desde IGDB) |
 | `SteamLibraryMain.vue` | Steam games display |
 | `NextGamesMain.vue` | Upcoming games container |
 | `NextGamesCard.vue` | Individual upcoming game card |
-| `MoviesMain.vue` | Movies container with year tabs + botón Agregar |
-| `MoviesCard.vue` | Individual movie card (linkea a `/movies/{tmdb_id}`) |
-| `MoviesFormModal.vue` | Alta manual de película, con previsualización antes de guardar |
-| `SeriesMain.vue` | Series container with year tabs |
-| `SeriesCard.vue` | Individual series card |
-| `SeriesFormModal.vue` | Create/edit series entry modal |
+| `MoviesMain.vue` | Movies container with year tabs + botón Agregar (alta únicamente: editar vive en la ficha) |
+| `MoviesCard.vue` | Individual movie card (linkea a `/movies/{tmdb_id}`). Muestra un único badge de **promedio** (`averageScore()` de `rating_tmdb`/`rating_imdb`/`rating_personal`, los que existan), coloreado con `tmdbImdbBand` de `src/utils/ratingBands.ts` |
+| `MoviesFormModal.vue` | Alta manual de película, con previsualización antes de guardar. Incluye un campo opcional "Mi score (0-100)" |
+| `MoviesEditButton.vue` | Envuelve `EditButton` (accent `emerald`) + `MoviesEntriesModal`, en la ficha de película |
+| `MoviesEntriesModal.vue` | Modal de edición de la ficha: "Mi score" (`PUT /api/movies/score/[tmdbId]`) + lista de visionados (`movies_watched`, uno por rewatch en otro año), cada uno editable y borrable (`PUT`/`DELETE /api/movies/[id]` por `watched_id`). Recarga al guardar; si se borra el último visionado, redirige a `/ListMovies` sin tocar el score personal |
+| `SeriesMain.vue` | Series container with year tabs + botón Agregar (alta únicamente: editar vive en la ficha) |
+| `SeriesCard.vue` | Individual series card (sin botón de editar: eso vive en la ficha de la serie) |
+| `SeriesFormModal.vue` | Create/edit series entry modal. Las opciones de estado salen de `src/utils/seriesFormOptions.ts`, compartidas con `SeriesEntriesModal.vue` |
 | `SeriesSeasons.vue` | Expandable seasons/episodes accordion |
+| `SeriesEditButton.vue` | Envuelve `EditButton` (accent `indigo`) + `SeriesEntriesModal`, en la ficha de la serie |
+| `SeriesEntriesModal.vue` | Modal de edición de la ficha: campo "Mi score" (0-100, uno por serie, `PUT /api/series/score/[slug]`) + una fila por temporada registrada en `series_watched`, cada una editable y borrable (`PUT`/`DELETE /api/series/[id]`). Recarga al guardar; si se borra la última temporada, redirige a `/ListSeries` |
 | `SyncButton.vue` | Botón de sync manual reutilizable (Movies/Series/Next Games) |
+| `MangaMain.vue` | Manga container: filtros (tipo, estado, formato, género, búsqueda), stats, botón Agregar (alta únicamente: editar vive en la ficha) |
+| `MangaCard.vue` | Tarjeta de manga: portada, badge de tipo (Manga/Manhwa/Manhua), estado, progreso `cap/total`, score personal (sin botón de editar: eso vive en la ficha) |
+| `MangaFormModal.vue` | Alta/edición de manga, con lookup a AniList (URL o id) → previsualización → confirmar, mismo flujo que `MoviesFormModal.vue`. En modo edición suma un botón "Eliminar" con confirmación dentro del propio modal (no `window.confirm`); emite `deleted` |
+| `MangaEditButton.vue` | Envuelve `EditButton` (accent `orange`) + `MangaFormModal` en modo edición, en la ficha del manga; redirige a `/ListManga` si se elimina |
 
 **`SyncButton.vue`** — llama a un endpoint `/api/*/sync` con `?secret=`. Pide el
 `CRON_SECRET` por `window.prompt` y lo guarda en `localStorage` (clave `nb_sync_secret`);
@@ -170,17 +191,22 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/next-games/sync` | GET | Trigger IGDB sync (same auth) |
 | `/api/next-games/featured` | GET, POST | List/toggle featured games |
 | `/api/movies` | GET, POST | Lista de películas vistas (JOIN `movies_watched` ↔ `movies_cache`) / alta manual |
-| `/api/movies/[id]` | GET, DELETE | GET: detalle por `tmdb_id` (acepta `trakt_id` por compatibilidad). DELETE: borra una entrada de `movies_watched` por su `watched_id` |
+| `/api/movies/[id]` | GET, PUT, DELETE | GET: detalle por `tmdb_id` (acepta `trakt_id` por compatibilidad). PUT: edita `year_watched`/`platform` de una entrada de `movies_watched` por su `watched_id` (409 si choca con `UNIQUE(tmdb_id, year_watched)`). DELETE: borra una entrada de `movies_watched` por su `watched_id` |
 | `/api/movies/lookup` | GET | `?q=<slug\|url de Trakt\|id de TMDB>` → previsualización sin guardar, con `watched_years` |
 | `/api/movies/sync` | GET | Trigger Trakt movies sync (requires auth) |
 | `/api/movies/lists` | GET | Movie lists metadata |
+| `/api/movies/score/[tmdbId]` | PUT | `{ rating_personal: number\|null }` → alta/edición (0-100 entero) o borrado (`null`) del score personal en `movies_personal` |
 | `/api/series` | GET, POST | List all series / Create series entry |
 | `/api/series/[id]` | GET, PUT, DELETE | Series entry CRUD by ID |
 | `/api/series/sync` | GET | Trigger Trakt series sync (requires auth) |
+| `/api/series/score/[slug]` | PUT | `{ rating_personal: number\|null }` → alta/edición (0-100 entero) o borrado (`null`) del score personal en `series_personal`, keyed por `trakt_slug` (una fila por serie, no por temporada) |
 | `/api/streaming/unlock` | POST | `{ pin }` → valida el PIN y emite la cookie de sesión |
 | `/api/streaming/lock` | POST | Borra la cookie de sesión de streaming |
 | `/api/series/detail/[slug]` | GET | Series full detail (on-demand fetch) |
 | `/api/igdb/lookup` | GET | `?q=<url\|slug\|id>` → datos de un juego de IGDB para autocompletar el modal |
+| `/api/manga` | GET, POST | Lista de manga leído (JOIN `manga_read` ↔ `manga_cache`) / alta (URL o id de AniList) |
+| `/api/manga/[id]` | PUT, DELETE | CRUD de una entrada de `manga_read` por su `id` |
+| `/api/manga/lookup` | GET | `?q=<url\|id de AniList>` → previsualización sin guardar, con `already_added` |
 
 ### Database Schema (Cloudflare D1)
 
@@ -198,9 +224,10 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 - **next_games_featured** — Featured game toggles (igdb_id PK)
 
 **Movies tables**:
-- **movies_cache** — **Solo metadata** (trakt_id PK, `tmdb_id` UNIQUE, poster, thumb, genres, rating, más columnas de detalle: tagline, certification, cast_json, videos_json, images_json, `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at). Ya **no** tiene `list_slug` / `list_order` / `listed_at`: eso vive en `movies_watched`
+- **movies_cache** — **Solo metadata** (trakt_id PK, `tmdb_id` UNIQUE, poster, thumb, genres, rating, más columnas de detalle: tagline, certification, cast_json, videos_json, images_json, `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at). Ya **no** tiene `list_slug` / `list_order` / `listed_at`: eso vive en `movies_watched`. `rating_tmdb` / `rating_imdb` (0-100, `vote_average * 10` / `imdbRating * 10` vía OMDb) y `ratings_fetched_at` se refrescan solos si tienen más de 30 días al visitar la ficha (`getMovieById`), aparte del `detail_fetched_at` de Trakt/TMDB
 - **movies_watched** — Las películas vistas (`tmdb_id` + `year_watched` UNIQUE, `trakt_id` nullable, `trakt_slug`, `platform`, `source` `'trakt' | 'manual'`, `listed_at`). Es el equivalente de `series_watched`, y lo que permite que una película figure en más de un año
 - **movies_lists** — Movie list metadata (slug PK, description, item_count)
+- **movies_personal** — Score personal 0-100 (`tmdb_id` PK, `rating_personal` NOT NULL). Una fila por película, no por año visto: un rewatch en otro año muestra el mismo score. Se edita desde `MovieScoreEditor.vue` (`PUT /api/movies/score/[tmdbId]`) o desde `MoviesFormModal.vue` al dar de alta. El viejo `movies_cache.rating` (0-10, de Trakt/TMDB) sigue en la base pero **ya no se muestra**: la UI usa `rating_tmdb`/`rating_imdb`/`rating_personal`
 
 **La clave de unión entre las dos es `tmdb_id`, no `trakt_id`.** Es el único
 identificador que existe tanto en lo que devuelve Trakt como en lo que se puede
@@ -212,8 +239,20 @@ upsert; sin ese paso el sync falla con `UNIQUE constraint failed: movies_cache.t
 y se pierde el lote entero de 50.
 
 **Series tables**:
-- **series_cache** — Cached series data (trakt_slug PK, poster, thumb, genres, rating, plus detail columns: tagline, certification, cast_json, videos_json, images_json, seasons_json, `season_posters_json` (mapa `{"1":"url"}`), `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at)
+- **series_cache** — Cached series data (trakt_slug PK, poster, thumb, genres, `rating` de Trakt/TMDB 0-10 — se guarda pero **ya no se muestra**, plus detail columns: tagline, certification, cast_json, videos_json, images_json, seasons_json, `season_posters_json` (mapa `{"1":"url"}`), `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at). `rating_tmdb` / `rating_imdb` (0-100, `vote_average * 10` / `imdbRating * 10` vía OMDb) y `ratings_fetched_at` se rellenan al dar de alta la serie (`syncSingleShow`, best-effort, no bloquea el alta) y se refrescan solos si tienen más de 30 días al visitar la ficha (`getSeriesDetail`); ese mismo refresh completa `tmdb_id`/`imdb_id` si faltaban
 - **series_watched** — User's watched entries (trakt_slug + season_number UNIQUE, year_watched, platform, status_viewed)
+- **series_personal** — Score personal 0-100 (`trakt_slug` PK, `rating_personal` NOT NULL). Una fila por serie, no por temporada: todas las temporadas de un mismo show comparten el mismo score. Se edita desde `SeriesEntriesModal.vue` (`PUT /api/series/score/[slug]`)
+
+**Manga tables**:
+- **manga_cache** — Metadata de AniList (`anilist_id` PK). Campos base (`title_romaji`,
+  `title_english`, `title_native`, `type` derivado de `countryOfOrigin` — Manga/Manhwa/Manhua,
+  `format`, `status`, `cover`, `chapters`, `volumes`, `average_score`, `genres_json`, etc.) más
+  campos de detalle cargados on-demand (`tags_json`, `staff_json`, `characters_json`,
+  `relations_json`, `recommendations_json`, `external_links_json`, `detail_fetched_at`)
+- **manga_read** — Seguimiento personal (`anilist_id` UNIQUE, `estado`
+  `Leyendo | Completado | Pausado | Abandonado | Pendiente`, `capitulo_actual`, `platform`,
+  `fecha_inicio`/`fecha_final` en `DD/MM/YYYY`, `rating_personal` 0-100, mismas convenciones
+  que `dates_played` y `rating_personal` de `games`)
 
 **Streaming tables**:
 - **streaming_accounts** — Cuentas de servicios de streaming (name UNIQUE, url, logo, email, password, plan, sort_order). Sustituye a `src/data/SSAccounts.js`, que está en `.gitignore`
@@ -223,7 +262,8 @@ y se pierde el lote entero de 50.
 `add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
 `add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
 `rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`,
-`add-personal-rating`, `add-terminado-estado`.
+`add-personal-rating`, `add-terminado-estado`, `add-manga-tables`, `add-movie-scores`,
+`add-series-scores`.
 `drop-movies-list-columns` es **irreversible**: el respaldo de lo que borró
 (`list_slug`, `list_order`, `listed_at` de las 481 filas) es
 `db/backup-movies-list-slug.json`, y es lo único que queda de esos datos.
@@ -238,6 +278,14 @@ npx wrangler d1 execute neon-burst-db --local  --file db/<migracion>.sql
 npx wrangler d1 execute neon-burst-db --remote --file db/<migracion>.sql
 ```
 
+**Excepción: `--file` contra `--remote` puede fallar con `Auth error [code: 10000]`.**
+Le pasó a `add-movie-scores`. Cuando eso pase, aplicar el contenido de la migración con
+`--command` en su lugar (una o varias sentencias separadas por `;` dentro del mismo string):
+```
+npx wrangler d1 execute neon-burst-db --remote --command "ALTER TABLE ...; CREATE TABLE ...;"
+```
+`db/fetch-movie-scores.js` ya asume esto: nunca usa `--file`, solo `--command`.
+
 ### Services
 
 - `src/services/gamesService.ts` — D1 CRUD for games + dates_played (uses prepared statements)
@@ -250,9 +298,18 @@ npx wrangler d1 execute neon-burst-db --remote --file db/<migracion>.sql
 - `src/utils/mediaQuery.ts` — `parseMediaQuery()` (acepta slug de Trakt, URL de Trakt, id o URL de TMDB) y `slugToQuery()` (slug → término + año), compartida con `tmdbSeries.ts`
 - `src/services/streamingAuth.ts` — PIN + cookie de sesión firmada (HMAC-SHA256 vía Web Crypto) + rate limiting por IP en `streaming_attempts`
 - `src/services/streamingService.ts` — Lectura de `streaming_accounts`; `getStreamingAccountsPublic()` omite email y contraseña
-- `src/services/seriesService.ts` — D1 CRUD for series_watched + series_cache + on-demand detail fetch from Trakt (cast, seasons, episodes, videos)
-- `src/services/seriesSync.ts` — Refreshes series_cache metadata from Trakt for current year / ongoing shows; `syncSingleShow` cae a TMDB y lanza `TraktRequestError` (→ HTTP 502) si ambas APIs fallan
-- `src/services/tmdbSeries.ts` — Proveedor TMDB de series (fallback temporal, ver abajo): resuelve el slug de Trakt a un id de TMDB por búsqueda y devuelve los datos con la misma forma que las funciones de Trakt
+- `src/services/seriesService.ts` — D1 CRUD for series_watched + series_cache + on-demand detail fetch from Trakt (cast, seasons, episodes, videos). `getAllSeries()`/`getSeriesDetail()` hacen LEFT JOIN con `series_personal`; `setPersonalRating()` es el alta/edición/borrado del score personal. `getSeriesDetail()` refresca `rating_tmdb`/`rating_imdb` (y completa `tmdb_id`/`imdb_id` si faltaban) si pasaron más de 30 días, igual que `getMovieById()` en `moviesService.ts`
+- `src/services/seriesSync.ts` — Refreshes series_cache metadata from Trakt for current year / ongoing shows; `syncSingleShow` cae a TMDB y lanza `TraktRequestError` (→ HTTP 502) si ambas APIs fallan. También intenta `rating_tmdb`/`rating_imdb` al dar de alta (best-effort, no bloquea si TMDB/OMDb fallan)
+- `src/services/tmdbSeries.ts` — Proveedor TMDB de series (fallback temporal, ver abajo): resuelve el slug de Trakt a un id de TMDB por búsqueda y devuelve los datos con la misma forma que las funciones de Trakt. `fetchTmdbTvScore()` y `fetchTmdbTvImdbId()` son los equivalentes de `tmdbMovies.ts#fetchTmdbScore` para el refresh de scores
+- `src/services/anilist.ts` — Proveedor AniList (GraphQL público, sin auth). Funciones puras
+  (`parseAnilistQuery`, `countryToType`, `mapAnilistToCacheRow`) separadas de las que hacen
+  fetch (`fetchAnilistPreview`, `fetchAnilistMedia`) para que Vitest pueda testear las
+  primeras sin `cloudflare:workers`. Errores de red/HTTP/429 se tipan como `AnilistRequestError`
+  (→ HTTP 502/404), igual que `TraktRequestError` en `seriesSync.ts`
+- `src/services/mangaService.ts` — D1 CRUD de `manga_read` + `manga_cache` y detalle on-demand
+  desde AniList. `getMangaDetail()` re-fetchea si nunca se cargó, o si el manga sigue
+  `RELEASING` y el detalle tiene más de 7 días (para que el conteo de capítulos no quede
+  desactualizado sin necesidad de un cron)
 
 ### Streaming (puerta de PIN)
 
@@ -304,7 +361,11 @@ Movies and series use a lazy-loading pattern for detailed data:
 - **IGDB (via Twitch OAuth)** — Upcoming games with community interest metrics
 - **RAWG API** — Internal source for the Metacritic score only (its own user rating is not stored)
 - **OpenCritic (via RapidAPI)** — `topCriticScore` (0-100) shown next to Metacritic
-- **TMDB API** — YouTube video trailers, y **fallback temporal de series y películas** (ver abajo)
+- **TMDB API** — YouTube video trailers, `rating_tmdb` (`vote_average * 10`), y **fallback temporal de series y películas** (ver abajo)
+- **OMDb API** — Fuente de `rating_imdb`, buscando por `imdb_id` (`movies_cache.imdb_id`). Free tier: 1000 requests/día. `src/services/omdb.ts`
+- **AniList API** — Metadata de manga/manhwa/manhua vía GraphQL público (`https://graphql.anilist.co`).
+  **No requiere autenticación** para lecturas: el Client ID/Secret no se usan. Neon Burst es la
+  única fuente de verdad para lo leído — no hay sync con la lista de AniList del usuario ni OAuth
 
 ### Fallback temporal a TMDB (series y películas)
 
@@ -363,7 +424,8 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 - **Neon glow classes**: `neon-glow-blue`, `neon-glow-cyan`, `neon-glow-pink` (defined in global.css)
 - **Neon border classes**: `neon-border-blue`, `neon-border-cyan`, etc.
 - **CRT scanline overlay**: subtle 2px repeating gradient
-- **Per-section accent colors**: blue (played games), cyan (Steam), pink (next games), emerald (movies), indigo (series)
+- **Per-section accent colors**: blue (played games), cyan (Steam), pink (next games), emerald (movies), indigo (series), orange (manga)
+- **Editar solo desde la ficha**: juegos, películas, series y manga se editan únicamente desde un botón "Editar" en su página de detalle — nunca desde la tarjeta del listado, que solo agrega. El botón es siempre `EditButton.vue` con el acento de la sección (blue/indigo/emerald/orange); en juegos y manga abre el mismo form modal en modo edición, en series y películas abre un modal con la lista de entradas (una por temporada vista o por año visto), porque puede haber más de una
 - **Estado colors**: green (Terminado), gold (Completado), pink (Abandonado), blue (Jugando), yellow (Pausado), purple (Recurrente)
 - **`Terminado` vs `Completado`**: `Terminado` es haber terminado la campaña o historia; `Completado` es tener el **100% de los logros**, y por eso lleva trofeo y color dorado en el dashboard en vez del check. Antes `Completado` significaba las dos cosas, y `migrate-add-terminado-estado.sql` separó los 51 juegos que había: 45 quedaron en Terminado y 6 en Completado por tener `logros_obt >= logros_total`
 - **Badges de flags**: indigo (Demo), emerald (Early Access), cyan (Review/`is_testing`). Regla al agregar un flag nuevo: los estados conservan su color documentado, el flag toma uno libre
@@ -371,17 +433,28 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
   - En `PlayedGamesCard.vue`, si el juego tiene **alguna** marca (`is_demo`, `is_early_access`, `is_testing`), la marca **reemplaza** al badge de estado — ver `hasFlag`. En una demo o un Early Access, "esto no es el juego final" pesa más que en qué punto se dejó, y la fila de badges deja de amontonarse
   - En `playedGames/[id].astro` se muestran **todas** juntas, marcas y estado: es donde hay lugar para el detalle completo
   - El estado sigue en el `aria-label` de la card aunque no se vea, así que un lector de pantalla no lo pierde
-- **Colores de rating**: cada uno usa **la escala de quien lo emite**, no una común. Definidos en `ratingColor` en `src/pages/playedGames/[id].astro`:
+- **Colores de rating**: cada uno usa **la escala de quien lo emite**, no una común. Metacritic/OpenCritic están definidos en `ratingColor` de `src/pages/playedGames/[id].astro`; el score personal (juegos, películas y series) y los scores TMDB/IMDb viven en el módulo compartido `src/utils/ratingBands.ts`:
 
   | rating | bandas |
   |---|---|
   | Metacritic | green `>= 75`, yellow `>= 50`, pink debajo (cortes fijos y oficiales) |
   | OpenCritic | green `>= 84` (Mighty), emerald `>= 75` (Strong), yellow `>= 65` (Fair), pink debajo (Weak) |
-  | Mi score | blue `>= 90`, green `>= 70`, yellow `>= 55`, orange `>= 45`, pink debajo |
+  | Mi score (juegos, películas y series) | blue `>= 90`, green `>= 70`, yellow `>= 55`, orange `>= 45`, pink debajo — `ratingBands.personal` |
+  | TMDB / IMDb | green `>= 70`, yellow `>= 50`, pink debajo — `ratingBands.tmdb` / `ratingBands.imdb`, el corte 7/5 de Trakt sobre 10 movido a 0-100 |
+
+- **Series: TMDB / IMDb / Mi score reemplazan el rating de Trakt.** Igual que en películas
+  (ver `movies_personal` arriba), `series_cache.rating` (Trakt/TMDB, 0-10) se sigue guardando
+  pero ya no se muestra en ningún lado. `SeriesCard.vue` muestra un único badge con el
+  promedio de los scores disponibles (`averageScore` + `tmdbImdbBand`, igual que
+  `MoviesCard.vue`); `series/[slug].astro` muestra los tres badges por separado
+  (`rating_tmdb` / `rating_imdb` / `rating_personal`), cada uno solo si no es `null`. A
+  diferencia del score personal de películas (por `tmdb_id`, una fila por película), el de
+  series es **por serie completa**, no por temporada: se edita en `SeriesEntriesModal.vue`
+  vía `PUT /api/series/score/[slug]`, keyed por `trakt_slug`.
 
   **Los tiers de OpenCritic son percentiles, no cortes fijos** (Mighty = 10% superior, Strong = 30% siguiente, Fair = del 30 al 60, Weak = 30% inferior). 84/75/65 es la traducción práctica y puede moverse con el tiempo.
-- **`rating_personal` en la lista**: va en la fila de datos de `PlayedGamesCard.vue`, después de las horas, con una estrella y el número en el color de su banda. Si es NULL no se renderiza **ni el separador `·`**, así que la fila no queda coja — con 58 de 66 juegos sin puntuar, la ausencia tiene que verse deliberada
-- Las clases de color de rating viven en los mapas `badgeClass` / `textClass` de `[id].astro`, escritas literales: Tailwind escanea el código como texto y purga cualquier clase que se arme por interpolación
+- **`rating_personal` en la lista**: va en la fila de datos de `PlayedGamesCard.vue`/`MoviesCard.vue`, con una estrella y el número en el color de su banda. Si es NULL no se renderiza **ni el separador `·`**, así que la fila no queda coja — con 58 de 66 juegos sin puntuar, la ausencia tiene que verse deliberada
+- Las clases de color de rating viven en los mapas `badgeClass` / `textClass` de `src/utils/ratingBands.ts`, escritas literales: Tailwind escanea el código como texto y purga cualquier clase que se arme por interpolación. `playedGames/[id].astro`, `PlayedGamesCard.vue`, `movies/[id].astro` y `MoviesCard.vue` los importan de ahí en vez de duplicarlos
 - Floating bottom nav: icon-only on mobile, icons+labels on desktop
 - Reduced motion support via `prefers-reduced-motion`
 
@@ -404,7 +477,8 @@ Required in `.env` locally and as Cloudflare secrets for the worker:
 - `RAWG_API_KEY` — RAWG API key (solo para leer el score de Metacritic)
 - `OPENCRITIC_API_KEY` — Key de RapidAPI para la API de OpenCritic (solo la usa `npm run fetch-ratings` en local, no es secret del worker)
 - `TRAKT_CLIENT_ID` — Trakt API key (for movies and series)
-- `TMDB_API_KEY` — TMDB API key (trailers + fallback temporal de series)
+- `TMDB_API_KEY` — TMDB API key (trailers + fallback temporal de series + `rating_tmdb`)
+- `OMDB_API_KEY` — OMDb API key, para `rating_imdb` (en `.env` local **y** `wrangler secret put OMDB_API_KEY` para el worker; sin ella, `rating_imdb` se deja en `NULL` sin bloquear nada)
 - `CRON_SECRET` — Authenticates cron/sync requests
 - `STREAMING_PIN` — PIN de 6 dígitos que abre `/streaming`
 - `STREAMING_SESSION_SECRET` — Clave HMAC que firma la cookie de sesión de streaming

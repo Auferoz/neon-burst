@@ -2,7 +2,9 @@
 import Layout from '../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
 import { getSeriesDetail } from '../../services/seriesService';
+import { badgeClass, ratingBands } from '../../utils/ratingBands';
 import SeriesSeasons from '../../components/Vue/SeriesSeasons.vue';
+import SeriesEditButton from '../../components/Vue/SeriesEditButton.vue';
 
 export const prerender = false;
 
@@ -11,12 +13,6 @@ const series = await getSeriesDetail(env.DB, slug!);
 
 if (!series) {
 	return Astro.redirect('/ListSeries');
-}
-
-function ratingColor(rating: number): string {
-	if (rating >= 7) return 'text-neon-green border-neon-green/30 bg-neon-green/10';
-	if (rating >= 5) return 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10';
-	return 'text-neon-pink border-neon-pink/30 bg-neon-pink/10';
 }
 
 function statusColor(status: string): string {
@@ -78,6 +74,21 @@ function formatDate(iso: string): string {
 			</svg>
 			Volver a la lista
 		</a>
+		{series.watched_entries.length > 0 && (
+			<SeriesEditButton
+				client:load
+				title={series.title}
+				traktSlug={series.trakt_slug}
+				ratingPersonal={series.rating_personal}
+				entries={series.watched_entries.map(w => ({
+					id: w.id,
+					season_number: w.season_number,
+					year_watched: w.year_watched,
+					platform: w.platform,
+					status_viewed: w.status_viewed,
+				}))}
+			/>
+		)}
 	</div>
 
 	<!-- Hero section -->
@@ -159,20 +170,42 @@ function formatDate(iso: string): string {
 					</div>
 				)}
 
-				<!-- Rating -->
-				{series.rating > 0 && (
-					<div class="flex flex-wrap gap-3">
+				<!-- Scores: TMDB, IMDb, Mi score -->
+				<div class="flex flex-wrap items-center gap-3">
+					{series.rating_tmdb != null && (
 						<div class="flex items-center gap-2">
 							<span class:list={[
 								'inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4',
-								ratingColor(series.rating)
+								badgeClass[ratingBands.tmdb(series.rating_tmdb)]
 							]}>
-								{series.rating.toFixed(1)}
+								{series.rating_tmdb}
 							</span>
-							<span class="text-xs text-text-muted">Trakt ({series.votes.toLocaleString()} votos)</span>
+							<span class="text-xs text-text-muted">TMDB</span>
 						</div>
-					</div>
-				)}
+					)}
+					{series.rating_imdb != null && (
+						<div class="flex items-center gap-2">
+							<span class:list={[
+								'inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4',
+								badgeClass[ratingBands.imdb(series.rating_imdb)]
+							]}>
+								{series.rating_imdb}
+							</span>
+							<span class="text-xs text-text-muted">IMDb</span>
+						</div>
+					)}
+					{series.rating_personal != null && (
+						<div class="flex items-center gap-2">
+							<span class:list={[
+								'inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4',
+								badgeClass[ratingBands.personal(series.rating_personal)]
+							]}>
+								{series.rating_personal}
+							</span>
+							<span class="text-xs text-text-muted">Mi score</span>
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	</div>

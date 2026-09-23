@@ -9,6 +9,7 @@
 import { env } from 'cloudflare:workers';
 import type { CastMember, MovieImages, Video } from './moviesService';
 import { slugToQuery, type MediaQuery } from '../utils/mediaQuery';
+import { tmdbToScore } from './movieScores';
 
 const TMDB_API_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMG = 'https://image.tmdb.org/t/p';
@@ -87,6 +88,7 @@ export interface TmdbMovieDetail {
   fanart: string;
   logo: string;
   votes: number;
+  rating_tmdb: number | null;
   cast: CastMember[];
   videos: Video[];
   images: MovieImages;
@@ -182,10 +184,21 @@ export async function fetchTmdbMovieDetail(tmdbId: number): Promise<TmdbMovieDet
     fanart: images.fanart[0] || tmdbImage(movie.backdrop_path, 'w1280'),
     logo: images.logo[0] || '',
     votes: movie.vote_count || 0,
+    rating_tmdb: tmdbToScore(movie.vote_average, movie.vote_count),
     cast,
     videos,
     images,
   };
+}
+
+/**
+ * Score TMDB (0-100) de una película, sin el resto del detalle. Se usa para
+ * refrescar `rating_tmdb` en la ficha sin pedir credits/images/videos.
+ */
+export async function fetchTmdbScore(tmdbId: number): Promise<number | null> {
+  const movie = await tmdbFetch<TmdbMovie>(`/movie/${tmdbId}`);
+  if (!movie) return null;
+  return tmdbToScore(movie.vote_average, movie.vote_count);
 }
 
 interface TmdbSearchResult {

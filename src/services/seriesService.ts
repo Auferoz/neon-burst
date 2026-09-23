@@ -4,7 +4,8 @@
  */
 
 import { env } from 'cloudflare:workers';
-import { fetchTmdbShowDetail, resolveTmdbTvId, TMDB_SOURCE } from './tmdbSeries';
+import { fetchTmdbShowDetail, fetchTmdbTvImdbId, fetchTmdbTvScore, resolveTmdbTvId, TMDB_SOURCE } from './tmdbSeries';
+import { fetchImdbRating } from './omdb';
 
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -66,15 +67,24 @@ export interface SeriesEntry extends SeriesWatchedRow {
   tmdb_id: number;
   imdb_id: string;
   season_poster: string;
+  rating_tmdb: number | null;
+  rating_imdb: number | null;
+  rating_personal: number | null;
 }
 
+/**
+ * Todas las temporadas vistas. `rating_personal` sale de series_personal, con
+ * LEFT JOIN por trakt_slug: es un score por serie, así que todas las
+ * temporadas de un mismo show comparten el mismo valor.
+ */
 export async function getAllSeries(db: D1Database): Promise<SeriesEntry[]> {
   const { results } = await db.prepare(`
     SELECT w.*, c.title, c.year, c.overview, c.rating, c.genres, c.network,
            c.status, c.runtime, c.poster, c.thumb, c.tmdb_id, c.imdb_id,
-           c.season_posters_json
+           c.season_posters_json, c.rating_tmdb, c.rating_imdb, p.rating_personal
     FROM series_watched w
     LEFT JOIN series_cache c ON w.trakt_slug = c.trakt_slug
+    LEFT JOIN series_personal p ON p.trakt_slug = w.trakt_slug
     ORDER BY w.year_watched DESC, w.created_at DESC
   `).all<SeriesEntry & { season_posters_json?: string }>();
 
@@ -139,6 +149,23 @@ export async function updateSeriesEntry(
 export async function deleteSeriesEntry(db: D1Database, id: number): Promise<boolean> {
   const result = await db.prepare('DELETE FROM series_watched WHERE id = ?').bind(id).run();
   return result.meta.changes > 0;
+}
+
+/**
+ * Alta/edición/borrado del score personal de una serie.
+ * Una fila por trakt_slug: todas las temporadas comparten el mismo score.
+ * `ratingPersonal: null` borra la fila (vuelve a "sin puntuar").
+ */
+export async function setPersonalRating(db: D1Database, traktSlug: string, ratingPersonal: number | null): Promise<void> {
+  if (ratingPersonal === null) {
+    await db.prepare('DELETE FROM series_personal WHERE trakt_slug = ?').bind(traktSlug).run();
+    return;
+  }
+  await db.prepare(
+    `INSERT INTO series_personal (trakt_slug, rating_personal, updated_at)
+     VALUES (?, ?, datetime('now'))
+     ON CONFLICT(trakt_slug) DO UPDATE SET rating_personal = excluded.rating_personal, updated_at = datetime('now')`
+  ).bind(traktSlug, ratingPersonal).run();
 }
 
 // ── Detail interfaces ──
@@ -222,6 +249,9 @@ export interface SeriesDetail {
   seasons: Season[];
   watched_entries: SeriesWatchedRow[];
   votes: number;
+  rating_tmdb: number | null;
+  rating_imdb: number | null;
+  rating_personal: number | null;
 }
 
 // ── Trakt API types ──
@@ -386,7 +416,7 @@ async function fetchTmdbTvVideos(tmdbId: number): Promise<Video[]> {
 // ── Main detail function ──
 
 export async function getSeriesDetail(db: D1Database, slug: string): Promise<SeriesDetail | null> {
-  const row = await db.prepare('SELECT * FROM series_cache WHERE trakt_slug = ?').bind(slug).first<Record<string, unknown>>();
+  let row = await db.prepare('SELECT * FROM series_cache WHERE trakt_slug = ?').bind(slug).first<Record<string, unknown>>();
   if (!row) return null;
 
   // On-demand detail fetch (or re-fetch if stale/empty)
@@ -396,13 +426,91 @@ export async function getSeriesDetail(db: D1Database, slug: string): Promise<Ser
   if (needsFetch) {
     await fetchSeriesDetail(db, slug, row.tmdb_id as number);
     const updated = await db.prepare('SELECT * FROM series_cache WHERE trakt_slug = ?').bind(slug).first<Record<string, unknown>>();
-    if (updated) return rowToSeriesDetail(db, updated);
+    if (updated) row = updated;
   }
 
-  return rowToSeriesDetail(db, row);
+  const scores = await refreshSeriesScoresIfStale(
+    db,
+    slug,
+    (row.tmdb_id as number | null) ?? null,
+    (row.imdb_id as string) || '',
+    (row.rating_tmdb as number | null) ?? null,
+    (row.rating_imdb as number | null) ?? null,
+    (row.ratings_fetched_at as string | null) ?? null,
+  );
+  row.rating_tmdb = scores.rating_tmdb;
+  row.rating_imdb = scores.rating_imdb;
+  if (scores.tmdb_id != null) row.tmdb_id = scores.tmdb_id;
+  if (scores.imdb_id) row.imdb_id = scores.imdb_id;
+
+  const personal = await db.prepare('SELECT rating_personal FROM series_personal WHERE trakt_slug = ?')
+    .bind(slug).first<{ rating_personal: number }>();
+
+  return rowToSeriesDetail(db, row, personal?.rating_personal ?? null);
 }
 
-async function rowToSeriesDetail(db: D1Database, row: Record<string, unknown>): Promise<SeriesDetail> {
+const SCORES_STALE_MS = 30 * 24 * 60 * 60 * 1000; // 30 días
+
+function isScoresStale(fetchedAt: string | null): boolean {
+  if (!fetchedAt) return true;
+  const fetchedMs = Date.parse(fetchedAt.replace(' ', 'T') + 'Z');
+  if (Number.isNaN(fetchedMs)) return true;
+  return Date.now() - fetchedMs > SCORES_STALE_MS;
+}
+
+/**
+ * Refresca rating_tmdb / rating_imdb en la visita a la ficha si nunca se
+ * pidieron o si pasaron más de 30 días. También completa tmdb_id / imdb_id en
+ * series_cache si faltaban: a diferencia de movies_cache (donde tmdb_id es la
+ * clave de unión y siempre existe), series_cache puede tener ambos en null
+ * cuando el alta vino de Trakt sin ese dato.
+ *
+ * Un fetch que falla no borra el valor anterior, y sin OMDB_API_KEY
+ * simplemente no toca rating_imdb.
+ */
+async function refreshSeriesScoresIfStale(
+  db: D1Database,
+  traktSlug: string,
+  tmdbId: number | null,
+  imdbId: string,
+  currentTmdb: number | null,
+  currentImdb: number | null,
+  ratingsFetchedAt: string | null,
+): Promise<{ rating_tmdb: number | null; rating_imdb: number | null; tmdb_id: number | null; imdb_id: string | null }> {
+  if (!isScoresStale(ratingsFetchedAt)) {
+    return { rating_tmdb: currentTmdb, rating_imdb: currentImdb, tmdb_id: null, imdb_id: null };
+  }
+
+  const resolvedTmdbId = tmdbId || await resolveTmdbTvId(traktSlug);
+  const resolvedImdbId = imdbId || (resolvedTmdbId ? await fetchTmdbTvImdbId(resolvedTmdbId) : null) || '';
+
+  const [tmdbScore, imdbScore] = await Promise.all([
+    resolvedTmdbId ? fetchTmdbTvScore(resolvedTmdbId) : Promise.resolve(null),
+    resolvedImdbId && env.OMDB_API_KEY ? fetchImdbRating(resolvedImdbId, env.OMDB_API_KEY) : Promise.resolve(null),
+  ]);
+
+  const nextTmdb = tmdbScore ?? currentTmdb;
+  const nextImdb = imdbScore ?? currentImdb;
+
+  try {
+    await db.prepare(
+      `UPDATE series_cache SET rating_tmdb = ?, rating_imdb = ?,
+        tmdb_id = COALESCE(tmdb_id, ?), imdb_id = CASE WHEN imdb_id IS NULL OR imdb_id = '' THEN ? ELSE imdb_id END,
+        ratings_fetched_at = datetime('now') WHERE trakt_slug = ?`
+    ).bind(nextTmdb, nextImdb, resolvedTmdbId, resolvedImdbId || null, traktSlug).run();
+  } catch (e) {
+    console.error(`[series] refreshSeriesScoresIfStale ${traktSlug} failed:`, e);
+  }
+
+  return {
+    rating_tmdb: nextTmdb,
+    rating_imdb: nextImdb,
+    tmdb_id: tmdbId ? null : resolvedTmdbId,
+    imdb_id: imdbId ? null : (resolvedImdbId || null),
+  };
+}
+
+async function rowToSeriesDetail(db: D1Database, row: Record<string, unknown>, ratingPersonal: number | null = null): Promise<SeriesDetail> {
   let cast: CastMember[] = [];
   let videos: Video[] = [];
   let images: SeriesImages = { poster: [], fanart: [], thumb: [], banner: [], logo: [], clearart: [] };
@@ -458,6 +566,9 @@ async function rowToSeriesDetail(db: D1Database, row: Record<string, unknown>): 
     seasons,
     watched_entries: watched,
     votes: (row.votes as number) || 0,
+    rating_tmdb: (row.rating_tmdb as number | null) ?? null,
+    rating_imdb: (row.rating_imdb as number | null) ?? null,
+    rating_personal: ratingPersonal,
   };
 }
 

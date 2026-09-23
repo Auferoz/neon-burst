@@ -3,8 +3,10 @@
  */
 
 import { env } from 'cloudflare:workers';
-import { fetchTmdbEnglishTitle, fetchTmdbMovieDetail, lookupTmdbMovieId, resolveTmdbMovieIdByImdb, TMDB_SOURCE } from './tmdbMovies';
+import { fetchTmdbEnglishTitle, fetchTmdbMovieDetail, fetchTmdbScore, lookupTmdbMovieId, resolveTmdbMovieIdByImdb, TMDB_SOURCE } from './tmdbMovies';
 import { parseMediaQuery } from '../utils/mediaQuery';
+import { fetchImdbRating } from './omdb';
+import { validateRatingPersonal } from './movieScores';
 
 const TRAKT_API_URL = 'https://api.trakt.tv';
 
@@ -76,6 +78,9 @@ export interface MovieDetail {
   after_credits: boolean;
   during_credits: boolean;
   votes: number;
+  rating_tmdb: number | null;
+  rating_imdb: number | null;
+  rating_personal: number | null;
 }
 
 /** Una película vista: la fila de movies_watched + su metadata de movies_cache. */
@@ -97,14 +102,18 @@ export interface MovieListItem {
   rating: number;
   poster: string;
   thumb: string;
+  rating_tmdb: number | null;
+  rating_imdb: number | null;
+  rating_personal: number | null;
 }
 
 /**
  * Lista completa de películas vistas.
  *
- * El año sale de movies_watched.year_watched. El JOIN es por tmdb_id porque es el
- * único identificador disponible tanto en lo que trae Trakt como en lo que se
- * carga a mano.
+ * El año sale de movies_watched.year_watched. El JOIN con movies_cache es por
+ * tmdb_id porque es el único identificador disponible tanto en lo que trae
+ * Trakt como en lo que se carga a mano; movies_personal se suma con LEFT JOIN
+ * porque la mayoría de las películas todavía no tienen score propio.
  */
 export async function getAllMovies(db: D1Database): Promise<MovieListItem[]> {
   const { results } = await db.prepare(
@@ -112,13 +121,32 @@ export async function getAllMovies(db: D1Database): Promise<MovieListItem[]> {
        w.id AS watched_id, w.year_watched, w.platform, w.source, w.listed_at,
        COALESCE(w.trakt_id, c.trakt_id) AS trakt_id,
        c.tmdb_id, c.imdb_id, c.title, c.year, c.released, c.runtime,
-       c.genres, c.overview, c.rating, c.poster, c.thumb
+       c.genres, c.overview, c.rating, c.poster, c.thumb,
+       c.rating_tmdb, c.rating_imdb, p.rating_personal
      FROM movies_watched w
      JOIN movies_cache c ON c.tmdb_id = w.tmdb_id
+     LEFT JOIN movies_personal p ON p.tmdb_id = w.tmdb_id
      ORDER BY w.year_watched DESC, w.listed_at DESC`
   ).all<MovieListItem>();
 
   return results || [];
+}
+
+/**
+ * Alta/edición/borrado del score personal de una película.
+ * Una fila por tmdb_id: un rewatch en otro año muestra el mismo score.
+ * `ratingPersonal: null` borra la fila (vuelve a "sin puntuar").
+ */
+export async function setPersonalRating(db: D1Database, tmdbId: number, ratingPersonal: number | null): Promise<void> {
+  if (ratingPersonal === null) {
+    await db.prepare('DELETE FROM movies_personal WHERE tmdb_id = ?').bind(tmdbId).run();
+    return;
+  }
+  await db.prepare(
+    `INSERT INTO movies_personal (tmdb_id, rating_personal, updated_at)
+     VALUES (?, ?, datetime('now'))
+     ON CONFLICT(tmdb_id) DO UPDATE SET rating_personal = excluded.rating_personal, updated_at = datetime('now')`
+  ).bind(tmdbId, ratingPersonal).run();
 }
 
 /** Motivos por los que un alta manual puede fallar, mapeados a HTTP en la API. */
@@ -164,7 +192,7 @@ export function isProvisionalTraktId(traktId: number | null): boolean {
  */
 export async function createMovieEntry(
   db: D1Database,
-  data: { query: string; year_watched: number; platform?: string }
+  data: { query: string; year_watched: number; platform?: string; rating_personal?: number | null }
 ): Promise<MovieListItem> {
   const parsed = parseMediaQuery(data.query);
   if (!parsed) {
@@ -197,21 +225,29 @@ export async function createMovieEntry(
     // El título va en inglés para no mezclar idiomas con lo que vino de Trakt
     const title = (await fetchTmdbEnglishTitle(tmdbId)) || detail.title;
 
+    // OMDb es best-effort: si falla o no hay imdb_id, se guarda null y no
+    // bloquea el alta. El backfill / la revisita a la ficha lo completan después.
+    const ratingImdb = detail.imdb_id && env.OMDB_API_KEY
+      ? await fetchImdbRating(detail.imdb_id, env.OMDB_API_KEY)
+      : null;
+
     await db.prepare(
       `INSERT INTO movies_cache
          (trakt_id, tmdb_id, imdb_id, title, year, released, runtime, genres, overview,
           rating, poster, thumb, tagline, certification, country, language, trailer,
           homepage, fanart, logo, votes, cast_json, videos_json, images_json,
+          rating_tmdb, rating_imdb, ratings_fetched_at,
           data_source, detail_fetched_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-               datetime('now'), datetime('now'))`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+               ?, ?, datetime('now'),
+               ?, datetime('now'), datetime('now'))`
     ).bind(
       provisionalTraktId(tmdbId), tmdbId, detail.imdb_id, title, detail.year,
       detail.released, detail.runtime, detail.genres, detail.overview, detail.rating,
       detail.poster, detail.thumb, detail.tagline, detail.certification, detail.country,
       detail.language, detail.trailer, detail.homepage, detail.fanart, detail.logo,
       detail.votes, JSON.stringify(detail.cast), JSON.stringify(detail.videos),
-      JSON.stringify(detail.images), TMDB_SOURCE,
+      JSON.stringify(detail.images), detail.rating_tmdb, ratingImdb, TMDB_SOURCE,
     ).run();
   }
 
@@ -227,6 +263,13 @@ export async function createMovieEntry(
       throw new CreateMovieFailure('duplicate', `Esa película ya está registrada en ${data.year_watched}`);
     }
     throw e;
+  }
+
+  if (data.rating_personal !== undefined && data.rating_personal !== null) {
+    const validation = validateRatingPersonal(data.rating_personal);
+    if (validation.ok) {
+      await setPersonalRating(db, tmdbId, validation.value);
+    }
   }
 
   const created = await getMovieEntry(db, tmdbId, data.year_watched);
@@ -245,9 +288,11 @@ export async function getMovieEntry(
        w.id AS watched_id, w.year_watched, w.platform, w.source, w.listed_at,
        COALESCE(w.trakt_id, c.trakt_id) AS trakt_id,
        c.tmdb_id, c.imdb_id, c.title, c.year, c.released, c.runtime,
-       c.genres, c.overview, c.rating, c.poster, c.thumb
+       c.genres, c.overview, c.rating, c.poster, c.thumb,
+       c.rating_tmdb, c.rating_imdb, p.rating_personal
      FROM movies_watched w
      JOIN movies_cache c ON c.tmdb_id = w.tmdb_id
+     LEFT JOIN movies_personal p ON p.tmdb_id = w.tmdb_id
      WHERE w.tmdb_id = ? AND w.year_watched = ?`
   ).bind(tmdbId, yearWatched).first<MovieListItem>();
 }
@@ -259,6 +304,70 @@ export async function getMovieEntry(
 export async function deleteMovieEntry(db: D1Database, watchedId: number): Promise<boolean> {
   const result = await db.prepare('DELETE FROM movies_watched WHERE id = ?').bind(watchedId).run();
   return (result.meta.changes ?? 0) > 0;
+}
+
+/** Una fila de movies_watched, tal como la edita el modal de la ficha. */
+export interface MovieWatchedRow {
+  watched_id: number;
+  year_watched: number;
+  platform: string;
+}
+
+/**
+ * Todas las veces que se vio una película (una fila por `year_watched`),
+ * para el modal de edición de `movies/[id].astro`.
+ */
+export async function getMovieWatchedEntries(db: D1Database, tmdbId: number): Promise<MovieWatchedRow[]> {
+  const { results } = await db.prepare(
+    'SELECT id AS watched_id, year_watched, platform FROM movies_watched WHERE tmdb_id = ? ORDER BY year_watched DESC'
+  ).bind(tmdbId).all<MovieWatchedRow>();
+  return results || [];
+}
+
+/** Se lanza cuando el UNIQUE(tmdb_id, year_watched) choca en una edición. */
+export class DuplicateWatchedYearError extends Error {
+  constructor() {
+    super('Ya existe un registro de esta película en ese año');
+    this.name = 'DuplicateWatchedYearError';
+  }
+}
+
+/**
+ * Edita `year_watched` y/o `platform` de una entrada de movies_watched.
+ * `data` ya viene validado (allowlist) por `validateMovieWatchedUpdate`.
+ */
+export async function updateMovieEntry(
+  db: D1Database,
+  watchedId: number,
+  data: { year_watched?: number; platform?: string }
+): Promise<MovieWatchedRow | null> {
+  const fields: string[] = [];
+  const values: unknown[] = [];
+
+  if (data.year_watched !== undefined) {
+    fields.push('year_watched = ?');
+    values.push(data.year_watched);
+  }
+  if (data.platform !== undefined) {
+    fields.push('platform = ?');
+    values.push(data.platform);
+  }
+
+  if (fields.length === 0) return null;
+
+  values.push(watchedId);
+
+  try {
+    await db.prepare(`UPDATE movies_watched SET ${fields.join(', ')} WHERE id = ?`).bind(...values).run();
+  } catch (e) {
+    if ((e as Error).message.includes('UNIQUE')) {
+      throw new DuplicateWatchedYearError();
+    }
+    throw e;
+  }
+
+  return db.prepare('SELECT id AS watched_id, year_watched, platform FROM movies_watched WHERE id = ?')
+    .bind(watchedId).first<MovieWatchedRow>();
 }
 
 // ── Trakt API fetchers ──
@@ -372,7 +481,7 @@ export async function getMovieById(db: D1Database, id: number): Promise<MovieDet
   const byId = (column: 'tmdb_id' | 'trakt_id') =>
     db.prepare(`SELECT * FROM movies_cache WHERE ${column} = ?`).bind(id).first<Record<string, unknown>>();
 
-  const row = (await byId('tmdb_id')) || (await byId('trakt_id'));
+  let row = (await byId('tmdb_id')) || (await byId('trakt_id'));
   if (!row) return null;
 
   const traktId = row.trakt_id as number;
@@ -384,13 +493,75 @@ export async function getMovieById(db: D1Database, id: number): Promise<MovieDet
   if (needsFetch) {
     await fetchMovieDetail(db, traktId, row.tmdb_id as number, (row.imdb_id as string) || '');
     const updated = await db.prepare('SELECT * FROM movies_cache WHERE trakt_id = ?').bind(traktId).first<Record<string, unknown>>();
-    if (updated) return rowToMovieDetail(updated);
+    if (updated) row = updated;
   }
 
-  return rowToMovieDetail(row);
+  const scores = await refreshMovieScoresIfStale(
+    db,
+    row.tmdb_id as number,
+    (row.imdb_id as string) || '',
+    (row.rating_tmdb as number | null) ?? null,
+    (row.rating_imdb as number | null) ?? null,
+    (row.ratings_fetched_at as string | null) ?? null,
+  );
+  row.rating_tmdb = scores.rating_tmdb;
+  row.rating_imdb = scores.rating_imdb;
+
+  const personal = await db.prepare('SELECT rating_personal FROM movies_personal WHERE tmdb_id = ?')
+    .bind(row.tmdb_id as number).first<{ rating_personal: number }>();
+
+  return rowToMovieDetail(row, personal?.rating_personal ?? null);
 }
 
-function rowToMovieDetail(row: Record<string, unknown>): MovieDetail {
+const SCORES_STALE_MS = 30 * 24 * 60 * 60 * 1000; // 30 días
+
+function isScoresStale(fetchedAt: string | null): boolean {
+  if (!fetchedAt) return true;
+  const fetchedMs = Date.parse(fetchedAt.replace(' ', 'T') + 'Z');
+  if (Number.isNaN(fetchedMs)) return true;
+  return Date.now() - fetchedMs > SCORES_STALE_MS;
+}
+
+/**
+ * Refresca rating_tmdb / rating_imdb en la visita a la ficha si nunca se
+ * pidieron o si pasaron más de 30 días — a diferencia del resto del detalle,
+ * las notas de TMDB e IMDb siguen cambiando después del estreno.
+ *
+ * Un fetch que falla no borra el valor anterior (se queda con el que ya había
+ * en la fila), y sin OMDB_API_KEY simplemente no toca rating_imdb.
+ */
+async function refreshMovieScoresIfStale(
+  db: D1Database,
+  tmdbId: number,
+  imdbId: string,
+  currentTmdb: number | null,
+  currentImdb: number | null,
+  ratingsFetchedAt: string | null,
+): Promise<{ rating_tmdb: number | null; rating_imdb: number | null }> {
+  if (!isScoresStale(ratingsFetchedAt)) {
+    return { rating_tmdb: currentTmdb, rating_imdb: currentImdb };
+  }
+
+  const [tmdbScore, imdbScore] = await Promise.all([
+    fetchTmdbScore(tmdbId),
+    imdbId && env.OMDB_API_KEY ? fetchImdbRating(imdbId, env.OMDB_API_KEY) : Promise.resolve(null),
+  ]);
+
+  const nextTmdb = tmdbScore ?? currentTmdb;
+  const nextImdb = imdbScore ?? currentImdb;
+
+  try {
+    await db.prepare(
+      `UPDATE movies_cache SET rating_tmdb = ?, rating_imdb = ?, ratings_fetched_at = datetime('now') WHERE tmdb_id = ?`
+    ).bind(nextTmdb, nextImdb, tmdbId).run();
+  } catch (e) {
+    console.error(`[movies] refreshMovieScoresIfStale ${tmdbId} failed:`, e);
+  }
+
+  return { rating_tmdb: nextTmdb, rating_imdb: nextImdb };
+}
+
+function rowToMovieDetail(row: Record<string, unknown>, ratingPersonal: number | null): MovieDetail {
   let cast: CastMember[] = [];
   let videos: Video[] = [];
   let images: MovieImages = { poster: [], fanart: [], thumb: [], banner: [], logo: [], clearart: [] };
@@ -426,6 +597,9 @@ function rowToMovieDetail(row: Record<string, unknown>): MovieDetail {
     after_credits: !!(row.after_credits as number),
     during_credits: !!(row.during_credits as number),
     votes: (row.votes as number) || 0,
+    rating_tmdb: (row.rating_tmdb as number | null) ?? null,
+    rating_imdb: (row.rating_imdb as number | null) ?? null,
+    rating_personal: ratingPersonal,
   };
 }
 

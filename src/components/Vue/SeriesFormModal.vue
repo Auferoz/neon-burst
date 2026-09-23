@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
+import { SERIES_STATUS_OPTIONS } from '../../utils/seriesFormOptions';
 
 interface SeriesFormData {
   id?: number;
@@ -217,8 +218,7 @@ function onBackdrop(e: MouseEvent) {
                 v-model="form.status_viewed"
                 class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors cursor-pointer"
               >
-                <option value="completed">Completed</option>
-                <option value="ongoing">Ongoing</option>
+                <option v-for="opt in SERIES_STATUS_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
               </select>
             </div>
           </div>

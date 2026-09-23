@@ -27,6 +27,7 @@ const emit = defineEmits<{
 const query = ref('');
 const yearWatched = ref<number | ''>(new Date().getFullYear());
 const platform = ref('');
+const ratingPersonal = ref<number | ''>('');
 
 const preview = ref<MoviePreview | null>(null);
 const looking = ref(false);
@@ -37,6 +38,7 @@ function reset() {
   query.value = '';
   yearWatched.value = new Date().getFullYear();
   platform.value = '';
+  ratingPersonal.value = '';
   preview.value = null;
   error.value = '';
 }
@@ -94,6 +96,7 @@ async function save() {
         query: query.value.trim(),
         year_watched: Number(yearWatched.value),
         platform: platform.value.trim(),
+        rating_personal: ratingPersonal.value === '' ? null : Number(ratingPersonal.value),
       }),
     });
 
@@ -235,6 +238,20 @@ function onBackdrop(e: MouseEvent) {
                 <option v-for="p in platforms" :key="p" :value="p" />
               </datalist>
             </div>
+          </div>
+
+          <!-- Mi score -->
+          <div>
+            <label for="movie-rating-personal" class="block text-xs text-text-muted mb-1">Mi score (0-100)</label>
+            <input
+              id="movie-rating-personal"
+              v-model="ratingPersonal"
+              type="number"
+              min="0"
+              max="100"
+              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-emerald/50 focus:ring-1 focus:ring-neon-emerald/20 transition-colors"
+              placeholder="Opcional"
+            />
           </div>
 
           <!-- Acciones -->

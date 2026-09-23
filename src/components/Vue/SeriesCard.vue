@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { textClass, tmdbImdbBand, averageScore } from '../../utils/ratingBands';
+
 interface SeriesEntry {
   id: number;
   trakt_slug: string;
@@ -8,7 +11,6 @@ interface SeriesEntry {
   status_viewed: string;
   title: string;
   year: number;
-  rating: number;
   genres: string;
   network: string;
   runtime: number;
@@ -16,23 +18,32 @@ interface SeriesEntry {
   thumb: string;
   imdb_id: string;
   season_poster: string;
+  rating_tmdb: number | null;
+  rating_imdb: number | null;
+  rating_personal: number | null;
 }
 
 const props = defineProps<{
   series: SeriesEntry;
 }>();
 
-const emit = defineEmits<{
-  edit: [series: SeriesEntry];
-}>();
-
-function ratingColor(rating: number): string {
-  if (rating >= 7) return 'text-neon-green border-neon-green/30 bg-neon-green/10';
-  if (rating >= 5) return 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10';
-  return 'text-neon-pink border-neon-pink/30 bg-neon-pink/10';
-}
-
 const displayPoster = props.series.season_poster || props.series.poster;
+
+// Un único badge de promedio en vez de tres scores por separado (TMDB, IMDb,
+// Mi score): promedia los que existan e ignora los que faltan.
+const avgScore = computed(() =>
+  averageScore([props.series.rating_tmdb, props.series.rating_imdb, props.series.rating_personal])
+);
+
+const avgSources = computed(() => {
+  const sources: string[] = [];
+  if (props.series.rating_tmdb != null) sources.push('TMDB');
+  if (props.series.rating_imdb != null) sources.push('IMDb');
+  if (props.series.rating_personal != null) sources.push('Mi score');
+  return sources;
+});
+
+const avgLabel = computed(() => `Promedio: ${avgScore.value} de 100 (${avgSources.value.join(', ')})`);
 
 const genres = props.series.genres
   ? props.series.genres.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)
@@ -149,7 +160,7 @@ function onPosterError(e: Event) {
         <!-- Spacer -->
         <div class="flex-1" />
 
-        <!-- Status + Rating + Actions -->
+        <!-- Status + Score + Actions -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
             <!-- Status badge -->
@@ -161,26 +172,20 @@ function onPosterError(e: Event) {
             >
               {{ series.status_viewed }}
             </span>
-            <!-- Rating -->
+            <!-- Average score (TMDB/IMDb/personal) -->
             <span
-              v-if="series.rating"
-              :class="ratingColor(series.rating)"
-              class="text-[10px] font-bold px-2 py-0.5 rounded-md border"
+              v-if="avgScore !== null"
+              :class="textClass[tmdbImdbBand(avgScore)]"
+              class="inline-flex items-center gap-0.5 font-bold text-[10px]"
+              :aria-label="avgLabel"
             >
-              {{ series.rating.toFixed(1) }}
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+                <path d="M12 2l2.9 6.26 6.6.79-4.9 4.62 1.3 6.83L12 17.2l-5.9 3.3 1.3-6.83L2.5 9.05l6.6-.79L12 2z" />
+              </svg>
+              {{ avgScore }}
             </span>
           </div>
           <div class="flex items-center gap-1">
-            <!-- Edit button -->
-            <button
-              @click.stop.prevent="emit('edit', series)"
-              class="w-6 h-6 flex items-center justify-center rounded-md text-text-secondary hover:text-neon-indigo hover:bg-neon-indigo/10 transition-colors cursor-pointer"
-              aria-label="Editar"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </button>
             <!-- Trakt link -->
             <a
               :href="`https://trakt.tv/shows/${series.trakt_slug}`"

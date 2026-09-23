@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { textClass, tmdbImdbBand, averageScore } from '../../utils/ratingBands';
+
 interface Movie {
   trakt_id: number | null;
   tmdb_id: number;
@@ -9,9 +12,11 @@ interface Movie {
   runtime: number;
   genres: string;
   overview: string;
-  rating: number;
   poster: string;
   thumb: string;
+  rating_tmdb: number | null;
+  rating_imdb: number | null;
+  rating_personal: number | null;
 }
 
 const props = defineProps<{
@@ -26,12 +31,6 @@ function formatRuntime(minutes: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function ratingColor(rating: number): string {
-  if (rating >= 7) return 'text-neon-green border-neon-green/30 bg-neon-green/10';
-  if (rating >= 5) return 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10';
-  return 'text-neon-pink border-neon-pink/30 bg-neon-pink/10';
-}
-
 const genres = props.movie.genres
   ? props.movie.genres.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3)
   : [];
@@ -42,10 +41,26 @@ function onPosterError(e: Event) {
   const placeholder = img.nextElementSibling as HTMLElement;
   if (placeholder) placeholder.style.display = 'flex';
 }
+
+// Un único badge de promedio en vez de tres scores por separado (TMDB, IMDb,
+// Mi score): promedia los que existan e ignora los que faltan.
+const avgScore = computed(() =>
+  averageScore([props.movie.rating_tmdb, props.movie.rating_imdb, props.movie.rating_personal])
+);
+
+const avgSources = computed(() => {
+  const sources: string[] = [];
+  if (props.movie.rating_tmdb != null) sources.push('TMDB');
+  if (props.movie.rating_imdb != null) sources.push('IMDb');
+  if (props.movie.rating_personal != null) sources.push('Mi score');
+  return sources;
+});
+
+const avgLabel = computed(() => `Promedio: ${avgScore.value} de 100 (${avgSources.value.join(', ')})`);
 </script>
 
 <template>
-  <a :href="`/movies/${movie.tmdb_id}`" class="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-emerald rounded-xl" :aria-label="`${movie.title} (${movie.year}), ${formatRuntime(movie.runtime)}, rating ${movie.rating}`">
+  <a :href="`/movies/${movie.tmdb_id}`" class="block h-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-emerald rounded-xl" :aria-label="`${movie.title} (${movie.year}), ${formatRuntime(movie.runtime)}`">
   <article
     class="group relative border border-border-default rounded-xl overflow-hidden transition-all duration-200 hover:border-border-hover h-full flex flex-col cursor-pointer"
   >
@@ -143,15 +158,21 @@ function onPosterError(e: Event) {
         <!-- Spacer -->
         <div class="flex-1" />
 
-        <!-- Rating + Links -->
-        <div class="flex items-center justify-between">
-          <span
-            v-if="movie.rating"
-            :class="ratingColor(movie.rating)"
-            class="text-[10px] font-bold px-2 py-0.5 rounded-md border"
-          >
-            {{ movie.rating.toFixed(1) }}
-          </span>
+        <!-- Scores + Links -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span
+              v-if="avgScore !== null"
+              :class="textClass[tmdbImdbBand(avgScore)]"
+              class="inline-flex items-center gap-0.5 font-bold text-[10px]"
+              :aria-label="avgLabel"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
+                <path d="M12 2l2.9 6.26 6.6.79-4.9 4.62 1.3 6.83L12 17.2l-5.9 3.3 1.3-6.83L2.5 9.05l6.6-.79L12 2z" />
+              </svg>
+              {{ avgScore }}
+            </span>
+          </div>
           <div class="flex items-center gap-1.5">
             <a
               v-if="movie.imdb_id"

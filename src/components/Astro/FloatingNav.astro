@@ -3,6 +3,7 @@ import IconHome from '../Icons/IconHome.astro';
 import IconGamepad from '../Icons/IconGamepad.astro';
 import IconFilm from '../Icons/IconFilm.astro';
 import IconTv from '../Icons/IconTv.astro';
+import IconBook from '../Icons/IconBook.astro';
 
 interface Props {
 	currentPath: string;
@@ -15,6 +16,7 @@ const navLinks = [
 	{ href: '/playedGames', label: 'Jugados', icon: 'gamepad' },
 	{ href: '/ListMovies', label: 'Movies', icon: 'film' },
 	{ href: '/ListSeries', label: 'Series', icon: 'tv' },
+	{ href: '/ListManga', label: 'Manga', icon: 'book' },
 ];
 
 function isActive(href: string) {
@@ -43,6 +45,7 @@ function isActive(href: string) {
 				{link.icon === 'gamepad' && <IconGamepad size={24} class="shrink-0" />}
 				{link.icon === 'film' && <IconFilm size={24} class="shrink-0" />}
 				{link.icon === 'tv' && <IconTv size={24} class="shrink-0" />}
+				{link.icon === 'book' && <IconBook size={24} class="shrink-0" />}
 				<span class="hidden sm:inline text-xs font-medium">{link.label}</span>
 			</a>
 		))}

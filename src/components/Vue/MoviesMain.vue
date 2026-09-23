@@ -21,8 +21,10 @@ interface Movie {
   runtime: number;
   genres: string;
   overview: string;
-  rating: number;
   poster: string;
+  rating_tmdb: number | null;
+  rating_imdb: number | null;
+  rating_personal: number | null;
 }
 
 const movies = ref<Movie[]>([]);
@@ -87,20 +89,22 @@ const filteredMovies = computed(() => {
 // Global stats
 const totalMovies = computed(() => movies.value.length);
 const totalHours = computed(() => Math.round(movies.value.reduce((s, m) => s + (m.runtime || 0), 0) / 60));
-const avgRating = computed(() => {
-  const rated = movies.value.filter(m => m.rating > 0);
-  if (!rated.length) return 0;
-  return Math.round((rated.reduce((s, m) => s + m.rating, 0) / rated.length) * 10) / 10;
+// "Mi promedio": el score personal, no el rating de Trakt/TMDB. Se oculta si
+// todavía no se puntuó ninguna película.
+const avgPersonalRating = computed(() => {
+  const scored = movies.value.filter(m => m.rating_personal != null);
+  if (!scored.length) return null;
+  return Math.round(scored.reduce((s, m) => s + (m.rating_personal as number), 0) / scored.length);
 });
 const totalGenres = computed(() => allGenres.value.length);
 
 // Filtered stats
 const filteredTotalMovies = computed(() => filteredMovies.value.length);
 const filteredTotalHours = computed(() => Math.round(filteredMovies.value.reduce((s, m) => s + (m.runtime || 0), 0) / 60));
-const filteredAvgRating = computed(() => {
-  const rated = filteredMovies.value.filter(m => m.rating > 0);
-  if (!rated.length) return 0;
-  return Math.round((rated.reduce((s, m) => s + m.rating, 0) / rated.length) * 10) / 10;
+const filteredAvgPersonalRating = computed(() => {
+  const scored = filteredMovies.value.filter(m => m.rating_personal != null);
+  if (!scored.length) return null;
+  return Math.round(scored.reduce((s, m) => s + (m.rating_personal as number), 0) / scored.length);
 });
 const filteredTotalGenres = computed(() => {
   const genres = new Set<string>();
@@ -169,11 +173,13 @@ onMounted(fetchMovies);
             <IconClock :size="14" class="text-neon-emerald" />
             <span class="text-neon-emerald font-semibold">{{ totalHours.toLocaleString() }}h</span> vistas
           </span>
-          <span class="text-border-default">&middot;</span>
-          <span class="inline-flex items-center gap-1">
-            <IconStar :size="14" class="text-neon-emerald" />
-            <span class="text-neon-emerald font-semibold">{{ avgRating }}</span> rating
-          </span>
+          <template v-if="avgPersonalRating !== null">
+            <span class="text-border-default">&middot;</span>
+            <span class="inline-flex items-center gap-1">
+              <IconStar :size="14" class="text-neon-emerald" />
+              <span class="text-neon-emerald font-semibold">{{ avgPersonalRating }}</span> mi promedio
+            </span>
+          </template>
           <span class="text-border-default">&middot;</span>
           <span class="inline-flex items-center gap-1">
             <span class="text-neon-emerald font-semibold">{{ totalGenres }}</span> géneros
@@ -206,13 +212,13 @@ onMounted(fetchMovies);
             <div class="text-[11px] lg:text-xs text-text-secondary truncate">Vistas</div>
           </div>
         </div>
-        <div role="listitem" :aria-label="`Rating promedio ${filteredAvgRating}`" class="bg-neon-yellow/10 border-neon-yellow/25 relative border rounded-lg px-3 py-2 flex items-center gap-2 transition-colors duration-200 overflow-hidden">
+        <div v-if="filteredAvgPersonalRating !== null" role="listitem" :aria-label="`Mi promedio ${filteredAvgPersonalRating}`" class="bg-neon-yellow/10 border-neon-yellow/25 relative border rounded-lg px-3 py-2 flex items-center gap-2 transition-colors duration-200 overflow-hidden">
           <div class="text-neon-yellow shrink-0" aria-hidden="true">
             <IconStar :size="20" />
           </div>
           <div class="min-w-0">
-            <div class="text-neon-yellow text-lg lg:text-xl font-bold leading-none mb-0.5">{{ filteredAvgRating }}</div>
-            <div class="text-[11px] lg:text-xs text-text-secondary truncate">Rating</div>
+            <div class="text-neon-yellow text-lg lg:text-xl font-bold leading-none mb-0.5">{{ filteredAvgPersonalRating }}</div>
+            <div class="text-[11px] lg:text-xs text-text-secondary truncate">Mi promedio</div>
           </div>
         </div>
         <div role="listitem" :aria-label="`${filteredTotalGenres} géneros`" class="bg-neon-pink/10 border-neon-pink/25 relative border rounded-lg px-3 py-2 flex items-center gap-2 transition-colors duration-200 overflow-hidden">

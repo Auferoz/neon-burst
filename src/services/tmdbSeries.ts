@@ -11,6 +11,7 @@
 import { env } from 'cloudflare:workers';
 import type { CastMember, Season, SeriesImages, Video } from './seriesService';
 import { slugToQuery } from '../utils/mediaQuery';
+import { tmdbToScore } from './movieScores';
 
 const TMDB_API_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMG = 'https://image.tmdb.org/t/p';
@@ -148,6 +149,22 @@ export async function fetchTmdbShowBasic(tmdbId: number): Promise<TmdbShowBasic 
     poster: tmdbImage(show.poster_path, 'w500'),
     thumb: tmdbImage(show.backdrop_path, 'w780'),
   };
+}
+
+/**
+ * Score TMDB (0-100) de una serie, sin el resto del detalle. Se usa para
+ * refrescar `rating_tmdb` en la ficha sin pedir cast/seasons/videos.
+ */
+export async function fetchTmdbTvScore(tmdbId: number): Promise<number | null> {
+  const show = await tmdbFetch<TmdbTvShow>(`/tv/${tmdbId}`);
+  if (!show) return null;
+  return tmdbToScore(show.vote_average, show.vote_count);
+}
+
+/** `imdb_id` de una serie, para completar series_cache cuando falta. */
+export async function fetchTmdbTvImdbId(tmdbId: number): Promise<string | null> {
+  const data = await tmdbFetch<{ imdb_id?: string | null }>(`/tv/${tmdbId}/external_ids`);
+  return data?.imdb_id || null;
 }
 
 /** Detalle completo con la misma forma que el detalle de Trakt. */

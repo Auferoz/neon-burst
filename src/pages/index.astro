@@ -10,6 +10,7 @@ import IconFilm from '../components/Icons/IconFilm.astro';
 import IconTv from '../components/Icons/IconTv.astro';
 import IconMonitorPlay from '../components/Icons/IconMonitorPlay.astro';
 import IconBoxes from '../components/Icons/IconBoxes.astro';
+import IconBook from '../components/Icons/IconBook.astro';
 ---
 
 <Layout title="Inicio">
@@ -50,6 +51,10 @@ import IconBoxes from '../components/Icons/IconBoxes.astro';
 				<IconRocket size={22} />
 			</NavCard>
 
+			<NavCard href="/myLibrary" title="Game Library" subtitle="Epic, GOG, Xbox y más" accentColor="yellow">
+				<IconBoxes size={22} />
+			</NavCard>
+
 			<NavCard href="/ListSeries" title="Series" subtitle="Lista de series" accentColor="indigo">
 				<IconTv size={22} />
 			</NavCard>
@@ -58,8 +63,8 @@ import IconBoxes from '../components/Icons/IconBoxes.astro';
 				<IconFilm size={22} />
 			</NavCard>
 
-			<NavCard href="/myLibrary" title="Game Library" subtitle="Epic, GOG, Xbox y más" accentColor="yellow">
-				<IconBoxes size={22} />
+			<NavCard href="/ListManga" title="Manga" subtitle="Manga, manhwa y manhua" accentColor="orange">
+				<IconBook size={22} />
 			</NavCard>
 
 			<NavCard href="/streaming" title="Streaming" subtitle="Cuentas y accesos" accentColor="purple">

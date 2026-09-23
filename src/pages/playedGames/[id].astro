@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
 import { getGameById } from '../../services/gamesService';
 import { igdbImage } from '../../utils/igdbImage';
+import { badgeClass, textClass, personalBand } from '../../utils/ratingBands';
 import PlayedGamesEditButton from '../../components/Vue/PlayedGamesEditButton.vue';
 
 export const prerender = false;
@@ -41,31 +42,11 @@ const ratingColor = {
     n >= 75 ? 'neon-green' : n >= 50 ? 'neon-yellow' : 'neon-pink',
   opencritic: (n: number) =>
     n >= 84 ? 'neon-green' : n >= 75 ? 'neon-emerald' : n >= 65 ? 'neon-yellow' : 'neon-pink',
-  personal: (n: number) =>
-    n >= 90 ? 'neon-blue' : n >= 70 ? 'neon-green' : n >= 55 ? 'neon-yellow' : n >= 45 ? 'neon-orange' : 'neon-pink',
+  personal: personalBand,
 };
 
-/**
- * Tailwind escanea el código como texto, así que las clases tienen que existir
- * literales en algún lado o las purga. Este mapa es ese lugar.
- */
-const badgeClass: Record<string, string> = {
-  'neon-blue': 'text-neon-blue border-neon-blue/30 bg-neon-blue/10',
-  'neon-green': 'text-neon-green border-neon-green/30 bg-neon-green/10',
-  'neon-emerald': 'text-neon-emerald border-neon-emerald/30 bg-neon-emerald/10',
-  'neon-yellow': 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10',
-  'neon-orange': 'text-neon-orange border-neon-orange/30 bg-neon-orange/10',
-  'neon-pink': 'text-neon-pink border-neon-pink/30 bg-neon-pink/10',
-};
-
-const textClass: Record<string, string> = {
-  'neon-blue': 'text-neon-blue',
-  'neon-green': 'text-neon-green',
-  'neon-emerald': 'text-neon-emerald',
-  'neon-yellow': 'text-neon-yellow',
-  'neon-orange': 'text-neon-orange',
-  'neon-pink': 'text-neon-pink',
-};
+// badgeClass y textClass vienen de utils/ratingBands.ts: el score personal
+// comparte esas mismas bandas y clases con las películas.
 
 const logrosPercent = game.logros_total > 0
 	? Math.round((game.logros_obt / game.logros_total) * 100)
