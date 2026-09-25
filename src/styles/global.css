@@ -14,6 +14,15 @@
   font-display: swap;
 }
 
+/*
+ * Reserva siempre el hueco de la scrollbar vertical. Sin esto, al pasar del mensaje
+ * de carga (página corta, sin scroll) a la lista, aparece la barra y el contenido
+ * centrado se corre hacia un costado.
+ */
+html {
+  scrollbar-gutter: stable;
+}
+
 @theme {
   /* Neon accent palette — cyberpunk/hacker aesthetic */
   --color-neon-blue: #1e90ff;

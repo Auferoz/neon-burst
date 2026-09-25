@@ -6,6 +6,10 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.13.1 — 2026-09-25
+- Las páginas ya no se corren hacia un costado al terminar de cargar: el espacio de
+  la barra de scroll queda reservado desde el principio
+
 ## 1.13.0 — 2026-09-23
 - Tarjetas de tarea rediseñadas en `/myTodoist`: barra de acento por prioridad, chip
   de vencimiento, recurrencia, etiquetas y proyecto (en vistas que abarcan varios),
