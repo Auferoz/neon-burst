@@ -6,6 +6,11 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.13.2 — 2026-09-26
+- Una demo ya puede llamarse igual que su juego final en `/playedGames`: se distinguen
+  por la etiqueta Demo, y las demos que llevaban " - DEMO" en el nombre lo perdieron
+- Guardar un juego con un título repetido muestra un mensaje claro en vez de un error genérico
+
 ## 1.13.1 — 2026-09-25
 - Las páginas ya no se corren hacia un costado al terminar de cargar: el espacio de
   la barra de scroll queda reservado desde el principio

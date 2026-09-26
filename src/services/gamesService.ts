@@ -48,6 +48,14 @@ export interface GameWithDates extends Game {
   horas_total: number;
 }
 
+export const DUPLICATE_TITLE_MESSAGE = 'Ya existe un juego con ese título (con la misma marca de Demo)';
+
+/** True when a write hit the unique (title, is_demo) index. */
+export function isDuplicateTitleError(e: unknown): boolean {
+  const message = e instanceof Error ? e.message : String(e);
+  return message.includes('UNIQUE constraint failed');
+}
+
 export async function getAllGames(db: D1Database): Promise<GameWithYears[]> {
   const { results: games } = await db.prepare(
     'SELECT * FROM games ORDER BY title ASC'

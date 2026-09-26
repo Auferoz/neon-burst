@@ -140,7 +140,7 @@ async function main() {
     : '';
 
   const output = execSync(
-    `npx wrangler d1 execute neon-burst-db --local --command "SELECT id, title, rating_metacritic, rating_opencritic FROM games ${where}ORDER BY title ASC;" --json`,
+    `npx wrangler d1 execute neon-burst-db --local --command "SELECT id, title, is_demo, rating_metacritic, rating_opencritic FROM games ${where}ORDER BY title ASC;" --json`,
     { encoding: 'utf-8', cwd: process.cwd() }
   );
 
@@ -198,7 +198,7 @@ async function main() {
       opencritic: opencritic?.score ?? null,
       // Keyed by title, not id: this file is read from the local database but
       // also applied to the remote one, and the two do not share ids.
-      sql: `UPDATE games SET ${parts.join(', ')} WHERE title = '${sqlQuote(game.title)}';`,
+      sql: `UPDATE games SET ${parts.join(', ')} WHERE title = '${sqlQuote(game.title)}' AND is_demo = ${game.is_demo ? 1 : 0};`,
     });
   }
 

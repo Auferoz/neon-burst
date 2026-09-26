@@ -34,7 +34,9 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 `src/services/anilist.ts`: `parseAnilistQuery`, `countryToType`, the AniList → `manga_cache`
 row mapper; and `src/services/omdb.ts`, `src/services/movieScores.ts`, `src/utils/ratingBands.ts`
 for the movie/series scores, shared by both — plus `db/scoreBackfillUtils.js`, the plain-JS
-helpers used by `db/fetch-movie-scores.js` and `db/fetch-series-scores.js`), so it can run in
+helpers used by `db/fetch-movie-scores.js` and `db/fetch-series-scores.js`, and
+`db/sqlDumpSplit.js`, which `db/sync-local.js` uses to split rows over local D1's ~100 KB
+statement limit into an INSERT plus chunked UPDATEs), so it can run in
 plain Node without the Astro/Cloudflare toolchain. Its config (`vitest.config.ts`) is
 independent of `astro.config.mjs` on purpose.
 
@@ -286,7 +288,9 @@ y se pierde el lote entero de 50.
 `add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
 `rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`,
 `add-personal-rating`, `add-terminado-estado`, `add-manga-tables`, `add-movie-scores`,
-`add-series-scores`, `add-manual-score-flags`, `add-todo-tables`.
+`add-series-scores`, `add-manual-score-flags`, `add-todo-tables`, `games-title-demo-unique`.
+`games-title-demo-unique` cambia la unicidad de `games` de `title` a `(title, is_demo)`: una
+demo y su juego final comparten título y se distinguen solo por la etiqueta Demo.
 `add-todo-tables` está aplicada solo en local; el remoto queda pendiente de un `OK`
 explícito del usuario (ver "Todo" más abajo).
 `drop-movies-list-columns` es **irreversible**: el respaldo de lo que borró
@@ -651,7 +655,8 @@ comparten código. Todo cambio en el esquema o en la lógica de upsert hay que a
 base local y genera SQL con `WHERE id = ...` le escribe a la fila equivocada al
 aplicarlo con `--remote`. Pasó de verdad: el `id 59` era *Uncharted 4* en local y
 *Breath of the Wild* en remoto. Por eso `db/fetch-ratings.js` genera sus `UPDATE`
-con `WHERE title = '...'` (escapando las comillas simples). Cualquier script nuevo
+con `WHERE title = '...' AND is_demo = N` (escapando las comillas simples; el `is_demo` hace
+falta porque una demo y su juego final pueden tener el mismo título). Cualquier script nuevo
 que genere SQL portable entre las dos bases tiene que hacer lo mismo.
 
 Para evitar la divergencia de raíz, correr `npm run sync-local` antes de trabajar

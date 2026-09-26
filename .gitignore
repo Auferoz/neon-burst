@@ -32,3 +32,20 @@ src/data/SSAccounts.js
 .atl/
 #índice local.
 .codegraph/
+# secrets locales de wrangler (alternativa a .env)
+.dev.vars
+.env.*
+!.env.example
+
+# volcados de crash de Git Bash / Cygwin
+*.stackdump
+
+# settings personales de Claude Code (los compartidos van en .claude/settings.json)
+.claude/settings.local.json
+
+# dumps y archivos generados de D1 (datos reales, se regeneran con los scripts)
+db/backup.sql
+db/backup-deferred.sql
+db/backup-games-*.sql
+db/remote-dump.sql
+db/ratings.sql

@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS dates_played (
   FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_games_title ON games(title);
+-- Unique per (title, is_demo): a demo and its full game may share a title
+CREATE UNIQUE INDEX IF NOT EXISTS idx_games_title_demo ON games(title, is_demo);
 CREATE INDEX IF NOT EXISTS idx_games_estado ON games(estado);
 CREATE INDEX IF NOT EXISTS idx_games_console ON games(console_pc);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_dates_unique ON dates_played(game_id, year, fecha_inicio);
