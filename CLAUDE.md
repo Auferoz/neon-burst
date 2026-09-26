@@ -13,6 +13,7 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 - `npm run preview` — Preview production build locally
 - `npm run generate-types` — Generate Cloudflare Worker types via Wrangler
 - `npm run sync-local` — Sobrescribe la D1 local con un export del remoto (dropea todas las tablas de usuario primero)
+- `npm run db:migrations` / `db:migrate` / `db:migrate:remote` — Estado y aplicación de `db/migrations/` (ver Migraciones)
 - `npm run fetch-ratings` — Fetch game ratings from external sources
 - `npm run fetch-ratings:missing` — Idem, pero solo los ratings que siguen en NULL (ahorra cuota de OpenCritic)
 - `npm run fetch-movie-scores` — Fetch TMDB + IMDb (OMDb) scores para películas y actualiza D1 local
@@ -35,6 +36,7 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 row mapper; and `src/services/omdb.ts`, `src/services/movieScores.ts`, `src/utils/ratingBands.ts`
 for the movie/series scores, shared by both — plus `db/scoreBackfillUtils.js`, the plain-JS
 helpers used by `db/fetch-movie-scores.js` and `db/fetch-series-scores.js`, and
+`src/utils/search.ts` (global search query normalization, LIKE escaping and row mappers), and
 `db/sqlDumpSplit.js`, which `db/sync-local.js` uses to split rows over local D1's ~100 KB
 statement limit into an INSERT plus chunked UPDATEs), so it can run in
 plain Node without the Astro/Cloudflare toolchain. Its config (`vitest.config.ts`) is
@@ -119,6 +121,7 @@ public/
 | `MangaFormModal.vue` | Alta/edición de manga. Lookup a AniList (URL o id) → previsualización → confirmar, mismo flujo que `MoviesFormModal.vue`, pero acá el `fetch` a AniList lo hace el propio navegador (`fetchAnilistPreview`/`fetchAnilistMedia` de `anilist.ts`): el servidor solo confirma con `/api/manga/lookup?id=` si ya está agregado. En modo edición suma un botón "Eliminar" con confirmación dentro del propio modal (no `window.confirm`); emite `deleted` |
 | `MangaEditButton.vue` | Envuelve `EditButton` (accent `orange`) + `MangaFormModal` en modo edición, en la ficha del manga; redirige a `/ListManga` si se elimina |
 | `MangaRefresher.vue` | Isla `client:idle` en `manga/[id].astro`, montada solo si `getMangaDetail()` marcó `needs_refresh`. Trae el detalle de AniList del lado del navegador y lo sube por `PUT /api/manga/cache/[anilistId]`; si funciona, recarga la página una vez (con guard en `sessionStorage` contra loops); si falla, no hay nada visible que romper — el caché queda como estaba |
+| `GlobalSearch.vue` | Buscador global (solo por teclado: `Ctrl+K`/`Cmd+K`; no tiene botón en `FloatingNav.astro` a propósito). Montado en `Layout.astro` con `client:idle` (salvo `hideMenu`). Combobox con debounce de 200 ms y `AbortController` contra `GET /api/search`; resultados agrupados por sección con su acento (mapa literal). Nunca toca Streaming ni Todo |
 | `Todo/TodoApp.vue` | Container de `/myTodoist`: crea el store (`useTodoStore.ts`, provisto por `provide`/`inject`), carga `GET /api/todo/bootstrap`, enruta las vistas vía `?view=` (`inbox`, `today`, `upcoming`, `project:ID`, `label:ID`, `completed`, `dashboard`, `search`) con `history.replaceState`, y registra los atajos de teclado |
 | `Todo/useTodoStore.ts` | Composable (no componente): estado reactivo compartido + updates optimistas con rollback y toast de error; ofrece "Deshacer" (5 s) al completar/borrar |
 | `Todo/TodoSidebar.vue` / `TodoSidebarNav.vue` | Columna fija en desktop, drawer en mobile (mismo contenido, `TodoSidebarNav`): vistas, proyectos (alta/borrado inline) y etiquetas |
@@ -218,6 +221,7 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/streaming/unlock` | POST | `{ pin }` → valida el PIN y emite la cookie de sesión |
 | `/api/streaming/lock` | POST | Borra la cookie de sesión de streaming |
 | `/api/series/detail/[slug]` | GET | Series full detail (on-demand fetch) |
+| `/api/search` | GET | `?q=` (2-100 caracteres, si no 400) → `{ results: SearchResult[] }`, hasta 5 por sección (juegos, biblioteca, Steam, películas vistas, series vistas, manga leído), los que empiezan por `q` primero. `no-store`. Excluye Streaming y Todo a propósito |
 | `/api/igdb/lookup` | GET | `?q=<url\|slug\|id>` → datos de un juego de IGDB para autocompletar el modal |
 | `/api/manga` | GET, POST | Lista de manga leído (JOIN `manga_read` ↔ `manga_cache`) / alta. El navegador ya resolvió y trajo el `media` de AniList; el POST manda `{ anilist_id, media, ...tracking }` y el servidor solo valida y guarda |
 | `/api/manga/[id]` | PUT, DELETE | CRUD de una entrada de `manga_read` por su `id` |
@@ -283,16 +287,34 @@ y se pierde el lote entero de 50.
 - **streaming_accounts** — Cuentas de servicios de streaming (name UNIQUE, url, logo, email, password, plan, sort_order). Sustituye a `src/data/SSAccounts.js`, que está en `.gitignore`
 - **streaming_attempts** — Freno de fuerza bruta del PIN (ip PK, fails, locked_until)
 
-**Migraciones** (`db/migrate-*.sql`, se aplican con `wrangler d1 execute`): `add-movies-tables`,
-`add-series-tables`, `add-detail-columns`, `add-thumb`, `add-season-posters`, `add-testing`,
-`add-demo-early-access`, `add-data-source`, `add-movies-data-source`, `add-streaming-tables`,
-`rename-rawg-opencritic`, `add-movies-watched`, `drop-movies-list-columns`,
-`add-personal-rating`, `add-terminado-estado`, `add-manga-tables`, `add-movie-scores`,
-`add-series-scores`, `add-manual-score-flags`, `add-todo-tables`, `games-title-demo-unique`.
-`games-title-demo-unique` cambia la unicidad de `games` de `title` a `(title, is_demo)`: una
-demo y su juego final comparten título y se distinguen solo por la etiqueta Demo.
-`add-todo-tables` está aplicada solo en local; el remoto queda pendiente de un `OK`
-explícito del usuario (ver "Todo" más abajo).
+**Migraciones: desde `0001` se registran con `wrangler d1 migrations`.** Viven en
+`db/migrations/NNNN_nombre.sql` (`migrations_dir` en `wrangler.jsonc`) y cada base guarda
+en la tabla `d1_migrations` cuáles ya corrió, así que local y remoto no pueden divergir
+sin que se note:
+```
+npx wrangler d1 migrations create neon-burst-db <nombre>   # crea db/migrations/NNNN_<nombre>.sql
+npm run db:migrations                                      # pendientes en local y en remoto
+npm run db:migrate                                         # aplica las pendientes en local
+npm run db:migrate:remote                                  # idem en remoto
+```
+**Aplícalas siempre en local Y en remoto** (un `ALTER TABLE` solo local provoca en producción
+`D1_ERROR: table X has no column named Y`). `migrations apply` manda cada archivo por la
+misma vía que `--command`, no por la importación de `--file`, así que no le afecta el
+`Auth error [code: 10000]` de abajo. Escríbelas idempotentes cuando se pueda
+(`IF EXISTS`/`IF NOT EXISTS`, `UPDATE` con `WHERE` que no vuelva a matchear).
+
+- `0001_games_title_demo_unique` cambia la unicidad de `games` de `title` a
+  `(title, is_demo)`: una demo y su juego final comparten título y se distinguen solo por la
+  etiqueta Demo. Se aplicó a mano primero y se registró después (es idempotente).
+
+**Migraciones históricas** (`db/migrate-*.sql`, anteriores al registro, ya aplicadas en
+ambas bases; se corrían a mano con `wrangler d1 execute` y no figuran en `d1_migrations`):
+`add-movies-tables`, `add-series-tables`, `add-detail-columns`, `add-thumb`,
+`add-season-posters`, `add-testing`, `add-demo-early-access`, `add-data-source`,
+`add-movies-data-source`, `add-streaming-tables`, `rename-rawg-opencritic`,
+`add-movies-watched`, `drop-movies-list-columns`, `add-personal-rating`,
+`add-terminado-estado`, `add-manga-tables`, `add-movie-scores`, `add-series-scores`,
+`add-manual-score-flags`, `add-todo-tables`.
 `drop-movies-list-columns` es **irreversible**: el respaldo de lo que borró
 (`list_slug`, `list_order`, `listed_at` de las 481 filas) es
 `db/backup-movies-list-slug.json`, y es lo único que queda de esos datos.
@@ -300,16 +322,9 @@ Ojo: `db/schema.sql`
 **no** incluye todavía `season_posters_json` ni las columnas `data_source` — una base creada
 solo desde `schema.sql` necesita correr esas migraciones aparte.
 
-**Aplícalas siempre en local Y en remoto.** Un `ALTER TABLE` que solo se corrió en local
-provoca en producción `D1_ERROR: table X has no column named Y`:
-```
-npx wrangler d1 execute neon-burst-db --local  --file db/<migracion>.sql
-npx wrangler d1 execute neon-burst-db --remote --file db/<migracion>.sql
-```
-
-**Excepción: `--file` contra `--remote` puede fallar con `Auth error [code: 10000]`.**
-Le pasó a `add-movie-scores`. Cuando eso pase, aplicar el contenido de la migración con
-`--command` en su lugar (una o varias sentencias separadas por `;` dentro del mismo string):
+**`--file` contra `--remote` puede fallar con `Auth error [code: 10000]`.** Le pasó a
+`add-movie-scores`. Para SQL suelto contra el remoto (fuera de `migrations apply`), usar
+`--command` (una o varias sentencias separadas por `;` dentro del mismo string):
 ```
 npx wrangler d1 execute neon-burst-db --remote --command "ALTER TABLE ...; CREATE TABLE ...;"
 ```
@@ -339,6 +354,7 @@ npx wrangler d1 execute neon-burst-db --remote --command "ALTER TABLE ...; CREAT
   no tienen import de `cloudflare:workers`, así que Vitest las testea directo y el Worker las usa
   para validar lo que sube el navegador. Errores de red/HTTP/429 se tipan como `AnilistRequestError`
   (mensajes en español), igual que `TraktRequestError` en `seriesSync.ts`
+- `src/services/searchService.ts` — `searchAll()` del buscador global: un `LIKE ? ESCAPE '\'` por sección en paralelo, ordenado con los que empiezan por la búsqueda primero. La lógica pura (normalizar la query, escapar `%`/`_`/`\`, mapear filas → `SearchResult` con su `href`) vive en `src/utils/search.ts`, testeada
 - `src/services/mangaService.ts` — D1 CRUD de `manga_read` + `manga_cache`. **Nunca llama a
   AniList** (ver arriba): `createMangaEntry()` recibe el `media` que ya trajo el navegador,
   lo valida el endpoint (`validateAnilistMediaPayload`) y acá solo se mapea y persiste.

@@ -6,6 +6,14 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.14.0 — 2026-09-26
+- Buscador global: `Ctrl+K` (o `Cmd+K`) abre una búsqueda en juegos jugados,
+  biblioteca, Steam, películas, series y manga a la vez, con los títulos que empiezan
+  por lo escrito primero. Se navega con las flechas y Enter. Streaming y Todo no
+  aparecen nunca en los resultados
+- Las migraciones de la base quedan registradas: cada base sabe cuáles ya corrió, y
+  `npm run db:migrations` muestra si local y remoto están al día
+
 ## 1.13.2 — 2026-09-26
 - Una demo ya puede llamarse igual que su juego final en `/playedGames`: se distinguen
   por la etiqueta Demo, y las demos que llevaban " - DEMO" en el nombre lo perdieron
