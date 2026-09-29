@@ -16,6 +16,9 @@ interface SteamCacheRow {
   hltb_main: number | null;
   hltb_extra: number | null;
   hltb_completionist: number | null;
+  controller_support: string;
+  categories: string;
+  metacritic: number | null;
 }
 
 export const GET: APIRoute = async () => {

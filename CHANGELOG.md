@@ -6,6 +6,17 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.15.0 — 2026-09-29
+- Sorteo de juegos en `/mySteamGames`: el botón "Sortear" abre un modal con toda la
+  biblioteca de Steam y filtros combinables (género, mando o mouse y teclado, un jugador /
+  multijugador / cooperativo, duración, sin jugar o jugado, Metacritic mínimo y nombre).
+  Una animación tipo tragamonedas elige un juego al azar, con opciones para volver a
+  sortear, sacarlo del bombo o abrirlo en Steam
+- Listas propias para el sorteo ("Pendientes", "Para el finde"…): se arman buscando juegos
+  de la biblioteca y quedan guardadas para usarlas como filtro
+- La biblioteca de Steam vuelve a tener los tiempos de HowLongToBeat (268 de 288 juegos),
+  además del soporte de mando, las categorías y el Metacritic de cada juego
+
 ## 1.14.0 — 2026-09-26
 - Buscador global: `Ctrl+K` (o `Cmd+K`) abre una búsqueda en juegos jugados,
   biblioteca, Steam, películas, series y manga a la vez, con los títulos que empiezan

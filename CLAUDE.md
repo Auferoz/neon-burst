@@ -20,8 +20,8 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 - `npm run fetch-movie-scores:remote` — Idem contra D1 remoto (usa `--command`, ver Migraciones)
 - `npm run fetch-series-scores` — Fetch TMDB + IMDb (OMDb) scores para series y actualiza D1 local
 - `npm run fetch-series-scores:remote` — Idem contra D1 remoto (usa `--command`, ver Migraciones)
-- `npm run sync-steam` — Run Steam library sync locally
-- `npm run sync-steam:remote` — Trigger Steam sync on remote worker
+- `npm run sync-steam` — Sync completo de la biblioteca de Steam **desde la PC** (tienda + póster + HowLongToBeat) contra D1 local; `--appids=1,2` para unos pocos. Tarda ~15 min para ~290 juegos por el límite de la tienda. Necesita `npm run db:migrate` al día (usa las columnas de `0002`)
+- `npm run sync-steam:remote` — Idem, escribiendo en D1 remoto (vía `--command`)
 - `npm run sync-movies` — Sync movies from Trakt locally
 - `npm run sync-movies:remote` — Sync movies from Trakt on remote D1
 - `npm run seed-series` — Seed series watched data + sync cache locally
@@ -37,6 +37,8 @@ row mapper; and `src/services/omdb.ts`, `src/services/movieScores.ts`, `src/util
 for the movie/series scores, shared by both — plus `db/scoreBackfillUtils.js`, the plain-JS
 helpers used by `db/fetch-movie-scores.js` and `db/fetch-series-scores.js`, and
 `src/utils/search.ts` (global search query normalization, LIKE escaping and row mappers), and
+`src/utils/steamRaffle.ts` (raffle filters, genre normalization, unbiased winner pick and the reel schedule),
+`db/steamSyncUtils.js` (Steam store/HLTB mappers and the never-overwrite-with-empty upsert), and
 `db/sqlDumpSplit.js`, which `db/sync-local.js` uses to split rows over local D1's ~100 KB
 statement limit into an INSERT plus chunked UPDATEs), so it can run in
 plain Node without the Astro/Cloudflare toolchain. Its config (`vitest.config.ts`) is
@@ -101,7 +103,9 @@ public/
 | `EditButton.vue` | Botón "Editar" presentacional compartido (lápiz + texto), usado en las cuatro fichas de detalle. Prop `accent` (`blue \| indigo \| emerald \| orange`, uno por sección) con clases literales para que Tailwind no las purgue; emite `click`, no sabe nada del modal que abre |
 | `PlayedGamesEditButton.vue` | Envuelve `EditButton` (accent `blue`) + `PlayedGamesFormModal`; recarga la página al guardar |
 | `PlayedGamesFormModal.vue` | Create/edit game modal (con autocompletado desde IGDB) |
-| `SteamLibraryMain.vue` | Steam games display |
+| `SteamLibraryMain.vue` | Steam games display + botón "Sortear" que abre `SteamRaffleModal` con los juegos ya cargados |
+| `SteamRaffleModal.vue` | Container del sorteo: filtros (persistidos en `localStorage`, clave `nb_steam_raffle_filters`, validados con `sanitizeFilters`), exclusiones de la sesión, listas (fetch/mutaciones a `/api/steam/raffle-lists`) y fases `filters | lists | spinning | result`. El ganador se elige **antes** de animar (`pickWinnerIndex` + `cryptoUint32`, muestreo por rechazo sin sesgo de módulo) |
+| `SteamRaffleFilters.vue` / `SteamRaffleLists.vue` / `SteamRaffleReel.vue` / `SteamRaffleResult.vue` | Presentacionales del sorteo: filtros; pestaña "Listas" (alta/renombre/borrado con confirmación inline, juegos agregados por autocompletado sobre la biblioteca, nunca texto libre); tragamonedas que recorre `buildReelSchedule` (ease-out ~4 s, termina exactamente en el ganador; con `prefers-reduced-motion` se saltea); pantalla del elegido con "Jugar en Steam" (`steam://run/<appid>`) |
 | `NextGamesMain.vue` | Upcoming games container |
 | `NextGamesCard.vue` | Individual upcoming game card |
 | `MoviesMain.vue` | Movies container with year tabs + botón Agregar (alta únicamente: editar vive en la ficha) |
@@ -221,6 +225,9 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/streaming/unlock` | POST | `{ pin }` → valida el PIN y emite la cookie de sesión |
 | `/api/streaming/lock` | POST | Borra la cookie de sesión de streaming |
 | `/api/series/detail/[slug]` | GET | Series full detail (on-demand fetch) |
+| `/api/steam/raffle-lists` | GET, POST | Listas del sorteo `{ id, name, appids[] }[]` / alta `{ name }` (1-60 caracteres; 409 si el nombre ya existe, sin distinguir mayúsculas) |
+| `/api/steam/raffle-lists/[id]` | PATCH, DELETE | Renombrar / borrar (borra también sus ítems) |
+| `/api/steam/raffle-lists/[id]/items`, `/[appid]` | POST, DELETE | Agregar `{ appid }` (404 si no está en `steam_cache`) / quitar un juego de la lista |
 | `/api/search` | GET | `?q=` (2-100 caracteres, si no 400) → `{ results: SearchResult[] }`, hasta 5 por sección (juegos, biblioteca, Steam, películas vistas, series vistas, manga leído), los que empiezan por `q` primero. `no-store`. Excluye Streaming y Todo a propósito |
 | `/api/igdb/lookup` | GET | `?q=<url\|slug\|id>` → datos de un juego de IGDB para autocompletar el modal |
 | `/api/manga` | GET, POST | Lista de manga leído (JOIN `manga_read` ↔ `manga_cache`) / alta. El navegador ya resolvió y trajo el `media` de AniList; el POST manda `{ anilist_id, media, ...tracking }` y el servidor solo valida y guarda |
@@ -248,7 +255,8 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 - **dates_played** — Play sessions per year (game_id FK, year, fecha_inicio, fecha_final, horas)
 
 **Steam/IGDB cache tables**:
-- **steam_cache** — Cached Steam library (appid PK, playtime, HLTB times, metadata)
+- **steam_cache** — Cached Steam library (appid PK, playtime, HLTB times, metadata). `controller_support` (`'full' | 'partial' | 'none'`, de `appdetails.controller_support` + categorías 28/18), `categories` (ids de categoría de Steam separados por coma: 2 un jugador, 1 multijugador, 9 cooperativo, 22 logros…) y `metacritic` (`0002_steam_store_details`). El cron del Worker solo actualiza nombre/horas y da de alta los juegos nuevos vacíos; **todo lo demás lo completa `npm run sync-steam` desde la PC**, con upserts que nunca pisan un dato guardado con uno vacío (`db/steamSyncUtils.js`)
+- **steam_raffle_lists** / **steam_raffle_list_items** — Listas con nombre del sorteo (`name` único NOCASE) y sus juegos (`list_id` + `appid` PK). Sin FK a `steam_cache` a propósito: es un caché que se reescribe y la lista tiene que sobrevivirlo (`0003_steam_raffle_lists`)
 - **next_games_cache** — Cached upcoming IGDB games (igdb_id PK, cover, platforms, hypes/follows)
 - **next_games_featured** — Featured game toggles (igdb_id PK)
 
@@ -303,6 +311,8 @@ misma vía que `--command`, no por la importación de `--file`, así que no le a
 `Auth error [code: 10000]` de abajo. Escríbelas idempotentes cuando se pueda
 (`IF EXISTS`/`IF NOT EXISTS`, `UPDATE` con `WHERE` que no vuelva a matchear).
 
+- `0003_steam_raffle_lists` crea las tablas de listas del sorteo.
+- `0002_steam_store_details` suma `controller_support`, `categories` y `metacritic` a `steam_cache` (filtros del sorteo).
 - `0001_games_title_demo_unique` cambia la unicidad de `games` de `title` a
   `(title, is_demo)`: una demo y su juego final comparten título y se distinguen solo por la
   etiqueta Demo. Se aplicó a mano primero y se registró después (es idempotente).
@@ -481,7 +491,8 @@ sube el resultado por `PUT /api/manga/cache/[anilistId]`.
 ### External APIs
 
 - **Trakt API** — Movies and series data, cast, seasons/episodes. All images come from Trakt (poster, fanart, thumb, headshots). Uses `?extended=full` for images.
-- **Steam API** — Steam library and game details
+- **Steam API** — Steam library and game details (`appdetails` de la tienda: ~200 pedidos cada 5 min, después 429)
+- **HowLongToBeat** — Sin API oficial: `db/sync-steam.js` usa la del propio sitio (`GET /api/search/site/init` → token, `POST /api/search/site` con `x-auth-token`). **Solo funciona desde la PC**: el token queda atado a la huella de quien lo pidió y desde Cloudflare Workers la búsqueda da `403 "invalid fingerprint"` (probado 2026-09-29). HLTB **renombra estas rutas cada tanto** (era `/api/finder` hasta 2026, y por eso `hltb_*` estuvo vacío en los 288 juegos): si el script avisa que falló el token, sacar las rutas nuevas de la pestaña Network de howlongtobeat.com. Librerías de terceros como `ckatzorke/howlongtobeat` están abandonadas
 - **IGDB (via Twitch OAuth)** — Upcoming games with community interest metrics
 - **RAWG API** — Internal source for the Metacritic score only (its own user rating is not stored)
 - **OpenCritic (via RapidAPI)** — `topCriticScore` (0-100) shown next to Metacritic

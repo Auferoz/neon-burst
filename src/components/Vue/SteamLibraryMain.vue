@@ -6,6 +6,8 @@ import IconGamepad from '../Icons/IconGamepad.vue';
 import IconRocket from '../Icons/IconRocket.vue';
 import SyncButton from './SyncButton.vue';
 import IconBoxes from '../Icons/IconBoxes.vue';
+import IconDice from '../Icons/IconDice.vue';
+import SteamRaffleModal from './SteamRaffleModal.vue';
 
 interface SteamGame {
   appid: number;
@@ -20,11 +22,16 @@ interface SteamGame {
   hltb_main: number | null;
   hltb_extra: number | null;
   hltb_completionist: number | null;
+  controller_support: string;
+  categories: string;
+  metacritic: number | null;
 }
 
 const games = ref<SteamGame[]>([]);
 const loading = ref(true);
 const error = ref('');
+
+const raffleOpen = ref(false);
 
 const searchQuery = ref('');
 const sortBy = ref<'recent' | 'name' | 'playtime'>('recent');
@@ -140,6 +147,15 @@ onMounted(() => fetchGames());
       <div class="flex items-center gap-3">
         <h1 class="text-xl sm:text-2xl font-bold text-neon-cyan neon-glow-cyan leading-tight">steam_library</h1>
         <SyncButton endpoint="/api/steam/sync" accent="cyan" label="Sync" @synced="fetchGames(true)" />
+        <button
+          type="button"
+          :disabled="loading || games.length === 0"
+          @click="raffleOpen = true"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-cyan border border-neon-cyan/30 rounded-lg hover:bg-neon-cyan/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <IconDice :size="14" />
+          Sortear
+        </button>
       </div>
       <p class="text-text-secondary text-sm leading-relaxed mt-1">Tu colección completa de juegos en Steam</p>
 
@@ -374,5 +390,7 @@ onMounted(() => fetchGames());
         </div>
       </article>
     </div>
+
+    <SteamRaffleModal :open="raffleOpen" :games="games" @close="raffleOpen = false" />
   </div>
 </template>

@@ -57,10 +57,28 @@ CREATE TABLE IF NOT EXISTS steam_cache (
   hltb_main REAL,
   hltb_extra REAL,
   hltb_completionist REAL,
-  updated_at TEXT DEFAULT (datetime('now'))
+  updated_at TEXT DEFAULT (datetime('now')),
+  controller_support TEXT DEFAULT '',  -- 'full' | 'partial' | 'none'
+  categories TEXT DEFAULT '',          -- comma-separated Steam category ids
+  metacritic INTEGER
 );
 
 CREATE INDEX IF NOT EXISTS idx_steam_cache_name ON steam_cache(name);
+
+CREATE TABLE IF NOT EXISTS steam_raffle_lists (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_steam_raffle_lists_name ON steam_raffle_lists(name COLLATE NOCASE);
+
+CREATE TABLE IF NOT EXISTS steam_raffle_list_items (
+  list_id INTEGER NOT NULL REFERENCES steam_raffle_lists(id) ON DELETE CASCADE,
+  appid INTEGER NOT NULL,
+  added_at TEXT DEFAULT (datetime('now')),
+  PRIMARY KEY (list_id, appid)
+);
 
 CREATE TABLE IF NOT EXISTS next_games_cache (
   igdb_id INTEGER PRIMARY KEY,
