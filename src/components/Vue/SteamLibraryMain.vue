@@ -31,6 +31,7 @@ const sortBy = ref<'recent' | 'name' | 'playtime'>('recent');
 const filterPlayed = ref<'all' | 'played' | 'unplayed'>('all');
 
 const now = Date.now() / 1000;
+const SEVEN_DAYS = 7 * 24 * 60 * 60;
 const THIRTY_DAYS = 30 * 24 * 60 * 60;
 const SIX_MONTHS = 180 * 24 * 60 * 60;
 
@@ -39,7 +40,7 @@ type Recency = 'recent' | 'old' | 'never';
 function getRecency(lastPlayed: number): Recency {
   if (!lastPlayed) return 'never';
   const diff = now - lastPlayed;
-  if (diff < THIRTY_DAYS) return 'recent';
+  if (diff < SEVEN_DAYS) return 'recent';
   return 'old';
 }
 

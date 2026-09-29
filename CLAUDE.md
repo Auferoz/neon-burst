@@ -12,7 +12,7 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 - `npm run build` — Production build (outputs to `dist/`)
 - `npm run preview` — Preview production build locally
 - `npm run generate-types` — Generate Cloudflare Worker types via Wrangler
-- `npm run sync-local` — Sobrescribe la D1 local con un export del remoto (dropea todas las tablas de usuario primero)
+- `npm run sync-local` — Sobrescribe la D1 local con un export del remoto (dropea todas las tablas de usuario primero, en orden inverso por las FK de `todo_*`; las filas de más de ~100 KB, como el `seasons_json` de series largas, se parten en INSERT + UPDATEs vía `db/sqlDumpSplit.js`)
 - `npm run db:migrations` / `db:migrate` / `db:migrate:remote` — Estado y aplicación de `db/migrations/` (ver Migraciones)
 - `npm run fetch-ratings` — Fetch game ratings from external sources
 - `npm run fetch-ratings:missing` — Idem, pero solo los ratings que siguen en NULL (ahorra cuota de OpenCritic)
@@ -322,6 +322,12 @@ Ojo: `db/schema.sql`
 **no** incluye todavía `season_posters_json` ni las columnas `data_source` — una base creada
 solo desde `schema.sql` necesita correr esas migraciones aparte.
 
+**Restaurar el remoto: D1 Time Travel.** Siempre activo y sin costo: cualquier minuto de los
+últimos 7 días (Workers Free) o 30 (Paid) con
+`npx wrangler d1 time-travel restore neon-burst-db --timestamp=<unix>`. Reemplaza la base
+**entera** (no restaura una tabla o fila suelta). Antes de una migración riesgosa, además, un
+`npx wrangler d1 export neon-burst-db --remote --table <tabla> --output <archivo>`.
+
 **`--file` contra `--remote` puede fallar con `Auth error [code: 10000]`.** Le pasó a
 `add-movie-scores`. Para SQL suelto contra el remoto (fuera de `migrations apply`), usar
 `--command` (una o varias sentencias separadas por `;` dentro del mismo string):
@@ -486,6 +492,13 @@ sube el resultado por `PUT /api/manga/cache/[anilistId]`.
   única fuente de verdad para lo leído — no hay sync con la lista de AniList del usuario ni OAuth.
   **Se consulta solo desde el navegador**: AniList bloquea las IPs de salida de Cloudflare Workers
   con un 403 (confirmado en su foro), así que el servidor nunca la llama — ver `anilist.ts` arriba
+- **MangaUpdates — investigada y descartada** (2026-09-26) como fuente del último capítulo de
+  mangas en emisión (AniList deja `chapters` en NULL mientras sale). Su API pública
+  (`api.mangaupdates.com/v1`, sin auth) sí trae `latest_chapter`, pero responde **403 desde
+  Cloudflare Workers** (bloqueo por IP, probado con `wrangler dev --remote`, cambie o no el
+  User-Agent) y **403 desde el navegador** (rechaza cualquier `Origin` que no sea el suyo); solo
+  anda desde una PC. Además su dato solo sirve para manga japonés: en manhwa refleja las
+  traducciones al inglés, muy por detrás de lo que se lee. No reintentar sin una fuente nueva
 
 ### Fallback temporal a TMDB (series y películas)
 
