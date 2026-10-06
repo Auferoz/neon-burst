@@ -6,6 +6,14 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.15.1 — 2026-10-06
+- Ficha de juego: los nombres de compañía largos ya no ocupan dos líneas; se recortan
+  con "…" y muestran el nombre completo al pasar el mouse
+- Ficha de juego: el enlace "Ver en IGDB" ahora abre la página del juego por su nombre
+  (antes usaba el id, que IGDB no reconoce en la URL)
+- Tareas (`/myTodoist`): la Bandeja de entrada y los proyectos muestran las tareas en una
+  grilla de hasta 3 columnas en vez de una sola lista a todo el ancho
+
 ## 1.15.0 — 2026-09-29
 - Sorteo de juegos en `/mySteamGames`: el botón "Sortear" abre un modal con toda la
   biblioteca de Steam y filtros combinables (género, mando o mouse y teclado, un jugador /

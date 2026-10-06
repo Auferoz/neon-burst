@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import { env } from 'cloudflare:workers';
 import { getGameById } from '../../services/gamesService';
 import { igdbImage } from '../../utils/igdbImage';
+import { igdbGameUrl } from '../../utils/igdbUrl';
 import { badgeClass, textClass, personalBand } from '../../utils/ratingBands';
 import PlayedGamesEditButton from '../../components/Vue/PlayedGamesEditButton.vue';
 
@@ -345,9 +346,9 @@ const hasMedia = hasTrailer || hasArtwork;
 						<dd class="text-text-primary font-medium">{game.console_pc}</dd>
 					</div>
 					{game.companie && (
-						<div class="flex justify-between">
-							<dt class="text-text-muted">Compañía</dt>
-							<dd class="text-text-primary font-medium">{game.companie}</dd>
+						<div class="flex justify-between gap-4">
+							<dt class="text-text-muted shrink-0">Compañía</dt>
+							<dd class="text-text-primary font-medium min-w-0 truncate" title={game.companie}>{game.companie}</dd>
 						</div>
 					)}
 					{game.released && (
@@ -394,7 +395,7 @@ const hasMedia = hasTrailer || hasArtwork;
 							<dt class="text-text-muted">IGDB</dt>
 							<dd>
 								<a
-									href={`https://www.igdb.com/games/${game.igdb_id}`}
+									href={igdbGameUrl(game.title)}
 									target="_blank"
 									rel="noopener noreferrer"
 									class="text-neon-blue hover:underline text-xs"

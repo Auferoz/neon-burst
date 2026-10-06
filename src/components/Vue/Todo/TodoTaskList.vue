@@ -253,7 +253,7 @@ function toggleLabel(id: number) {
       <p v-if="filtered.length === 0" class="text-xs text-text-muted py-6 text-center">{{ emptyMessage }}</p>
       <div v-for="g in groups" :key="g.id ?? 'none'" class="space-y-1">
         <p v-if="g.name" class="text-xs font-semibold text-text-secondary uppercase tracking-wide">{{ g.name }}</p>
-        <div :ref="(el) => setListEl(String(g.id), el as Element | null)" class="space-y-1 min-h-2">
+        <div :ref="(el) => setListEl(String(g.id), el as Element | null)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start min-h-2">
           <TodoTaskItem
             v-for="t in g.tasks"
             :key="t.id"
