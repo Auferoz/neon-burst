@@ -305,7 +305,7 @@ onMounted(fetchGames);
     </div>
 
     <!-- Games grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Juegos jugados">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" role="list" aria-label="Juegos jugados">
       <PlayedGamesCard
         v-for="game in filteredGames"
         :key="game.id"

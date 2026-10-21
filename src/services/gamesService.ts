@@ -2,6 +2,9 @@
  * Games service — D1 database queries
  */
 
+import { fetchIgdbMedia } from './igdbGame';
+import { parseGameMedia, type GameMedia } from '../utils/igdbMedia';
+
 export interface Game {
   id: number;
   title: string;
@@ -24,6 +27,8 @@ export interface Game {
   is_demo: number;
   is_early_access: number;
   is_testing: number;
+  media_json: string | null;
+  media_fetched_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -102,6 +107,40 @@ export async function getGameById(db: D1Database, id: number): Promise<GameWithD
   return { ...game, dates_played: dates, horas_total };
 }
 
+export interface GameDetail extends GameWithDates {
+  /** Galería de IGDB; null si todavía no se pudo traer (la página cae a trailer/artworks). */
+  media: GameMedia | null;
+}
+
+/**
+ * Detalle para la ficha: `getGameById` + galería de IGDB cargada on-demand.
+ * La primera visita (con `igdb_id` y sin `media_fetched_at`) pide la galería y la
+ * guarda; después se sirve de D1. Se mantiene aparte de `getGameById` para que
+ * guardar el formulario (create/update) no espere a IGDB.
+ */
+export async function getGameDetail(db: D1Database, id: number): Promise<GameDetail | null> {
+  const game = await getGameById(db, id);
+  if (!game) return null;
+
+  let media = parseGameMedia(game.media_json);
+
+  if (!game.media_fetched_at && game.igdb_id) {
+    const fresh = await fetchIgdbMedia(game.igdb_id);
+    if (fresh) {
+      media = fresh;
+      try {
+        await db.prepare(
+          "UPDATE games SET media_json = ?, media_fetched_at = datetime('now') WHERE id = ?"
+        ).bind(JSON.stringify(fresh), id).run();
+      } catch (e) {
+        console.error(`[games] media update for ${id} failed:`, e);
+      }
+    }
+  }
+
+  return { ...game, media };
+}
+
 export async function createGame(
   db: D1Database,
   data: Partial<Omit<Game, 'id' | 'created_at' | 'updated_at'>> & { title: string; estado: string; dates_played?: Omit<DatePlayed, 'id' | 'game_id'>[] }
@@ -153,6 +192,16 @@ export async function updateGame(
       fields.push(`${key} = ?`);
       values.push(value);
     }
+  }
+
+  // Si cambia el igdb_id, la galería guardada ya no corresponde: se limpia para
+  // que la ficha la vuelva a pedir. Con el mismo id no se toca (SET ve la fila vieja).
+  if (gameData.igdb_id !== undefined && allowedColumns.has('igdb_id')) {
+    const newIgdb = gameData.igdb_id;
+    fields.push('media_json = CASE WHEN igdb_id IS ? THEN media_json ELSE NULL END');
+    values.push(newIgdb);
+    fields.push('media_fetched_at = CASE WHEN igdb_id IS ? THEN media_fetched_at ELSE NULL END');
+    values.push(newIgdb);
   }
 
   if (fields.length > 0) {

@@ -9,6 +9,7 @@
  */
 
 import { env } from 'cloudflare:workers';
+import { mapIgdbMedia, type GameMedia } from '../utils/igdbMedia';
 
 const IGDB_API_URL = 'https://api.igdb.com/v4';
 
@@ -147,6 +148,29 @@ function mapGame(g: IgdbGameRaw): IgdbGameLookup {
     trailer: pickTrailer(g.videos),
     description: g.summary || g.storyline || '',
   };
+}
+
+/**
+ * Galería completa de un juego (artworks, screenshots y videos) para la ficha.
+ * Nunca lanza: devuelve null si faltan credenciales, IGDB falla o no existe el
+ * juego, así la página cae al trailer/artwork guardados y reintenta en la
+ * próxima visita.
+ */
+export async function fetchIgdbMedia(igdbId: number): Promise<GameMedia | null> {
+  try {
+    if (!env.TWITCH_CLIENT_ID || !env.TWITCH_CLIENT_SECRET) return null;
+    const token = await getIgdbToken().catch(() => null);
+    if (!token) return null;
+
+    const [game] = await igdbQuery(
+      token,
+      `fields artworks.image_id, screenshots.image_id, videos.video_id, videos.name; where id = ${Math.trunc(igdbId)}; limit 1;`,
+    );
+    return game ? mapIgdbMedia(game) : null;
+  } catch (e) {
+    console.error(`[igdbGame] fetchIgdbMedia(${igdbId}) failed:`, e);
+    return null;
+  }
 }
 
 /**

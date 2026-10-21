@@ -6,6 +6,14 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.16.0 — 2026-10-21
+- Ficha de juego: ahora muestra todos los videos, artworks y screenshots del juego en IGDB, no solo uno. Pestañas "Videos (N)", "Artworks (N)" y "Screenshots (N)" (solo las que tienen contenido)
+- Videos: reproductor principal con una lista de miniaturas con nombre para cambiar de video; el trailer va primero
+- Artworks y screenshots: grilla de miniaturas que abre un visor a pantalla completa con anterior/siguiente, flechas del teclado, Esc para cerrar y foco accesible
+- La galería se trae de IGDB la primera vez que se abre la ficha y queda guardada; si IGDB no responde se sigue viendo el trailer y artwork de siempre
+- El contenido de la página ahora llega hasta 110rem de ancho en pantallas grandes
+- Las grillas de tarjetas (juegos jugados, Steam, próximos juegos, biblioteca, streaming y tareas) llegan a 4 columnas en pantallas xl
+
 ## 1.15.1 — 2026-10-06
 - Ficha de juego: los nombres de compañía largos ya no ocupan dos líneas; se recortan
   con "…" y muestran el nombre completo al pasar el mouse

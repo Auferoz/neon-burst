@@ -225,7 +225,7 @@ onMounted(() => fetchGames());
     >Ningún juego coincide con el filtro.</div>
 
     <!-- Grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" role="list">
       <LibraryCard
         v-for="group in visibleGroups"
         :key="group.key"

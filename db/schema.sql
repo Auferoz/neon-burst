@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS games (
   is_demo INTEGER DEFAULT 0,
   is_early_access INTEGER DEFAULT 0,
   is_testing INTEGER DEFAULT 0,
+  media_json TEXT,
+  media_fetched_at TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );

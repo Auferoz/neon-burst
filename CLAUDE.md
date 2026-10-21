@@ -36,7 +36,8 @@ Neon Burst is a personal entertainment tracker/catalog built with Astro 6, Vue 3
 row mapper; and `src/services/omdb.ts`, `src/services/movieScores.ts`, `src/utils/ratingBands.ts`
 for the movie/series scores, shared by both — plus `db/scoreBackfillUtils.js`, the plain-JS
 helpers used by `db/fetch-movie-scores.js` and `db/fetch-series-scores.js`, and
-`src/utils/search.ts` (global search query normalization, LIKE escaping and row mappers), and
+`src/utils/search.ts` (global search query normalization, LIKE escaping and row mappers),
+`src/utils/igdbMedia.ts` (IGDB gallery mapper and `media_json` parser), and
 `src/utils/steamRaffle.ts` (raffle filters, genre normalization, unbiased winner pick and the reel schedule),
 `db/steamSyncUtils.js` (Steam store/HLTB mappers and the never-overwrite-with-empty upsert), and
 `db/sqlDumpSplit.js`, which `db/sync-local.js` uses to split rows over local D1's ~100 KB
@@ -248,6 +249,7 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 
 **Games tables** (defined in `db/schema.sql`):
 - **games** — Main game tracking (title, estado, poster, trailer, artworks, genre, ratings, achievements, etc.) + flags booleanos `is_demo`, `is_early_access`, `is_testing` (0/1), que se muestran como badges en `PlayedGamesCard.vue` y el detalle
+  - `media_json` / `media_fetched_at`: galería de IGDB de la ficha (artworks, screenshots y videos, un `GameMedia` serializado; ver `src/utils/igdbMedia.ts`). Se llena on-demand en `getGameDetail()` y `media_fetched_at` solo se marca si IGDB respondió. Cambiar `igdb_id` en `updateGame()` los limpia
   - **Tres ratings, los tres en escala 0-100**: `rating_metacritic` (INTEGER, vía RAWG),
     `rating_opencritic` (REAL, `topCriticScore`) y `rating_personal` (INTEGER, **puntuación
     propia, se carga a mano desde el modal**). Los tres nacen en NULL y el detalle no
@@ -311,6 +313,7 @@ misma vía que `--command`, no por la importación de `--file`, así que no le a
 `Auth error [code: 10000]` de abajo. Escríbelas idempotentes cuando se pueda
 (`IF EXISTS`/`IF NOT EXISTS`, `UPDATE` con `WHERE` que no vuelva a matchear).
 
+- `0004_games_media` suma `media_json` y `media_fetched_at` a `games` (galería de IGDB de la ficha).
 - `0003_steam_raffle_lists` crea las tablas de listas del sorteo.
 - `0002_steam_store_details` suma `controller_support`, `categories` y `metacritic` a `steam_cache` (filtros del sorteo).
 - `0001_games_title_demo_unique` cambia la unicidad de `games` de `title` a
@@ -482,6 +485,8 @@ Movies and series use a lazy-loading pattern for detailed data:
 4. Stores everything in JSON columns (`cast_json`, `videos_json`, `images_json`, `seasons_json`) and sets `detail_fetched_at`
 5. Subsequent visits use cached data from D1
 
+**Galería de juegos (`playedGames/[id].astro`):** mismo patrón. `getGameDetail()` (aparte de `getGameById`, para que guardar el form no espere a IGDB) pide artworks/screenshots/videos a IGDB con `fetchIgdbMedia()` en la primera visita y los guarda en `games.media_json`; si IGDB falla no marca `media_fetched_at` (reintenta) y la ficha cae al `trailer`/`artworks` guardados. Quedan fuera las carátulas alternativas.
+
 **Manga es la excepción: el refresco es client-driven, no server-side.** El servidor no
 puede llamar a AniList (bloquea las IPs de Cloudflare Workers, ver `anilist.ts`), así que
 `getMangaDetail()` solo lee D1 y devuelve `needs_refresh`; si es `true`, `manga/[id].astro`
@@ -615,7 +620,7 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 - Floating bottom nav: icon-only on mobile, icons+labels on desktop
 - **Contrato único de spacing de página** (`src/layouts/Layout.astro` + tokens en
   `src/styles/global.css` `@theme`): gutter horizontal `--spacing-gutter` (1rem, `px-gutter`,
-  mobile y desktop); top `pt-4 sm:pt-8`; ancho `max-w-7xl mx-auto`; cierre inferior
+  mobile y desktop); top `pt-4 sm:pt-8`; ancho `max-w-[110rem] mx-auto`; cierre inferior
   `--spacing-nav-clearance` (4.5rem + `env(safe-area-inset-bottom)`, `pb-nav-clearance`) para
   reservar el alto real de `FloatingNav.astro` en toda página con nav, o
   `--spacing-page-bottom` (2rem + safe-area, `pb-page-bottom`) en las que la ocultan

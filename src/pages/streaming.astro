@@ -64,7 +64,7 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 					Ejecuta <code class="text-neon-purple">npm run seed-streaming</code>.
 				</p>
 			) : (
-				<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+				<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 					{accounts.map((service, index) => (
 						<article
 							class="group relative bg-surface-2/70 rounded-xl border border-border-default p-5 hover:border-neon-purple/30 hover:bg-surface-3/60 transition-all duration-300 card-fade-in"
