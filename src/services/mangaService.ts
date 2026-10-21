@@ -39,6 +39,7 @@ export interface MangaEntry extends MangaReadRow {
   chapters: number | null;
   volumes: number | null;
   genres_json: string;
+  average_score: number | null;
 }
 
 // ── List ──
@@ -46,7 +47,8 @@ export interface MangaEntry extends MangaReadRow {
 export async function getAllManga(db: D1Database): Promise<MangaEntry[]> {
   const { results } = await db.prepare(`
     SELECT r.*, c.title_romaji, c.title_english, c.title_native, c.type, c.format,
-           c.status, c.cover, c.cover_color, c.chapters, c.volumes, c.genres_json
+           c.status, c.cover, c.cover_color, c.chapters, c.volumes, c.genres_json,
+           c.average_score
     FROM manga_read r
     LEFT JOIN manga_cache c ON r.anilist_id = c.anilist_id
     ORDER BY r.created_at DESC

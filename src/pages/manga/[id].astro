@@ -182,13 +182,25 @@ function relationHref(id: number, siteUrl: string): string {
 					</div>
 				)}
 
-				<!-- AniList score -->
-				{manga.average_score && (
-					<div class="flex items-center gap-2">
-						<span class="inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4 text-neon-orange border-neon-orange/30 bg-neon-orange/10">
-							{manga.average_score}
-						</span>
-						<span class="text-xs text-text-muted">AniList ({(manga.popularity || 0).toLocaleString()} lectores)</span>
+				<!-- AniList score + Mi score: cada uno solo si existe -->
+				{(manga.average_score || readEntry?.rating_personal) && (
+					<div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+						{manga.average_score && (
+							<div class="flex items-center gap-2">
+								<span class="inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4 text-neon-orange border-neon-orange/30 bg-neon-orange/10">
+									{manga.average_score}
+								</span>
+								<span class="text-xs text-text-muted">AniList ({(manga.popularity || 0).toLocaleString()} lectores)</span>
+							</div>
+						)}
+						{readEntry?.rating_personal && (
+							<div class="flex items-center gap-2">
+								<span class:list={['inline-flex items-center justify-center h-9 rounded-lg text-sm font-bold border px-4', badgeClass[ratingColor.personal(readEntry.rating_personal)]]}>
+									{readEntry.rating_personal}
+								</span>
+								<span class="text-xs text-text-muted">Mi score</span>
+							</div>
+						)}
 					</div>
 				)}
 			</div>
@@ -232,7 +244,7 @@ function relationHref(id: number, siteUrl: string): string {
 						{characters.map((c) => (
 							<div class="text-center">
 								{c.image ? (
-									<img src={c.image} alt={c.name} class="w-16 h-16 rounded-full object-cover mx-auto mb-2 bg-surface-3 border border-border-default" loading="lazy" />
+									<img src={c.image} alt={c.name} class="w-16 h-16 rounded-xl object-cover mx-auto mb-2 bg-surface-3 border border-border-default" loading="lazy" />
 								) : (
 									<div class="w-16 h-16 rounded-full bg-surface-3 border border-border-default mx-auto mb-2 flex items-center justify-center text-text-muted text-xl">?</div>
 								)}

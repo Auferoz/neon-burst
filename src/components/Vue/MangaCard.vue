@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { textClass, tmdbImdbBand, averageScore } from '../../utils/ratingBands';
 
 interface MangaEntry {
   id: number;
@@ -18,6 +19,7 @@ interface MangaEntry {
   chapters: number | null;
   volumes: number | null;
   genres_json: string;
+  average_score: number | null;
 }
 
 const props = defineProps<{
@@ -39,17 +41,18 @@ const estadoClass: Record<string, string> = {
   Pendiente: 'text-text-secondary border-border-default bg-surface-2',
 };
 
-/**
- * Mismas cinco bandas que rating_personal en PlayedGamesCard.vue: es la escala
- * del usuario, no la de la crítica.
- */
-function personalColor(score: number): string {
-  if (score >= 90) return 'text-neon-blue';
-  if (score >= 70) return 'text-neon-green';
-  if (score >= 55) return 'text-neon-yellow';
-  if (score >= 45) return 'text-neon-orange';
-  return 'text-neon-pink';
-}
+// Un único badge de promedio (AniList + Mi score), igual que MoviesCard.vue:
+// promedia los que existan e ignora los que faltan.
+const avgScore = computed(() =>
+  averageScore([props.manga.average_score, props.manga.rating_personal])
+);
+
+const avgLabel = computed(() => {
+  const sources: string[] = [];
+  if (props.manga.average_score != null) sources.push('AniList');
+  if (props.manga.rating_personal != null) sources.push('Mi score');
+  return `Promedio: ${avgScore.value} de 100 (${sources.join(', ')})`;
+});
 
 const title = computed(() => props.manga.title_english || props.manga.title_romaji);
 
@@ -121,17 +124,18 @@ const progressLabel = computed(() => {
             <span :class="estadoClass[manga.estado] || estadoClass.Pendiente" class="text-[10px] font-medium px-2 py-0.5 rounded-md border">
               {{ manga.estado }}
             </span>
-            <!-- Mi score: si no lo cargué, no aparece -->
-            <template v-if="manga.rating_personal">
+            <!-- Promedio AniList + Mi score: sin ninguno de los dos, no aparece -->
+            <template v-if="avgScore !== null">
               <span
-                :class="personalColor(manga.rating_personal)"
+                :class="textClass[tmdbImdbBand(avgScore)]"
                 class="inline-flex items-center gap-0.5 text-[10px] font-bold"
-                :aria-label="`Mi score: ${manga.rating_personal} de 100`"
+                :aria-label="avgLabel"
+                :title="avgLabel"
               >
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
                   <path d="M12 2l2.9 6.26 6.6.79-4.9 4.62 1.3 6.83L12 17.2l-5.9 3.3 1.3-6.83L2.5 9.05l6.6-.79L12 2z" />
                 </svg>
-                {{ manga.rating_personal }}
+                {{ avgScore }}
               </span>
             </template>
           </div>

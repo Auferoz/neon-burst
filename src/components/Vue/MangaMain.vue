@@ -26,6 +26,7 @@ interface MangaEntry {
   chapters: number | null;
   volumes: number | null;
   genres_json: string;
+  average_score: number | null;
 }
 
 const manga = ref<MangaEntry[]>([]);

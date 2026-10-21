@@ -6,6 +6,11 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.17.0 — 2026-10-21
+- Manga: la ficha muestra "Mi score" junto al score de AniList, arriba de todo
+- Manga: cada tarjeta de la lista muestra el promedio entre AniList y Mi score (al pasar el mouse se ve de qué scores sale), en vez de solo Mi score
+- Home: el título "NEON_BURST" ahora usa el cyan del logo, en vez del azul
+
 ## 1.16.0 — 2026-10-21
 - Ficha de juego: ahora muestra todos los videos, artworks y screenshots del juego en IGDB, no solo uno. Pestañas "Videos (N)", "Artworks (N)" y "Screenshots (N)" (solo las que tienen contenido)
 - Videos: reproductor principal con una lista de miniaturas con nombre para cambiar de video; el trailer va primero
