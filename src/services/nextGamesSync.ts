@@ -5,6 +5,8 @@
 
 import { env } from 'cloudflare:workers';
 import { getIgdbToken } from './igdbGame';
+import { backfillWishlistAppids } from './wishlistService';
+import { steamAppidFromIgdb, steamUrlFromIgdb } from '../utils/wishlist';
 
 // Access env lazily to ensure availability in Workers runtime
 function getTwitchClientId() { return env.TWITCH_CLIENT_ID; }
@@ -19,7 +21,8 @@ interface IgdbGame {
   artworks?: { image_id: string }[];
   screenshots?: { image_id: string }[];
   platforms?: { abbreviation?: string; name: string }[];
-  websites?: { url: string; category: number }[];
+  websites?: { url: string; type?: number }[];
+  external_games?: { uid?: string; external_game_source?: number }[];
   hypes?: number;
   follows?: number;
 }
@@ -36,7 +39,8 @@ export async function syncNextGames(db: D1Database): Promise<{ synced: number; e
       involved_companies.company.name, involved_companies.developer, involved_companies.publisher,
       first_release_date, cover.image_id, artworks.image_id, screenshots.image_id,
       platforms.abbreviation, platforms.name,
-      websites.url, websites.category,
+      websites.url, websites.type,
+      external_games.uid, external_games.external_game_source,
       hypes, follows;
     where first_release_date >= ${startOfYear}
       & first_release_date <= ${endOfYear}
@@ -87,8 +91,8 @@ export async function syncNextGames(db: D1Database): Promise<{ synced: number; e
     const batch = filtered.slice(i, i + 50);
     const stmt = db.prepare(
       `INSERT OR REPLACE INTO next_games_cache
-        (igdb_id, name, developer, publisher, genres, cover, bg_image, release_date, platforms, steam_url, hypes, follows)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        (igdb_id, name, developer, publisher, genres, cover, bg_image, release_date, platforms, steam_url, steam_appid, hypes, follows)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
 
     const ops = batch.map((g) => {
@@ -104,11 +108,13 @@ export async function syncNextGames(db: D1Database): Promise<{ synced: number; e
           ? `https://images.igdb.com/igdb/image/upload/t_screenshot_big/${g.screenshots[0].image_id}.webp`
           : '';
       const platforms = g.platforms?.map((p) => p.abbreviation || p.name).filter(Boolean).join(', ') || '';
-      const steamUrl = g.websites?.find((w) => w.category === 13)?.url || '';
+      // IGDB renamed websites.category to websites.type; external_games carries the appid.
+      const steamUrl = steamUrlFromIgdb(g);
+      const steamAppid = steamAppidFromIgdb(g);
 
       return stmt.bind(
         g.id, g.name, developer, publisher, genres, cover, bgImage,
-        g.first_release_date || 0, platforms, steamUrl,
+        g.first_release_date || 0, platforms, steamUrl, steamAppid,
         g.hypes || 0, g.follows || 0,
       );
     });
@@ -120,6 +126,9 @@ export async function syncNextGames(db: D1Database): Promise<{ synced: number; e
       errors += batch.length;
     }
   }
+
+  // Featured games added before IGDB linked them to Steam get their appid now.
+  await backfillWishlistAppids(db);
 
   return { synced, errors };
 }

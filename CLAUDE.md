@@ -39,6 +39,8 @@ helpers used by `db/fetch-movie-scores.js` and `db/fetch-series-scores.js`, and
 `src/utils/search.ts` (global search query normalization, LIKE escaping and row mappers),
 `src/utils/igdbMedia.ts` (IGDB gallery mapper and `media_json` parser), and
 `src/utils/steamRaffle.ts` (raffle filters, genre normalization, unbiased winner pick and the reel schedule),
+`src/utils/steamGameDetail.ts` (Steam achievements + store extras mappers for the game modal),
+`src/utils/wishlist.ts` ("Por comprar": Steam URL/appid parsing, IGDB → Steam appid, CLP prices, summary, sort, store-search pick and pasted-list parsing),
 `db/steamSyncUtils.js` (Steam store/HLTB mappers and the never-overwrite-with-empty upsert), and
 `db/sqlDumpSplit.js`, which `db/sync-local.js` uses to split rows over local D1's ~100 KB
 statement limit into an INSERT plus chunked UPDATEs), so it can run in
@@ -104,11 +106,16 @@ public/
 | `EditButton.vue` | Botón "Editar" presentacional compartido (lápiz + texto), usado en las cuatro fichas de detalle. Prop `accent` (`blue \| indigo \| emerald \| orange`, uno por sección) con clases literales para que Tailwind no las purgue; emite `click`, no sabe nada del modal que abre |
 | `PlayedGamesEditButton.vue` | Envuelve `EditButton` (accent `blue`) + `PlayedGamesFormModal`; recarga la página al guardar |
 | `PlayedGamesFormModal.vue` | Create/edit game modal (con autocompletado desde IGDB) |
-| `SteamLibraryMain.vue` | Steam games display + botón "Sortear" que abre `SteamRaffleModal` con los juegos ya cargados |
+| `SteamLibraryMain.vue` | Steam games display + botón "Sortear" que abre `SteamRaffleModal` con los juegos ya cargados. La card no tiene link a la tienda ni tiempos de HLTB: toda la card es un botón que abre `SteamGameModal` |
+| `SteamGameModal.vue` | Ficha rápida de un juego de Steam: muestra al instante los datos de `steam_cache` (link a la tienda, HLTB, Metacritic, mando) y pide on-demand a `GET /api/steam/[appid]` descripción, screenshots y logros (conseguidos/total + lista de los que faltan, los más comunes primero; los ocultos con la descripción tras un `<details>`). Cachea por appid mientras dure la página |
 | `SteamRaffleModal.vue` | Container del sorteo: filtros (persistidos en `localStorage`, clave `nb_steam_raffle_filters`, validados con `sanitizeFilters`), exclusiones de la sesión, listas (fetch/mutaciones a `/api/steam/raffle-lists`) y fases `filters | lists | spinning | result`. El ganador se elige **antes** de animar (`pickWinnerIndex` + `cryptoUint32`, muestreo por rechazo sin sesgo de módulo) |
 | `SteamRaffleFilters.vue` / `SteamRaffleLists.vue` / `SteamRaffleReel.vue` / `SteamRaffleResult.vue` | Presentacionales del sorteo: filtros; pestaña "Listas" (alta/renombre/borrado con confirmación inline, juegos agregados por autocompletado sobre la biblioteca, nunca texto libre); tragamonedas que recorre `buildReelSchedule` (ease-out ~4 s, termina exactamente en el ganador; con `prefers-reduced-motion` se saltea); pantalla del elegido con "Jugar en Steam" (`steam://run/<appid>`) |
 | `NextGamesMain.vue` | Upcoming games container |
 | `NextGamesCard.vue` | Individual upcoming game card |
+| `WishlistTab.vue` | Pestaña "Por comprar" de `/nextGames` (`?tab=wishlist`, pestañas en `NextGamesMain.vue`). Container: carga `/api/wishlist`, alta manual por URL/appid de Steam, bajas, filtros (nombre, rango de precio, en oferta, salida: lanzados / por lanzar / año — `filterWishlist` y `releaseInfo` de `src/utils/wishlist.ts`), resumen del resultado filtrado (total en CLP, cuántos en oferta) y orden. La fecha sale de `release_date` (IGDB, destacados) o se parsea de `release_label` (texto de la tienda, "18 ABR 2011", manuales). Quitar un destacado acá también lo desmarca: emite `unfeatured` para que `NextGamesMain` actualice su set |
+| `WishlistImportModal.vue` | "Agregar lista" de Por comprar: un juego por línea (título, URL de la tienda o appid), resueltos contra Steam **desde el navegador** de a dos (`/api/wishlist/lookup`, como `LibraryImportModal.vue` con IGDB, para no chocar con el límite de subrequests del Worker), vista previa con precio y checkboxes, alta con `/api/wishlist/bulk`. Hasta 100 por vez |
+| `WishlistCard.vue` | Card presentacional de la lista: póster/fondo con cadena de respaldo (`SteamHeaderImage.vue`), precio final, original tachado y badge `-N%` si hay oferta; emite `remove` |
+| `SteamHeaderImage.vue` | `<img>` decorativo con cadena de fuentes: si una da error prueba la siguiente y al final renderiza el slot `fallback`. Lo usan la card y el modal de Steam y la lista "Por comprar" |
 | `MoviesMain.vue` | Movies container with year tabs + botón Agregar (alta únicamente: editar vive en la ficha) |
 | `MoviesCard.vue` | Individual movie card (linkea a `/movies/{tmdb_id}`). Muestra un único badge de **promedio** (`averageScore()` de `rating_tmdb`/`rating_imdb`/`rating_personal`, los que existan), coloreado con `tmdbImdbBand` de `src/utils/ratingBands.ts` |
 | `MoviesFormModal.vue` | Alta manual de película, con previsualización antes de guardar. Incluye un campo opcional "Mi score (0-100)" |
@@ -212,7 +219,11 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/steam/sync` | GET | Trigger Steam sync (requires `x-cron-secret` or `?secret=`) |
 | `/api/next-games` | GET | Upcoming games cache (5min cache) |
 | `/api/next-games/sync` | GET | Trigger IGDB sync (same auth) |
-| `/api/next-games/featured` | GET, POST | List/toggle featured games |
+| `/api/next-games/featured` | GET, POST | List/toggle featured games. Destacar copia el juego a `wishlist`; desmarcar borra esa copia |
+| `/api/wishlist` | GET, POST | Lista "Por comprar" con el precio en vivo de Steam en CLP (`appdetails?appids=a,b&cc=cl&filters=price_overview`, en tandas de 50; `no-store`) / alta manual `{ q }` = URL de la tienda o appid (400 inválido, 404 Steam no lo conoce, 409 ya está) |
+| `/api/wishlist/lookup` | GET | `?q=<título | URL | appid>` → `{ steam_appid, name, image, release_label, price, already_added }` sin guardar. Un título va a `storesearch` de la tienda, `pickStoreSearchResult()` elige el juego (nombre exacto, si no el primero que no sea soundtrack/DLC/pack) y se completa con su `appdetails` (la búsqueda no trae la fecha de salida); 404 sin resultados |
+| `/api/wishlist/bulk` | POST | `{ games: [{ steam_appid, name, image?, release_label? }] }` (máx. 100, ya resueltos con `lookup`; se validan) → `INSERT OR IGNORE`, devuelve `{ added, skipped, message }` |
+| `/api/wishlist/[id]` | DELETE | Quita una entrada; si era un destacado también lo desmarca en `next_games_featured`. Devuelve `{ igdb_id }` desmarcado o `null` |
 | `/api/movies` | GET, POST | Lista de películas vistas (JOIN `movies_watched` ↔ `movies_cache`) / alta manual |
 | `/api/movies/[id]` | GET, PUT, DELETE | GET: detalle por `tmdb_id` (acepta `trakt_id` por compatibilidad). PUT: edita `year_watched`/`platform` de una entrada de `movies_watched` por su `watched_id` (409 si choca con `UNIQUE(tmdb_id, year_watched)`). DELETE: borra una entrada de `movies_watched` por su `watched_id` |
 | `/api/movies/lookup` | GET | `?q=<slug\|url de Trakt\|id de TMDB>` → previsualización sin guardar, con `watched_years` |
@@ -226,6 +237,7 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/streaming/unlock` | POST | `{ pin }` → valida el PIN y emite la cookie de sesión |
 | `/api/streaming/lock` | POST | Borra la cookie de sesión de streaming |
 | `/api/series/detail/[slug]` | GET | Series full detail (on-demand fetch) |
+| `/api/steam/[appid]` | GET | Detalle en vivo de un juego de la biblioteca (404 si no está en `steam_cache`): `{ achievements, store }`, ambos `null` si Steam no los da. Pide en paralelo `GetPlayerAchievements` (400 "no stats" = sin logros), `GetSchemaForGame`, `GetGlobalAchievementPercentagesForApp`, `IPlayerService/GetGameAchievements/v1` (sin documentar, pero es la única que trae la descripción de los logros **ocultos**; las otras dos los devuelven vacíos) y `appdetails`; el mapeo puro vive en `src/utils/steamGameDetail.ts`. Requiere el perfil de Steam con "Detalles del juego" públicos. `private, max-age=120` |
 | `/api/steam/raffle-lists` | GET, POST | Listas del sorteo `{ id, name, appids[] }[]` / alta `{ name }` (1-60 caracteres; 409 si el nombre ya existe, sin distinguir mayúsculas) |
 | `/api/steam/raffle-lists/[id]` | PATCH, DELETE | Renombrar / borrar (borra también sus ítems) |
 | `/api/steam/raffle-lists/[id]/items`, `/[appid]` | POST, DELETE | Agregar `{ appid }` (404 si no está en `steam_cache`) / quitar un juego de la lista |
@@ -261,6 +273,8 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 - **steam_raffle_lists** / **steam_raffle_list_items** — Listas con nombre del sorteo (`name` único NOCASE) y sus juegos (`list_id` + `appid` PK). Sin FK a `steam_cache` a propósito: es un caché que se reescribe y la lista tiene que sobrevivirlo (`0003_steam_raffle_lists`)
 - **next_games_cache** — Cached upcoming IGDB games (igdb_id PK, cover, platforms, hypes/follows)
 - **next_games_featured** — Featured game toggles (igdb_id PK)
+- **wishlist** — Lista "Por comprar" (`0005_wishlist`). `source` `'featured' | 'manual'`, `igdb_id` y `steam_appid` UNIQUE y nullables. Tabla propia y no una vista sobre `next_games_cache` porque el sync de IGDB **borra todo ese caché** en cada corrida. Los destacados se copian al destacarlos y su `steam_appid` lo completa el sync (`backfillWishlistAppids`) si todavía no lo tenían. El precio no se guarda: se pide en vivo
+- `next_games_cache.steam_appid` — appid de Steam de cada próximo juego, de `external_games` (fuente 1) de IGDB. **IGDB renombró `websites.category` a `websites.type`**: con el nombre viejo `steam_url` quedó vacío en todos los juegos hasta 1.18.0
 
 **Movies tables**:
 - **movies_cache** — **Solo metadata** (trakt_id PK, `tmdb_id` UNIQUE, poster, thumb, genres, rating, más columnas de detalle: tagline, certification, cast_json, videos_json, images_json, `data_source` (`'trakt' | 'tmdb'`), detail_fetched_at). Ya **no** tiene `list_slug` / `list_order` / `listed_at`: eso vive en `movies_watched`. `rating_tmdb` / `rating_imdb` (0-100, `vote_average * 10` / `imdbRating * 10` vía OMDb) y `ratings_fetched_at` se refrescan solos si tienen más de 30 días al visitar la ficha (`getMovieById`), aparte del `detail_fetched_at` de Trakt/TMDB
@@ -313,6 +327,7 @@ misma vía que `--command`, no por la importación de `--file`, así que no le a
 `Auth error [code: 10000]` de abajo. Escríbelas idempotentes cuando se pueda
 (`IF EXISTS`/`IF NOT EXISTS`, `UPDATE` con `WHERE` que no vuelva a matchear).
 
+- `0005_wishlist` crea `wishlist` (copiando los destacados que ya había) y suma `steam_appid` a `next_games_cache`.
 - `0004_games_media` suma `media_json` y `media_fetched_at` a `games` (galería de IGDB de la ficha).
 - `0003_steam_raffle_lists` crea las tablas de listas del sorteo.
 - `0002_steam_store_details` suma `controller_support`, `categories` y `metacritic` a `steam_cache` (filtros del sorteo).
@@ -353,7 +368,8 @@ npx wrangler d1 execute neon-burst-db --remote --command "ALTER TABLE ...; CREAT
 
 - `src/services/gamesService.ts` — D1 CRUD for games + dates_played (uses prepared statements)
 - `src/services/steamSync.ts` — Fetches Steam API → store details → HLTB times → upserts steam_cache
-- `src/services/nextGamesSync.ts` — Queries IGDB for upcoming games with community interest → batch upserts
+- `src/services/nextGamesSync.ts` — Queries IGDB for upcoming games with community interest → batch upserts (con `steam_url`/`steam_appid` vía `src/utils/wishlist.ts`), y al final completa los appid de `wishlist`
+- `src/services/wishlistService.ts` — D1 de `wishlist` (alta de destacado/manual, baja, backfill de appid) + `fetchSteamPrices()`. País de los precios: `STEAM_PRICE_CC` (`'cl'`) en `src/utils/wishlist.ts`
 - `src/services/igdbGame.ts` — Lookup de **un** juego en IGDB por URL / slug / ID, mapeado a los campos de `games`. Exporta `getIgdbToken()` (compartido con `nextGamesSync.ts`), `parseIgdbQuery()` y `lookupIgdbGame()`. Usado por `/api/igdb/lookup` para el autocompletado del modal
 - `src/services/moviesService.ts` — D1 CRUD de `movies_watched` + `movies_cache` y detalle on-demand. `getAllMovies()` hace el JOIN; `createMovieEntry()` es el alta manual; `deleteMovieEntry()` borra una entrada
 - `src/services/tmdbMovies.ts` — Proveedor TMDB de películas (fallback temporal, ver abajo): detalle completo desde `/movie/{id}` con `credits`, `images`, `release_dates`, `videos` y `external_ids`. Además `lookupTmdbMovieId()` (slug → id), `fetchTmdbMoviePreview()` (liviano, para el modal) y `fetchTmdbEnglishTitle()`

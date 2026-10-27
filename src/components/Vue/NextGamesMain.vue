@@ -6,6 +6,8 @@ import IconGrid from '../Icons/IconGrid.vue';
 import IconCalendar from '../Icons/IconCalendar.vue';
 import IconGamepad from '../Icons/IconGamepad.vue';
 import IconLibrary from '../Icons/IconLibrary.vue';
+import IconBoxes from '../Icons/IconBoxes.vue';
+import WishlistTab from './WishlistTab.vue';
 
 interface NextGame {
   id: number;
@@ -21,6 +23,30 @@ interface NextGame {
   hypes: number;
   follows: number;
 }
+
+type Tab = 'releases' | 'wishlist';
+
+// Active tab, mirrored in ?tab= so a reload (or a shared link) keeps it.
+const tab = ref<Tab>('releases');
+const wishlistCount = ref<number | null>(null);
+
+function setTab(next: Tab) {
+  tab.value = next;
+  const url = new URL(window.location.href);
+  if (next === 'wishlist') url.searchParams.set('tab', 'wishlist');
+  else url.searchParams.delete('tab');
+  history.replaceState(history.state, '', url);
+}
+
+function onUnfeatured(id: number) {
+  featuredIds.value.delete(id);
+  featuredIds.value = new Set(featuredIds.value);
+}
+
+const tabClass = (active: boolean) =>
+  active
+    ? 'text-neon-pink border-neon-pink'
+    : 'text-text-secondary border-transparent hover:text-text-primary';
 
 const games = ref<NextGame[]>([]);
 const loading = ref(true);
@@ -61,6 +87,8 @@ async function toggleFeatured(id: number) {
       body: JSON.stringify({ igdb_id: id }),
     });
     if (!res.ok) throw new Error();
+    // The server also added/removed it from the "Por comprar" list; its count is stale now.
+    wishlistCount.value = null;
   } catch {
     // Revert on error
     if (was) {
@@ -175,6 +203,7 @@ async function fetchGames(force = false) {
 }
 
 onMounted(() => {
+  if (new URLSearchParams(window.location.search).get('tab') === 'wishlist') tab.value = 'wishlist';
   loadFeatured();
   fetchGames();
 });
@@ -221,110 +250,154 @@ onMounted(() => {
           <IconLibrary :size="14" />
           Steam
         </a>
+        <a
+          href="/myLibrary"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-neon-yellow/10 transition-colors"
+        >
+          <IconBoxes :size="14" />
+          Game Library
+        </a>
         <SyncButton endpoint="/api/next-games/sync" accent="pink" label="Sync" @synced="fetchGames(true)" />
       </div>
     </div>
 
-    <!-- Separator -->
-    <div class="h-px bg-linear-to-r from-neon-pink/40 via-neon-pink/20 to-transparent"></div>
-
-    <!-- Filters -->
-    <div v-if="!loading && games.length > 0" class="space-y-3">
-      <h2 class="text-sm font-semibold text-text-primary">Filtros</h2>
-      <div class="flex flex-wrap items-center gap-3">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Buscar juego, developer, género..."
-          aria-label="Buscar juego por nombre, developer o género"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-pink/40 transition-colors w-full sm:w-64"
-        />
-        <select
-          v-model="selectedMonth"
-          aria-label="Filtrar por mes"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
-        >
-          <option value="">Todos los meses</option>
-          <option v-for="m in allMonths" :key="m.value" :value="String(m.value)">
-            {{ m.label }} ({{ gamesPerMonth[m.value] || 0 }})
-          </option>
-        </select>
-        <select
-          v-model="selectedPlatform"
-          aria-label="Filtrar por plataforma"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
-        >
-          <option value="">Todas las plataformas</option>
-          <option v-for="p in availablePlatforms" :key="p" :value="p">
-            {{ p }} ({{ gamesPerPlatform[p] || 0 }})
-          </option>
-        </select>
-        <select
-          v-model="filterType"
-          aria-label="Filtrar por estado"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
-        >
-          <option value="all">Todos</option>
-          <option value="upcoming">Por lanzar</option>
-          <option value="released">Lanzados</option>
-        </select>
-        <!-- Featured filter button -->
-        <button
-          @click="filterType = filterType === 'featured' ? 'all' : 'featured'"
-          :aria-pressed="filterType === 'featured'"
-          aria-label="Filtrar por destacados"
-          class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border rounded-lg transition-colors cursor-pointer"
-          :class="filterType === 'featured'
-            ? 'text-neon-pink border-neon-pink/40 bg-neon-pink/10'
-            : 'text-text-secondary border-border-default hover:text-neon-pink hover:border-neon-pink/30 hover:bg-neon-pink/5'"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" :fill="filterType === 'featured' ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 2h14a1 1 0 0 1 1 1v19.143a.5.5 0 0 1-.766.424L12 18.03l-7.234 4.536A.5.5 0 0 1 4 22.143V3a1 1 0 0 1 1-1z"/></svg>
-          Destacados
-          <span v-if="featuredCount > 0" class="text-neon-pink font-semibold">{{ featuredCount }}</span>
-        </button>
-        <span class="text-[11px] text-text-secondary ml-auto">
-          {{ filteredGames.length }} de {{ games.length }}
-        </span>
-      </div>
-    </div>
-
-    <!-- Loading -->
-    <div v-if="loading" class="border border-dashed border-neon-pink/20 rounded-xl p-10 sm:p-14 text-center">
-      <div class="text-sm text-neon-pink font-medium animate-pulse" role="status">[ Escaneando lanzamientos... ]</div>
-    </div>
-
-    <!-- Error -->
-    <div v-else-if="error" class="border border-dashed border-neon-pink/20 rounded-xl p-10 sm:p-14 text-center">
-      <div class="text-sm text-neon-pink font-medium mb-2" role="alert">[ Error ]</div>
-      <p class="text-text-secondary text-xs">{{ error }}</p>
+    <!-- Tabs -->
+    <div role="tablist" aria-label="Secciones de próximos juegos" class="flex gap-5 border-b border-border-default">
       <button
-        @click="fetchGames"
-        class="mt-4 px-4 py-2 text-xs text-neon-pink border border-neon-pink/30 rounded-lg hover:bg-neon-pink/10 transition-colors cursor-pointer"
+        id="next-tab-releases"
+        type="button"
+        role="tab"
+        :aria-selected="tab === 'releases'"
+        aria-controls="next-tab-panel"
+        :class="tabClass(tab === 'releases')"
+        class="pb-2 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer"
+        @click="setTab('releases')"
       >
-        Reintentar
+        Lanzamientos
+        <span v-if="!loading" class="text-xs text-text-muted">({{ games.length }})</span>
+      </button>
+      <button
+        id="next-tab-wishlist"
+        type="button"
+        role="tab"
+        :aria-selected="tab === 'wishlist'"
+        aria-controls="next-tab-panel"
+        :class="tabClass(tab === 'wishlist')"
+        class="pb-2 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer"
+        @click="setTab('wishlist')"
+      >
+        Por comprar
+        <span v-if="wishlistCount !== null" class="text-xs text-text-muted">({{ wishlistCount }})</span>
       </button>
     </div>
 
-    <!-- Empty -->
-    <div v-else-if="games.length === 0" class="border border-dashed border-neon-pink/20 rounded-xl p-10 sm:p-14 text-center">
-      <div class="text-sm text-neon-pink font-medium mb-3">[ Sin juegos ]</div>
-      <p class="text-text-secondary text-xs">No se encontraron próximos juegos para este año.</p>
-    </div>
+    <div
+      id="next-tab-panel"
+      role="tabpanel"
+      :aria-labelledby="tab === 'releases' ? 'next-tab-releases' : 'next-tab-wishlist'"
+    >
+      <WishlistTab v-if="tab === 'wishlist'" @unfeatured="onUnfeatured" @count="wishlistCount = $event" />
 
-    <!-- No results -->
-    <div v-else-if="filteredGames.length === 0" class="border border-dashed border-neon-pink/20 rounded-xl p-10 text-center">
-      <div class="text-sm text-text-secondary font-medium">Sin resultados para los filtros aplicados</div>
-    </div>
+      <div v-else class="space-y-6">
+        <!-- Filters -->
+        <div v-if="!loading && games.length > 0" class="space-y-3">
+          <h2 class="text-sm font-semibold text-text-primary">Filtros</h2>
+          <div class="flex flex-wrap items-center gap-3">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Buscar juego, developer, género..."
+              aria-label="Buscar juego por nombre, developer o género"
+              class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-pink/40 transition-colors w-full sm:w-64"
+            />
+            <select
+              v-model="selectedMonth"
+              aria-label="Filtrar por mes"
+              class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+            >
+              <option value="">Todos los meses</option>
+              <option v-for="m in allMonths" :key="m.value" :value="String(m.value)">
+                {{ m.label }} ({{ gamesPerMonth[m.value] || 0 }})
+              </option>
+            </select>
+            <select
+              v-model="selectedPlatform"
+              aria-label="Filtrar por plataforma"
+              class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+            >
+              <option value="">Todas las plataformas</option>
+              <option v-for="p in availablePlatforms" :key="p" :value="p">
+                {{ p }} ({{ gamesPerPlatform[p] || 0 }})
+              </option>
+            </select>
+            <select
+              v-model="filterType"
+              aria-label="Filtrar por estado"
+              class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+            >
+              <option value="all">Todos</option>
+              <option value="upcoming">Por lanzar</option>
+              <option value="released">Lanzados</option>
+            </select>
+            <!-- Featured filter button -->
+            <button
+              @click="filterType = filterType === 'featured' ? 'all' : 'featured'"
+              :aria-pressed="filterType === 'featured'"
+              aria-label="Filtrar por destacados"
+              class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border rounded-lg transition-colors cursor-pointer"
+              :class="filterType === 'featured'
+                ? 'text-neon-pink border-neon-pink/40 bg-neon-pink/10'
+                : 'text-text-secondary border-border-default hover:text-neon-pink hover:border-neon-pink/30 hover:bg-neon-pink/5'"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" :fill="filterType === 'featured' ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 2h14a1 1 0 0 1 1 1v19.143a.5.5 0 0 1-.766.424L12 18.03l-7.234 4.536A.5.5 0 0 1 4 22.143V3a1 1 0 0 1 1-1z"/></svg>
+              Destacados
+              <span v-if="featuredCount > 0" class="text-neon-pink font-semibold">{{ featuredCount }}</span>
+            </button>
+            <span class="text-[11px] text-text-secondary ml-auto">
+              {{ filteredGames.length }} de {{ games.length }}
+            </span>
+          </div>
+        </div>
 
-    <!-- Games grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" role="list" aria-label="Próximos juegos">
-      <NextGamesCard
-        v-for="game in filteredGames"
-        :key="game.id"
-        :game="game"
-        :featured="featuredIds.has(game.id)"
-        @toggle-featured="toggleFeatured"
-      />
+        <!-- Loading -->
+        <div v-if="loading" class="border border-dashed border-neon-pink/20 rounded-xl p-10 sm:p-14 text-center">
+          <div class="text-sm text-neon-pink font-medium animate-pulse" role="status">[ Escaneando lanzamientos... ]</div>
+        </div>
+
+        <!-- Error -->
+        <div v-else-if="error" class="border border-dashed border-neon-pink/20 rounded-xl p-10 sm:p-14 text-center">
+          <div class="text-sm text-neon-pink font-medium mb-2" role="alert">[ Error ]</div>
+          <p class="text-text-secondary text-xs">{{ error }}</p>
+          <button
+            @click="fetchGames"
+            class="mt-4 px-4 py-2 text-xs text-neon-pink border border-neon-pink/30 rounded-lg hover:bg-neon-pink/10 transition-colors cursor-pointer"
+          >
+            Reintentar
+          </button>
+        </div>
+
+        <!-- Empty -->
+        <div v-else-if="games.length === 0" class="border border-dashed border-neon-pink/20 rounded-xl p-10 sm:p-14 text-center">
+          <div class="text-sm text-neon-pink font-medium mb-3">[ Sin juegos ]</div>
+          <p class="text-text-secondary text-xs">No se encontraron próximos juegos para este año.</p>
+        </div>
+
+        <!-- No results -->
+        <div v-else-if="filteredGames.length === 0" class="border border-dashed border-neon-pink/20 rounded-xl p-10 text-center">
+          <div class="text-sm text-text-secondary font-medium">Sin resultados para los filtros aplicados</div>
+        </div>
+
+        <!-- Games grid -->
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" role="list" aria-label="Próximos juegos">
+          <NextGamesCard
+            v-for="game in filteredGames"
+            :key="game.id"
+            :game="game"
+            :featured="featuredIds.has(game.id)"
+            @toggle-featured="toggleFeatured"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>

@@ -76,14 +76,17 @@ html {
 }
 
 /*
- * Scroll horizontal fino de las filas de tarjetas (reparto, staff, relaciones,
- * recomendaciones). Definido una sola vez acá: las páginas solo usan la clase.
+ * Scroll fino de las filas de tarjetas (reparto, staff, relaciones,
+ * recomendaciones) y del cuerpo de los modales. Definido una sola vez acá: las
+ * páginas solo usan la clase. `height` aplica a la barra horizontal y `width` a
+ * la vertical.
  */
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: var(--color-surface-4) var(--color-surface-2);
 }
 .scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
   height: 4px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {

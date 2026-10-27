@@ -6,6 +6,18 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.18.0 — 2026-10-27
+- Próximos juegos: nueva pestaña "Por comprar" con los juegos que quieres comprar y su precio en Steam en pesos chilenos, marcando las ofertas (precio original tachado y % de descuento), el total de la lista y cuántos están en oferta
+- Los juegos que marcas como destacados se agregan solos a "Por comprar", y se quitan al desmarcarlos; también se puede agregar cualquier juego pegando su URL de la tienda de Steam o su appid
+- Por comprar: botón "Agregar lista" para cargar muchos juegos de una pegando un título, URL de Steam o appid por línea; se buscan en Steam y se elige cuáles agregar viendo su precio
+- Por comprar: filtros por nombre, rango de precio, solo en oferta y fecha de salida (ya lanzados, por lanzar o un año); el total y el conteo de ofertas siguen a los filtros
+- Próximos juegos: botón para ir a Game Library
+- Próximos juegos: vuelve a aparecer el link a la tienda de Steam en las tarjetas (IGDB había cambiado el formato y se perdía)
+- Steam: al hacer clic en una tarjeta se abre una ficha del juego con descripción, screenshots, link a la tienda, Metacritic, soporte de mando y tiempos de HowLongToBeat
+- Steam: la ficha muestra los logros conseguidos sobre el total, con barra de progreso, y la lista de los que faltan (los más comunes primero, con el % de jugadores que los tiene; los ocultos también muestran cómo se consiguen, pero escondido hasta que se pide verlo)
+- Steam: las tarjetas de la lista quedan más limpias, sin el ícono de la tienda ni los tiempos de HowLongToBeat
+- Steam: los juegos nuevos cuya imagen de cabecera no está en la ruta de siempre ya no se ven sin fondo: se prueba con otra imagen del juego y, si no, con su póster
+
 ## 1.17.0 — 2026-10-21
 - Manga: la ficha muestra "Mi score" junto al score de AniList, arriba de todo
 - Manga: cada tarjeta de la lista muestra el promedio entre AniList y Mi score (al pasar el mouse se ve de qué scores sale), en vez de solo Mi score

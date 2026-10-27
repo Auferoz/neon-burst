@@ -8,30 +8,16 @@ import SyncButton from './SyncButton.vue';
 import IconBoxes from '../Icons/IconBoxes.vue';
 import IconDice from '../Icons/IconDice.vue';
 import SteamRaffleModal from './SteamRaffleModal.vue';
+import SteamGameModal from './SteamGameModal.vue';
+import SteamHeaderImage from './SteamHeaderImage.vue';
+import { steamHeaderCandidates, type SteamLibraryGame } from '../../utils/steamGameDetail';
 
-interface SteamGame {
-  appid: number;
-  name: string;
-  developer: string;
-  publisher: string;
-  genres: string;
-  released: string;
-  poster: string;
-  playtime: number;
-  last_played: number;
-  hltb_main: number | null;
-  hltb_extra: number | null;
-  hltb_completionist: number | null;
-  controller_support: string;
-  categories: string;
-  metacritic: number | null;
-}
-
-const games = ref<SteamGame[]>([]);
+const games = ref<SteamLibraryGame[]>([]);
 const loading = ref(true);
 const error = ref('');
 
 const raffleOpen = ref(false);
+const selectedGame = ref<SteamLibraryGame | null>(null);
 
 const searchQuery = ref('');
 const sortBy = ref<'recent' | 'name' | 'playtime'>('recent');
@@ -95,32 +81,11 @@ function formatPlaytime(minutes: number): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function formatHltb(hours: number | null): string {
-  if (!hours) return '-';
-  const h = Math.floor(hours);
-  const m = Math.round((hours - h) * 60);
-  return m > 0 ? `${h}h ${m}m` : `${h}h`;
-}
-
-function formatDate(timestamp: number): string {
-  if (!timestamp) return 'Nunca';
-  return new Date(timestamp * 1000).toLocaleDateString('es-ES', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  });
-}
-
 function onPosterError(e: Event) {
   const img = e.target as HTMLImageElement;
   img.style.display = 'none';
   const placeholder = img.nextElementSibling as HTMLElement;
   if (placeholder) placeholder.style.display = 'flex';
-}
-
-function onArtworkError(e: Event) {
-  const img = e.target as HTMLImageElement;
-  img.style.display = 'none';
-  const fallback = img.parentElement?.querySelector('.artwork-fallback') as HTMLElement;
-  if (fallback) fallback.style.display = 'flex';
 }
 
 async function fetchGames(force = false) {
@@ -268,20 +233,29 @@ onMounted(() => fetchGames());
         role="listitem"
         :aria-label="`${game.name}${game.playtime > 0 ? ', ' + formatPlaytime(game.playtime) + ' jugadas' : ', sin jugar'}`"
         :class="recencyStyles[getRecency(game.last_played)].border"
-        class="group relative border rounded-xl overflow-hidden transition-all duration-200 h-full flex flex-col"
+        class="group relative border rounded-xl overflow-hidden transition-all duration-200 h-full flex flex-col hover:border-neon-cyan/60 focus-within:border-neon-cyan/60"
       >
+        <!-- Whole-card hit area: opens the detail modal -->
+        <button
+          type="button"
+          class="absolute inset-0 z-20 rounded-xl cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-neon-cyan"
+          :aria-label="`Ver detalles de ${game.name}`"
+          aria-haspopup="dialog"
+          @click="selectedGame = game"
+        />
         <!-- Artwork background (decorative) -->
         <div class="absolute inset-0 z-0" aria-hidden="true">
-          <img
-            :src="`https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/header.jpg`"
-            alt=""
+          <SteamHeaderImage
+            :sources="steamHeaderCandidates(game.appid, game.poster)"
             class="w-full h-full object-cover object-top scale-105 group-hover:opacity-30 group-hover:blur-sm transition-all duration-300"
             loading="lazy"
-            @error="onArtworkError"
-          />
-          <div class="artwork-fallback absolute inset-0 bg-surface-1 items-center justify-center" style="display: none">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary/10"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-          </div>
+          >
+            <template #fallback>
+              <div class="absolute inset-0 bg-surface-1 flex items-center justify-center">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary/10"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              </div>
+            </template>
+          </SteamHeaderImage>
           <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
         </div>
 
@@ -309,22 +283,12 @@ onMounted(() => fetchGames());
 
           <!-- Info -->
           <div class="flex-1 min-w-0 flex flex-col">
-            <!-- Title + Steam link + Recency -->
+            <!-- Title + Recency -->
             <div class="flex items-start justify-between gap-2 mb-1">
-              <h3 class="text-sm font-semibold text-text-primary leading-snug line-clamp-2">
+              <h3 class="text-sm font-semibold text-text-primary leading-snug line-clamp-2 group-hover:text-neon-cyan transition-colors">
                 {{ game.name }}
               </h3>
               <div class="flex items-center gap-1.5 shrink-0">
-                <a
-                  :href="`https://store.steampowered.com/app/${game.appid}`"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="w-6 h-6 flex items-center justify-center rounded-md text-text-secondary hover:text-neon-cyan hover:bg-neon-cyan/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-cyan transition-colors cursor-pointer"
-                  :aria-label="`Ver ${game.name} en Steam Store`"
-                  @click.stop
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658a3.387 3.387 0 0 1 1.912-.59c.064 0 .127.003.19.008l2.861-4.142V8.91a4.528 4.528 0 0 1 4.524-4.524 4.528 4.528 0 0 1 4.524 4.524 4.528 4.528 0 0 1-4.524 4.524h-.105l-4.076 2.911c0 .052.004.105.004.159a3.392 3.392 0 0 1-3.39 3.393 3.396 3.396 0 0 1-3.322-2.727L.533 14.583A11.975 11.975 0 0 0 11.979 24c6.627 0 12.001-5.373 12.001-12S18.606 0 11.979 0zM7.54 18.21l-1.473-.61a2.54 2.54 0 0 0 4.867-.895 2.542 2.542 0 0 0-2.54-2.541c-.17 0-.335.02-.496.052l1.521.629a1.87 1.87 0 0 1-1.428 3.456l-.001-.001.05-.09zm8.4-5.878a3.02 3.02 0 0 0 3.016-3.016 3.02 3.02 0 0 0-3.016-3.016 3.02 3.02 0 0 0-3.016 3.016 3.02 3.02 0 0 0 3.016 3.016zm-.001-4.523a1.51 1.51 0 0 1 0 3.018 1.51 1.51 0 0 1 0-3.018z"/></svg>
-                </a>
                 <span
                   v-if="getRecency(game.last_played) !== 'old'"
                   :class="recencyStyles[getRecency(game.last_played)].badge"
@@ -360,37 +324,12 @@ onMounted(() => fetchGames());
               </span>
             </div>
 
-            <!-- Spacer -->
-            <div class="flex-1" />
-
-            <!-- HLTB -->
-            <div v-if="game.hltb_main || game.hltb_extra || game.hltb_completionist" aria-label="Tiempos de HowLongToBeat">
-              <div class="flex justify-between text-[10px] text-text-secondary mb-1">
-                <span>HowLongToBeat</span>
-              </div>
-              <div class="grid grid-cols-3 gap-1 text-[10px]">
-                <div class="text-center" v-if="game.hltb_main">
-                  <span class="text-neon-cyan font-semibold">{{ formatHltb(game.hltb_main) }}</span>
-                  <span class="text-text-secondary ml-0.5">main</span>
-                  <span class="sr-only">(historia principal)</span>
-                </div>
-                <div class="text-center" v-if="game.hltb_extra">
-                  <span class="text-neon-blue font-semibold">{{ formatHltb(game.hltb_extra) }}</span>
-                  <span class="text-text-secondary ml-0.5">extra</span>
-                  <span class="sr-only">(contenido extra)</span>
-                </div>
-                <div class="text-center" v-if="game.hltb_completionist">
-                  <span class="text-neon-green font-semibold">{{ formatHltb(game.hltb_completionist) }}</span>
-                  <span class="text-text-secondary ml-0.5">100%</span>
-                  <span class="sr-only">(completar al 100%)</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </article>
     </div>
 
     <SteamRaffleModal :open="raffleOpen" :games="games" @close="raffleOpen = false" />
+    <SteamGameModal :game="selectedGame" @close="selectedGame = null" />
   </div>
 </template>
