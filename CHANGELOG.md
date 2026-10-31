@@ -6,6 +6,9 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.18.2 — 2026-10-31
+- Home: se quita la tarjeta de DuelBurst, porque el proyecto se dio de baja
+
 ## 1.18.1 — 2026-10-31
 - Nuevo dominio: el sitio ahora vive en neonburst.cl
 - Home: los proyectos externos van en su propia sección, separada por una línea neón
