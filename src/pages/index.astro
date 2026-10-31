@@ -81,6 +81,19 @@ import { version } from '../../package.json';
 				<IconMonitorPlay size={22} />
 			</NavCard>
 
+		</div>
+
+		<!-- Separator: external projects -->
+		<div class="w-full max-w-2xl flex items-center gap-4">
+			<hr aria-hidden="true" class="flex-1 h-px border-0 bg-gradient-to-r from-transparent via-neon-cyan/50 to-neon-pink/50 shadow-[0_0_8px_var(--color-neon-cyan)]" />
+			<span class="font-display text-xs tracking-[0.3em] text-text-muted uppercase whitespace-nowrap">
+				<span aria-hidden="true" class="text-neon-cyan">// </span>Proyectos
+			</span>
+			<hr aria-hidden="true" class="flex-1 h-px border-0 bg-gradient-to-l from-transparent via-neon-pink/50 to-neon-cyan/50 shadow-[0_0_8px_var(--color-neon-pink)]" />
+		</div>
+
+		<!-- External projects -->
+		<div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 xxl:grid-cols-5 gap-4 sm:gap-5 w-full max-w-2xl">
 			<NavCard href="https://serviceswebporfolio.adesigns7.workers.dev/" title="Services Web" subtitle="Página de servicios web" accentColor="white">
 				<IconHome size={22} />
 			</NavCard>
@@ -89,11 +102,19 @@ import { version } from '../../package.json';
 				<IconHome size={22} />
 			</NavCard>
 
-			<NavCard href="yugioh-duelburst.adesigns7.workers.dev" title="DuelBurst" subtitle="a web tribute to Yu-Gi-Oh!" accentColor="white">
+			<NavCard href="https://yugioh-duelburst.adesigns7.workers.dev/" title="DuelBurst" subtitle="a web tribute to Yu-Gi-Oh!" accentColor="white">
+				<IconHome size={22} />
+			</NavCard>
+
+			<NavCard href="https://listtobuy.neonburst.cl/" title="List to Buy" subtitle="Lista de compras" accentColor="white">
+				<IconHome size={22} />
+			</NavCard>
+
+			<NavCard href="https://cartera-mensual.adesigns7.workers.dev/" title="Cartera Mensual" subtitle="Finanzas del mes" accentColor="white">
 				<IconHome size={22} />
 			</NavCard>
 		</div>
-		
+
 
 	</section>
 </Layout>

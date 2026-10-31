@@ -10,6 +10,8 @@ import cloudflareCron from './integrations/cloudflare-cron';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://neonburst.cl',
+
   vite: {
     plugins: [tailwindcss()],
     server: {
