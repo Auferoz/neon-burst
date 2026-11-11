@@ -19,6 +19,7 @@ import {
   raffleCaptureFileName,
   formatHours,
   formatPlaytime,
+  gamesInList,
   type RaffleGame,
   type RaffleFilters,
   type RaffleList,
@@ -489,5 +490,23 @@ describe('formatHours / formatPlaytime', () => {
     expect(formatPlaytime(45)).toBe('45 min');
     expect(formatPlaytime(120)).toBe('2 h');
     expect(formatPlaytime(135)).toBe('2 h 15 min');
+  });
+});
+
+describe('gamesInList', () => {
+  const games = [{ appid: 1, name: 'A' }, { appid: 2, name: 'B' }, { appid: 3, name: 'C' }];
+  const list = (appids: number[]): RaffleList => ({ id: 7, name: 'Finde', appids });
+
+  it('returns every game when no list is selected', () => {
+    expect(gamesInList(games, null)).toBe(games);
+  });
+  it('keeps only the games in the list, preserving library order', () => {
+    expect(gamesInList(games, list([3, 1]))).toEqual([games[0], games[2]]);
+  });
+  it('ignores list appids missing from the library', () => {
+    expect(gamesInList(games, list([2, 999]))).toEqual([games[1]]);
+  });
+  it('returns nothing for an empty list', () => {
+    expect(gamesInList(games, list([]))).toEqual([]);
   });
 });

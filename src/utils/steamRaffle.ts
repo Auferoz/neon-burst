@@ -29,6 +29,16 @@ export interface RaffleList {
   appids: number[];
 }
 
+/**
+ * Games that belong to `list`, in the library's order. With no list, the same
+ * array is returned. List appids missing from the library are ignored.
+ */
+export function gamesInList<T extends { appid: number }>(games: T[], list: RaffleList | null): T[] {
+  if (!list) return games;
+  const ids = new Set(list.appids);
+  return games.filter(g => ids.has(g.appid));
+}
+
 export type ControlKey = 'full' | 'partial' | 'none';
 export type ModeKey = 'single' | 'multi' | 'coop';
 export type DurationKey = 'lt5' | '5-15' | '15-30' | '30-60' | '60plus';

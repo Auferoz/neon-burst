@@ -11,6 +11,7 @@ import SteamRaffleModal from './SteamRaffleModal.vue';
 import SteamGameModal from './SteamGameModal.vue';
 import SteamHeaderImage from './SteamHeaderImage.vue';
 import { steamHeaderCandidates, type SteamLibraryGame } from '../../utils/steamGameDetail';
+import { gamesInList, type RaffleList } from '../../utils/steamRaffle';
 import { compareHltb, formatHltbShort, hasHltb, parseHltbSort, type HltbField, type HltbSortKey } from '../../utils/hltb';
 
 // Literal classes so Tailwind does not purge them; same colors as SteamGameModal.
@@ -40,6 +41,29 @@ const searchQuery = ref('');
 const sortBy = ref<'recent' | 'name' | 'playtime' | HltbSortKey>('recent');
 const filterPlayed = ref<'all' | 'played' | 'unplayed'>('all');
 
+// Raffle lists, reused as a library filter. Optional: if they fail to load,
+// the select is simply not shown.
+const raffleLists = ref<RaffleList[]>([]);
+const filterListId = ref<number | null>(null);
+const selectedList = computed(() => raffleLists.value.find(l => l.id === filterListId.value) ?? null);
+
+async function fetchRaffleLists() {
+  try {
+    const res = await fetch('/api/steam/raffle-lists', { cache: 'no-store' });
+    if (!res.ok) return;
+    raffleLists.value = await res.json();
+    // The selected list may have been deleted from the raffle modal.
+    if (filterListId.value !== null && !selectedList.value) filterListId.value = null;
+  } catch {
+    // Non-critical: keep the previous lists.
+  }
+}
+
+function closeRaffle() {
+  raffleOpen.value = false;
+  fetchRaffleLists();
+}
+
 const now = Date.now() / 1000;
 const SEVEN_DAYS = 7 * 24 * 60 * 60;
 const THIRTY_DAYS = 30 * 24 * 60 * 60;
@@ -61,7 +85,7 @@ const recencyStyles: Record<Recency, { border: string; badge: string; badgeText:
 };
 
 const filteredGames = computed(() => {
-  let result = games.value;
+  let result = gamesInList(games.value, selectedList.value);
 
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase();
@@ -121,7 +145,10 @@ async function fetchGames(force = false) {
   }
 }
 
-onMounted(() => fetchGames());
+onMounted(() => {
+  fetchGames();
+  fetchRaffleLists();
+});
 </script>
 
 <template>
@@ -218,6 +245,15 @@ onMounted(() => fetchGames());
           <option value="all">Todos</option>
           <option value="played">Jugados</option>
           <option value="unplayed">Sin jugar</option>
+        </select>
+        <select
+          v-if="raffleLists.length > 0"
+          v-model="filterListId"
+          aria-label="Filtrar por lista del sorteo"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-cyan/40 transition-colors cursor-pointer"
+        >
+          <option :value="null">Todas las listas</option>
+          <option v-for="l in raffleLists" :key="l.id" :value="l.id">{{ l.name }} ({{ l.appids.length }})</option>
         </select>
         <span class="text-[11px] text-text-secondary ml-auto">
           {{ filteredGames.length }} de {{ games.length }}
@@ -361,7 +397,7 @@ onMounted(() => fetchGames());
       </article>
     </div>
 
-    <SteamRaffleModal :open="raffleOpen" :games="games" @close="raffleOpen = false" />
+    <SteamRaffleModal :open="raffleOpen" :games="games" @close="closeRaffle" />
     <SteamGameModal :game="selectedGame" @close="selectedGame = null" />
   </div>
 </template>
