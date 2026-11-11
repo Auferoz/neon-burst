@@ -11,6 +11,23 @@ import SteamRaffleModal from './SteamRaffleModal.vue';
 import SteamGameModal from './SteamGameModal.vue';
 import SteamHeaderImage from './SteamHeaderImage.vue';
 import { steamHeaderCandidates, type SteamLibraryGame } from '../../utils/steamGameDetail';
+import { compareHltb, formatHltbShort, hasHltb, parseHltbSort, type HltbField, type HltbSortKey } from '../../utils/hltb';
+
+// Literal classes so Tailwind does not purge them; same colors as SteamGameModal.
+const HLTB_COLUMNS: { field: HltbField; label: string; color: string }[] = [
+  { field: 'hltb_main', label: 'Historia', color: 'text-neon-cyan' },
+  { field: 'hltb_extra', label: '+ Extras', color: 'text-neon-blue' },
+  { field: 'hltb_completionist', label: '100%', color: 'text-neon-green' },
+];
+
+const HLTB_SORT_OPTIONS: { value: HltbSortKey; label: string }[] = HLTB_COLUMNS.flatMap(c => [
+  { value: `${c.field}:asc` as HltbSortKey, label: `${c.label}: menor a mayor` },
+  { value: `${c.field}:desc` as HltbSortKey, label: `${c.label}: mayor a menor` },
+]);
+
+function hltbAriaText(game: SteamLibraryGame): string {
+  return HLTB_COLUMNS.filter(c => game[c.field]).map(c => `${c.label} ${formatHltbShort(game[c.field])}`).join(', ');
+}
 
 const games = ref<SteamLibraryGame[]>([]);
 const loading = ref(true);
@@ -20,7 +37,7 @@ const raffleOpen = ref(false);
 const selectedGame = ref<SteamLibraryGame | null>(null);
 
 const searchQuery = ref('');
-const sortBy = ref<'recent' | 'name' | 'playtime'>('recent');
+const sortBy = ref<'recent' | 'name' | 'playtime' | HltbSortKey>('recent');
 const filterPlayed = ref<'all' | 'played' | 'unplayed'>('all');
 
 const now = Date.now() / 1000;
@@ -61,7 +78,9 @@ const filteredGames = computed(() => {
     result = result.filter(g => g.playtime === 0);
   }
 
+  const hltbSort = parseHltbSort(sortBy.value);
   return [...result].sort((a, b) => {
+    if (hltbSort) return compareHltb(a, b, hltbSort.field, hltbSort.dir) || a.name.localeCompare(b.name);
     if (sortBy.value === 'name') return a.name.localeCompare(b.name);
     if (sortBy.value === 'playtime') return b.playtime - a.playtime;
     return b.last_played - a.last_played;
@@ -187,6 +206,9 @@ onMounted(() => fetchGames());
           <option value="recent">Recientes</option>
           <option value="name">Nombre</option>
           <option value="playtime">Más jugados</option>
+          <optgroup label="HowLongToBeat">
+            <option v-for="o in HLTB_SORT_OPTIONS" :key="o.value" :value="o.value">{{ o.label }}</option>
+          </optgroup>
         </select>
         <select
           v-model="filterPlayed"
@@ -231,7 +253,7 @@ onMounted(() => fetchGames());
         v-for="game in filteredGames"
         :key="game.appid"
         role="listitem"
-        :aria-label="`${game.name}${game.playtime > 0 ? ', ' + formatPlaytime(game.playtime) + ' jugadas' : ', sin jugar'}`"
+        :aria-label="`${game.name}${game.playtime > 0 ? ', ' + formatPlaytime(game.playtime) + ' jugadas' : ', sin jugar'}${hasHltb(game) ? '. HowLongToBeat: ' + hltbAriaText(game) : ''}`"
         :class="recencyStyles[getRecency(game.last_played)].border"
         class="group relative border rounded-xl overflow-hidden transition-all duration-200 h-full flex flex-col hover:border-neon-cyan/60 focus-within:border-neon-cyan/60"
       >
@@ -323,6 +345,16 @@ onMounted(() => fetchGames());
                 {{ g }}
               </span>
             </div>
+
+            <!-- HowLongToBeat (decorative: the times are in the article's aria-label) -->
+            <dl v-if="hasHltb(game)" class="mt-auto grid grid-cols-3 gap-1 text-center" aria-hidden="true">
+              <div v-for="c in HLTB_COLUMNS" :key="c.field" class="flex flex-col-reverse bg-surface-2/80 rounded-md px-1 py-1">
+                <dt class="text-[10px] text-text-secondary leading-tight mt-0.5">{{ c.label }}</dt>
+                <dd :class="game[c.field] ? c.color : 'text-text-muted'" class="text-[11px] font-semibold leading-tight">
+                  {{ formatHltbShort(game[c.field]) }}
+                </dd>
+              </div>
+            </dl>
 
           </div>
         </div>

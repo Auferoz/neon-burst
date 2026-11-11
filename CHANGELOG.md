@@ -6,6 +6,10 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.20.0 — 2026-11-11
+- Steam: las cards de la biblioteca muestran los tres tiempos de HowLongToBeat (Historia, + Extras y 100%)
+- Steam: el selector de orden suma ordenar por cada tiempo de HowLongToBeat, de menor a mayor o de mayor a menor; los juegos sin dato quedan al final
+
 ## 1.19.0 — 2026-11-11
 - Steam, sorteo: botón "Guardar como lista" en la pestaña Sorteo que guarda los juegos que siguen marcados en el bombo como una lista nueva, o reemplaza la lista que estás usando como filtro
 - Steam, sorteo: el resultado tiene una presentación nueva, con destello, confeti, anillo neón giratorio alrededor del póster, rayos de luz y el fondo del juego difuminado
