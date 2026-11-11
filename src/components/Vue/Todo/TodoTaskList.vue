@@ -165,14 +165,14 @@ function toggleLabel(id: number) {
           type="search"
           placeholder="Buscar..."
           aria-label="Buscar tareas"
-          class="w-full bg-surface-2 border border-border-default rounded-lg pl-8 pr-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-green/50 transition-colors"
+          class="w-full bg-surface-2 border border-border-input rounded-lg pl-8 pr-3 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-green/50 transition-colors"
         />
       </div>
 
       <select
         v-model="sortMode"
         aria-label="Ordenar por"
-        class="bg-surface-2 border border-border-default rounded-lg px-2 py-1.5 text-xs text-text-secondary focus:outline-none focus:border-neon-green/50 cursor-pointer"
+        class="bg-surface-2 border border-border-input rounded-lg px-2 py-1.5 text-xs text-text-secondary focus:outline-none focus:border-neon-green/50 cursor-pointer"
       >
         <option value="manual">Manual</option>
         <option value="due">Fecha</option>

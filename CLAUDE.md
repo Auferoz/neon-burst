@@ -109,7 +109,8 @@ public/
 | `SteamLibraryMain.vue` | Steam games display + botón "Sortear" que abre `SteamRaffleModal` con los juegos ya cargados. La card no tiene link a la tienda ni tiempos de HLTB: toda la card es un botón que abre `SteamGameModal` |
 | `SteamGameModal.vue` | Ficha rápida de un juego de Steam: muestra al instante los datos de `steam_cache` (link a la tienda, HLTB, Metacritic, mando) y pide on-demand a `GET /api/steam/[appid]` descripción, screenshots y logros (conseguidos/total + lista de los que faltan, los más comunes primero; los ocultos con la descripción tras un `<details>`). Cachea por appid mientras dure la página |
 | `SteamRaffleModal.vue` | Container del sorteo: filtros (persistidos en `localStorage`, clave `nb_steam_raffle_filters`, validados con `sanitizeFilters`), exclusiones de la sesión, listas (fetch/mutaciones a `/api/steam/raffle-lists`) y fases `filters | lists | spinning | result`. El ganador se elige **antes** de animar (`pickWinnerIndex` + `cryptoUint32`, muestreo por rechazo sin sesgo de módulo) |
-| `SteamRaffleFilters.vue` / `SteamRaffleLists.vue` / `SteamRaffleReel.vue` / `SteamRaffleResult.vue` | Presentacionales del sorteo: filtros; pestaña "Listas" (alta/renombre/borrado con confirmación inline, juegos agregados por autocompletado sobre la biblioteca, nunca texto libre); tragamonedas que recorre `buildReelSchedule` (ease-out ~4 s, termina exactamente en el ganador; con `prefers-reduced-motion` se saltea); pantalla del elegido con "Jugar en Steam" (`steam://run/<appid>`) |
+| `SteamRaffleFilters.vue` / `SteamRaffleLists.vue` / `SteamRaffleReel.vue` / `SteamRaffleResult.vue` | Presentacionales del sorteo: filtros; pestaña "Listas" (alta/renombre/borrado con confirmación inline, juegos agregados por autocompletado sobre la biblioteca, nunca texto libre); tragamonedas que recorre `buildReelSchedule` (ease-out ~4 s, termina exactamente en el ganador; con `prefers-reduced-motion` se saltea); pantalla del elegido con "Jugar en Steam" (`steam://run/<appid>`), animación de revelado (destello, confeti, anillo cónico, rayos; todo apagado con `prefers-reduced-motion`; el modal la re-monta con `:key` en cada sorteo) y "Guardar captura"/"Copiar imagen" |
+| `SteamRaffleSaveList.vue` | "Guardar como lista" de la pestaña Sorteo: guarda los juegos que siguen en el bombo (filtros menos exclusiones) como lista nueva (`POST /api/steam/raffle-lists` con `appids`) o reemplaza la lista usada como filtro (`PUT .../[id]/items`). Al guardar, el modal selecciona esa lista como filtro y limpia las exclusiones: el bombo queda igual |
 | `NextGamesMain.vue` | Upcoming games container |
 | `NextGamesCard.vue` | Individual upcoming game card |
 | `WishlistTab.vue` | Pestaña "Por comprar" de `/nextGames` (`?tab=wishlist`, pestañas en `NextGamesMain.vue`). Container: carga `/api/wishlist`, alta manual por URL/appid de Steam, bajas, filtros (nombre, rango de precio, en oferta, salida: lanzados / por lanzar / año — `filterWishlist` y `releaseInfo` de `src/utils/wishlist.ts`), resumen del resultado filtrado (total en CLP, cuántos en oferta) y orden. La fecha sale de `release_date` (IGDB, destacados) o se parsea de `release_label` (texto de la tienda, "18 ABR 2011", manuales). Quitar un destacado acá también lo desmarca: emite `unfeatured` para que `NextGamesMain` actualice su set |
@@ -153,6 +154,14 @@ si el endpoint devuelve 401 lo borra y vuelve a pedirlo. Props: `endpoint`, `acc
 (`indigo | emerald | pink | cyan | blue`), `label`; emite `synced` para que el contenedor
 recargue con `cache: 'no-store'`. Las clases de acento están escritas completas en un
 mapa estático para que Tailwind no las purgue.
+
+**Captura del resultado del sorteo** (`src/utils/raffleCapture.ts`, solo navegador): no es un
+screenshot del DOM sino una tarjeta 1080×1350 dibujada en `<canvas>` (sin dependencias). El CDN
+de Steam responde `Access-Control-Allow-Origin: *`, así que las imágenes con
+`crossOrigin = 'anonymous'` no ensucian el canvas; si una falla se dibuja sin ella. Con puntero
+táctil y `navigator.canShare({ files })` abre el menú de compartir; si no, descarga
+`sorteo-<slug>-YYYY-MM-DD.png`. Lo puro (`wrapText`, `raffleCaptureFileName`, `formatHours`,
+`formatPlaytime`, `sanitizeAppidList`, `chunk`) vive en `src/utils/steamRaffle.ts`, testeado.
 
 ### Autocompletado IGDB (modal de juegos)
 
@@ -238,9 +247,9 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/streaming/lock` | POST | Borra la cookie de sesión de streaming |
 | `/api/series/detail/[slug]` | GET | Series full detail (on-demand fetch) |
 | `/api/steam/[appid]` | GET | Detalle en vivo de un juego de la biblioteca (404 si no está en `steam_cache`): `{ achievements, store }`, ambos `null` si Steam no los da. Pide en paralelo `GetPlayerAchievements` (400 "no stats" = sin logros), `GetSchemaForGame`, `GetGlobalAchievementPercentagesForApp`, `IPlayerService/GetGameAchievements/v1` (sin documentar, pero es la única que trae la descripción de los logros **ocultos**; las otras dos los devuelven vacíos) y `appdetails`; el mapeo puro vive en `src/utils/steamGameDetail.ts`. Requiere el perfil de Steam con "Detalles del juego" públicos. `private, max-age=120` |
-| `/api/steam/raffle-lists` | GET, POST | Listas del sorteo `{ id, name, appids[] }[]` / alta `{ name }` (1-60 caracteres; 409 si el nombre ya existe, sin distinguir mayúsculas) |
+| `/api/steam/raffle-lists` | GET, POST | Listas del sorteo `{ id, name, appids[] }[]` / alta `{ name, appids? }` (1-60 caracteres; 409 si el nombre ya existe, sin distinguir mayúsculas). Con `appids` la crea ya llena; solo se guardan los que están en `steam_cache` (filtrado en SQL, de a 90 por sentencia por el límite de 100 parámetros de D1) |
 | `/api/steam/raffle-lists/[id]` | PATCH, DELETE | Renombrar / borrar (borra también sus ítems) |
-| `/api/steam/raffle-lists/[id]/items`, `/[appid]` | POST, DELETE | Agregar `{ appid }` (404 si no está en `steam_cache`) / quitar un juego de la lista |
+| `/api/steam/raffle-lists/[id]/items`, `/[appid]` | POST, PUT, DELETE | Agregar `{ appid }` (404 si no está en `steam_cache`) / reemplazar todo el contenido con `{ appids }` (un solo `batch`, devuelve la lista) / quitar un juego de la lista |
 | `/api/search` | GET | `?q=` (2-100 caracteres, si no 400) → `{ results: SearchResult[] }`, hasta 5 por sección (juegos, biblioteca, Steam, películas vistas, series vistas, manga leído), los que empiezan por `q` primero. `no-store`. Excluye Streaming y Todo a propósito |
 | `/api/igdb/lookup` | GET | `?q=<url\|slug\|id>` → datos de un juego de IGDB para autocompletar el modal |
 | `/api/manga` | GET, POST | Lista de manga leído (JOIN `manga_read` ↔ `manga_cache`) / alta. El navegador ya resolvió y trajo el `media` de AniList; el POST manda `{ anilist_id, media, ...tracking }` y el servidor solo valida y guarda |
@@ -583,8 +592,9 @@ cae a TMDB vía `src/services/tmdbSeries.ts` y `src/services/tmdbMovies.ts`.
 
 - **Accent colors**: neon-blue `#1e90ff` (primary), neon-cyan `#00e5ff`, neon-pink `#ff2d95`, neon-purple `#b026ff`, neon-orange `#ff7b00`, neon-gold `#ffd700`, neon-yellow `#e5ff00`, neon-green `#39ff14`, neon-emerald `#34d399`, neon-indigo `#818cf8` (blue/cyan/pink también tienen variante `-dim` con alpha `66`)
 - **Surfaces**: surface-0 `#06060a` through surface-4 `#222236`
-- **Texto**: text-primary `#e8e8f0`, text-secondary `#9898b0`, text-muted `#5c5c78`
-- **Bordes**: border-default `#1e1e30`, border-hover `#2a2a42`
+- **Texto**: text-primary `#e8e8f0`, text-secondary `#9898b0`, text-muted `#8080a0` (era `#5c5c78`, 3.0:1; ahora pasa AA 4.5:1 de surface-0 a surface-3)
+- **Bordes**: border-default `#1e1e30`, border-hover `#2a2a42` (decorativos), border-input `#60607f` (`border-border-input`: borde de todo `<input>`/`<select>`/`<textarea>`, 3:1 que pide WCAG 1.4.11 para el límite de un control)
+- **Contraste (WCAG AA)**: texto normal 4.5:1, grande y bordes de controles 3:1. Texto morado siempre `text-neon-purple-text` (`#c46bff`): `neon-purple` base da 3.4-4.2:1 y queda para fondos, bordes y glows (el blanco sobre él da 4.6:1; sobre el claro, 3.05). No usar colores de texto con `/NN` de opacidad (`text-neon-pink/60` cae a 2.6:1). Overlay de las cards con arte: `from-surface-0 via-surface-0/95 to-surface-0/92`, sin `opacity-*` encima: con menos, `text-secondary` baja a 3.6:1 sobre portadas claras
 - **Font**: Fira Code (monospace, Google Fonts) — terminal aesthetic
 - **Neon glow classes**: `neon-glow-blue`, `neon-glow-cyan`, `neon-glow-pink` (defined in global.css)
 - **Neon border classes**: `neon-border-blue`, `neon-border-cyan`, etc.

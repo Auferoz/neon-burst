@@ -119,10 +119,10 @@ async function removeLabel(id: number) {
       </div>
 
       <form v-if="newProjectOpen" class="flex items-center gap-1.5 px-1" @submit.prevent="addProject">
-        <select v-model="newProjectColor" aria-label="Color del proyecto" class="bg-surface-2 border border-border-default rounded-lg px-1 py-1 text-xs cursor-pointer">
+        <select v-model="newProjectColor" aria-label="Color del proyecto" class="bg-surface-2 border border-border-input rounded-lg px-1 py-1 text-xs cursor-pointer">
           <option v-for="c in PROJECT_COLOR_OPTIONS" :key="c" :value="c">●</option>
         </select>
-        <input ref="newProjectInput" v-model="newProjectName" type="text" placeholder="Nombre" aria-label="Nombre del proyecto" class="flex-1 min-w-0 bg-surface-2 border border-border-default rounded-lg px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
+        <input ref="newProjectInput" v-model="newProjectName" type="text" placeholder="Nombre" aria-label="Nombre del proyecto" class="flex-1 min-w-0 bg-surface-2 border border-border-input rounded-lg px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
         <button type="submit" class="text-xs text-neon-green cursor-pointer">OK</button>
       </form>
 
@@ -145,7 +145,7 @@ async function removeLabel(id: number) {
       </div>
 
       <form v-if="newLabelOpen" class="flex items-center gap-1.5 px-1" @submit.prevent="addLabel">
-        <input ref="newLabelInput" v-model="newLabelName" type="text" placeholder="Nombre" aria-label="Nombre de la etiqueta" class="flex-1 min-w-0 bg-surface-2 border border-border-default rounded-lg px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
+        <input ref="newLabelInput" v-model="newLabelName" type="text" placeholder="Nombre" aria-label="Nombre de la etiqueta" class="flex-1 min-w-0 bg-surface-2 border border-border-input rounded-lg px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
         <button type="submit" class="text-xs text-neon-green cursor-pointer">OK</button>
       </form>
 

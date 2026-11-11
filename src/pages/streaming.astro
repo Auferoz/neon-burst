@@ -39,7 +39,7 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 			<header class="space-y-3 mb-8">
 				<div class="flex items-start justify-between gap-4">
 					<div class="space-y-3">
-						<p class="text-xs font-semibold uppercase tracking-[0.2em] text-neon-purple/80">
+						<p class="text-xs font-semibold uppercase tracking-[0.2em] text-neon-purple-text">
 							Streaming &middot; {accounts.length} {accounts.length === 1 ? 'servicio' : 'servicios'}
 						</p>
 						<h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-text-primary">
@@ -49,7 +49,7 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 					<button
 						id="lock-session"
 						type="button"
-						class="shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-text-muted border border-border-default hover:text-neon-purple hover:border-neon-purple/30 hover:bg-neon-purple/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-purple"
+						class="shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-text-muted border border-border-default hover:text-neon-purple-text hover:border-neon-purple/30 hover:bg-neon-purple/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-purple"
 					>
 						<IconLock width={14} height={14} />
 						<span class="hidden sm:inline">Bloquear</span>
@@ -60,8 +60,8 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 
 			{accounts.length === 0 ? (
 				<p class="text-sm text-text-secondary">
-					No hay cuentas en <code class="text-neon-purple">streaming_accounts</code>.
-					Ejecuta <code class="text-neon-purple">npm run seed-streaming</code>.
+					No hay cuentas en <code class="text-neon-purple-text">streaming_accounts</code>.
+					Ejecuta <code class="text-neon-purple-text">npm run seed-streaming</code>.
 				</p>
 			) : (
 				<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -95,7 +95,7 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 								<div class="flex-1 min-w-0">
 									<h2 class="text-base font-semibold text-text-primary leading-tight truncate">{service.name}</h2>
 									{service.plan && (
-										<span class="inline-block mt-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-neon-purple/10 text-neon-purple border border-neon-purple/20">
+										<span class="inline-block mt-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-neon-purple/10 text-neon-purple-text border border-neon-purple/20">
 											{service.plan}
 										</span>
 									)}
@@ -104,7 +104,7 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 									href={service.url}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="shrink-0 text-text-muted hover:text-neon-purple transition-colors duration-200 rounded-lg focus-visible:outline-2 focus-visible:outline-neon-purple"
+									class="shrink-0 text-text-muted hover:text-neon-purple-text transition-colors duration-200 rounded-lg focus-visible:outline-2 focus-visible:outline-neon-purple"
 									aria-label={`Abrir ${service.name} en una pestaña nueva`}
 									title={`Abrir ${service.name}`}
 								>
@@ -120,7 +120,7 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 									<p class="flex-1 min-w-0 text-sm text-text-secondary truncate">{service.email}</p>
 									<button
 										type="button"
-										class="copy-value shrink-0 p-1.5 rounded-lg text-text-muted hover:text-neon-purple hover:bg-neon-purple/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-purple"
+										class="copy-value shrink-0 p-1.5 rounded-lg text-text-muted hover:text-neon-purple-text hover:bg-neon-purple/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-purple"
 										aria-label={`Copiar email de ${service.name}`}
 										title="Copiar email"
 										data-value={service.email}
@@ -137,13 +137,13 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 										<span class="password-hidden text-sm text-text-secondary tracking-wider select-none" aria-hidden="true">
 											&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;
 										</span>
-										<span class="password-visible hidden text-sm text-neon-purple tracking-wide select-all break-all">
+										<span class="password-visible hidden text-sm text-neon-purple-text tracking-wide select-all break-all">
 											{service.password}
 										</span>
 									</div>
 									<button
 										type="button"
-										class="toggle-password shrink-0 p-1.5 rounded-lg text-text-muted hover:text-neon-purple hover:bg-neon-purple/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-purple"
+										class="toggle-password shrink-0 p-1.5 rounded-lg text-text-muted hover:text-neon-purple-text hover:bg-neon-purple/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-purple"
 										aria-label={`Mostrar contraseña de ${service.name}`}
 										aria-pressed="false"
 										title="Mostrar/Ocultar contraseña"
@@ -158,7 +158,7 @@ const accounts = unlocked ? await getStreamingAccounts() : [];
 									</button>
 									<button
 										type="button"
-										class="copy-value shrink-0 p-1.5 rounded-lg text-text-muted hover:text-neon-purple hover:bg-neon-purple/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-purple"
+										class="copy-value shrink-0 p-1.5 rounded-lg text-text-muted hover:text-neon-purple-text hover:bg-neon-purple/10 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-neon-purple"
 										aria-label={`Copiar contraseña de ${service.name}`}
 										title="Copiar contraseña"
 										data-value={service.password}

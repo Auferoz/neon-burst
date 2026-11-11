@@ -24,7 +24,7 @@ const store = inject(TODO_STORE_KEY)!;
         role="alert"
       >
         <span>{{ store.errorToast.value }}</span>
-        <button type="button" class="text-neon-pink/80 hover:text-neon-pink cursor-pointer" aria-label="Cerrar" @click="store.dismissError">✕</button>
+        <button type="button" class="text-neon-pink hover:text-text-primary cursor-pointer" aria-label="Cerrar" @click="store.dismissError">✕</button>
       </div>
     </div>
   </Teleport>

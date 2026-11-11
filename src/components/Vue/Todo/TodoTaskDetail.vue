@@ -287,7 +287,7 @@ function onKeydown(e: KeyboardEvent) {
               v-model="description"
               rows="3"
               placeholder="Sin descripción"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-neon-green/50 resize-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-neon-green/50 resize-none"
               @blur="onDescriptionBlur"
             ></textarea>
           </div>
@@ -311,25 +311,25 @@ function onKeydown(e: KeyboardEvent) {
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label for="todo-detail-date" class="block text-xs text-text-muted mb-1">Fecha</label>
-              <input id="todo-detail-date" v-model="dueDate" type="date" class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50" @change="onDateChange" />
+              <input id="todo-detail-date" v-model="dueDate" type="date" class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50" @change="onDateChange" />
             </div>
             <div>
               <label for="todo-detail-time" class="block text-xs text-text-muted mb-1">Hora</label>
-              <input id="todo-detail-time" v-model="dueTime" type="time" :disabled="!dueDate" class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50 disabled:opacity-40" @change="onTimeChange" />
+              <input id="todo-detail-time" v-model="dueTime" type="time" :disabled="!dueDate" class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50 disabled:opacity-40" @change="onTimeChange" />
             </div>
           </div>
 
           <div>
             <label for="todo-detail-recurrence" class="block text-xs text-text-muted mb-1">Repetir</label>
             <div class="flex items-center gap-2">
-              <select id="todo-detail-recurrence" v-model="recurrenceKind" class="flex-1 bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50 cursor-pointer" @change="onRecurrenceChange">
+              <select id="todo-detail-recurrence" v-model="recurrenceKind" class="flex-1 bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50 cursor-pointer" @change="onRecurrenceChange">
                 <option value="none">No se repite</option>
                 <option value="daily">Cada día</option>
                 <option value="weekly">Cada semana</option>
                 <option value="monthly">Cada mes</option>
                 <option value="every">Cada N días</option>
               </select>
-              <input v-if="recurrenceKind === 'every'" v-model.number="everyN" type="number" min="1" class="w-16 bg-surface-2 border border-border-default rounded-lg px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50" @change="onRecurrenceChange" />
+              <input v-if="recurrenceKind === 'every'" v-model.number="everyN" type="number" min="1" class="w-16 bg-surface-2 border border-border-input rounded-lg px-2 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50" @change="onRecurrenceChange" />
             </div>
             <p v-if="recurrencePreview" class="text-[11px] text-neon-green mt-1">{{ recurrencePreview }}</p>
           </div>
@@ -337,13 +337,13 @@ function onKeydown(e: KeyboardEvent) {
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label for="todo-detail-project" class="block text-xs text-text-muted mb-1">Proyecto</label>
-              <select id="todo-detail-project" v-model.number="projectId" class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50 cursor-pointer" @change="onProjectChange">
+              <select id="todo-detail-project" v-model.number="projectId" class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50 cursor-pointer" @change="onProjectChange">
                 <option v-for="p in store.projects.value" :key="p.id" :value="p.id">{{ p.is_inbox ? 'Bandeja de entrada' : p.name }}</option>
               </select>
             </div>
             <div>
               <label for="todo-detail-section" class="block text-xs text-text-muted mb-1">Sección</label>
-              <select id="todo-detail-section" v-model="sectionId" :disabled="!sections.length" class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50 cursor-pointer disabled:opacity-40" @change="onSectionChange">
+              <select id="todo-detail-section" v-model="sectionId" :disabled="!sections.length" class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-green/50 cursor-pointer disabled:opacity-40" @change="onSectionChange">
                 <option :value="null">Sin sección</option>
                 <option v-for="s in sections" :key="s.id" :value="s.id">{{ s.name }}</option>
               </select>
@@ -365,7 +365,7 @@ function onKeydown(e: KeyboardEvent) {
               </button>
             </div>
             <form class="flex items-center gap-1.5" @submit.prevent="addLabelAndAttach">
-              <input v-model="newLabelName" type="text" placeholder="Nueva etiqueta" aria-label="Nueva etiqueta" class="flex-1 bg-surface-2 border border-border-default rounded-lg px-2.5 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
+              <input v-model="newLabelName" type="text" placeholder="Nueva etiqueta" aria-label="Nueva etiqueta" class="flex-1 bg-surface-2 border border-border-input rounded-lg px-2.5 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" />
               <button type="submit" class="text-xs text-neon-green cursor-pointer">Agregar</button>
             </form>
           </div>
@@ -411,7 +411,7 @@ function onKeydown(e: KeyboardEvent) {
               </div>
             </div>
             <form class="flex items-center gap-1.5 mt-2" @submit.prevent="addSubtask">
-              <input v-model="newSubtaskTitle" type="text" placeholder="Nueva subtarea" aria-label="Nueva subtarea" class="flex-1 bg-surface-2 border border-border-default rounded-lg px-2.5 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" @paste="onSubtaskPaste" />
+              <input v-model="newSubtaskTitle" type="text" placeholder="Nueva subtarea" aria-label="Nueva subtarea" class="flex-1 bg-surface-2 border border-border-input rounded-lg px-2.5 py-1 text-xs text-text-primary focus:outline-none focus:border-neon-green/50" @paste="onSubtaskPaste" />
               <button type="submit" class="text-xs text-neon-green cursor-pointer">Agregar</button>
             </form>
           </div>

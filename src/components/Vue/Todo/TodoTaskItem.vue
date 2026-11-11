@@ -307,7 +307,7 @@ function onSubtaskPaste(e: ClipboardEvent) {
           type="text"
           placeholder="Nueva subtarea"
           aria-label="Nueva subtarea"
-          class="flex-1 min-w-0 bg-surface-2 border border-border-default rounded px-1.5 py-0.5 text-xs text-text-primary focus:outline-none focus:border-neon-green/50"
+          class="flex-1 min-w-0 bg-surface-2 border border-border-input rounded px-1.5 py-0.5 text-xs text-text-primary focus:outline-none focus:border-neon-green/50"
           @keydown.enter.prevent="addSubtaskFromInput"
           @keydown.esc="cancelAddSubtask"
           @blur="cancelAddSubtask"

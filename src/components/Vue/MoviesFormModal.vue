@@ -162,7 +162,7 @@ function onBackdrop(e: MouseEvent) {
                 v-model="query"
                 type="text"
                 required
-                class="flex-1 min-w-0 bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-emerald/50 focus:ring-1 focus:ring-neon-emerald/20 transition-colors"
+                class="flex-1 min-w-0 bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-emerald/50 focus:ring-1 focus:ring-neon-emerald/20 transition-colors"
                 placeholder="ej: dune-part-two-2024"
                 @keydown.enter.prevent="lookup"
               />
@@ -221,7 +221,7 @@ function onBackdrop(e: MouseEvent) {
                 min="1900"
                 max="2100"
                 required
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 focus:ring-1 focus:ring-neon-emerald/20 transition-colors"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 focus:ring-1 focus:ring-neon-emerald/20 transition-colors"
               />
             </div>
             <div>
@@ -231,7 +231,7 @@ function onBackdrop(e: MouseEvent) {
                 v-model="platform"
                 type="text"
                 list="movie-platforms"
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-emerald/50 focus:ring-1 focus:ring-neon-emerald/20 transition-colors"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-emerald/50 focus:ring-1 focus:ring-neon-emerald/20 transition-colors"
                 placeholder="ej: Netflix, Cine"
               />
               <datalist id="movie-platforms">
@@ -249,7 +249,7 @@ function onBackdrop(e: MouseEvent) {
               type="number"
               min="0"
               max="100"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-emerald/50 focus:ring-1 focus:ring-neon-emerald/20 transition-colors"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-emerald/50 focus:ring-1 focus:ring-neon-emerald/20 transition-colors"
               placeholder="Opcional"
             />
           </div>

@@ -352,7 +352,7 @@ onMounted(fetchGames);
               v-model="replaySearch"
               type="text"
               placeholder="Buscar juego..."
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-green/50 focus:ring-1 focus:ring-neon-green/20 transition-colors mb-3"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-green/50 focus:ring-1 focus:ring-neon-green/20 transition-colors mb-3"
               autofocus
             />
 

@@ -4,6 +4,11 @@
  * UI resolves names/posters from the library it already has loaded.
  */
 
+import { chunk } from '../utils/steamRaffle';
+
+/** D1 caps bound parameters per statement at 100: 1 list id + 90 appids. */
+const APPIDS_PER_STATEMENT = 90;
+
 export interface RaffleListRow {
   id: number;
   name: string;
@@ -46,7 +51,7 @@ export async function getRaffleLists(db: D1Database): Promise<RaffleListRow[]> {
   return (lists ?? []).map(l => ({ id: l.id, name: l.name, appids: byList.get(l.id) ?? [] }));
 }
 
-async function getListById(db: D1Database, id: number): Promise<RaffleListRow | null> {
+export async function getListById(db: D1Database, id: number): Promise<RaffleListRow | null> {
   const list = await db.prepare('SELECT id, name FROM steam_raffle_lists WHERE id = ?')
     .bind(id).first<{ id: number; name: string }>();
   if (!list) return null;
@@ -90,6 +95,31 @@ export async function listExists(db: D1Database, id: number): Promise<boolean> {
 export async function addItem(db: D1Database, listId: number, appid: number): Promise<void> {
   await db.prepare('INSERT OR IGNORE INTO steam_raffle_list_items (list_id, appid) VALUES (?, ?)')
     .bind(listId, appid).run();
+}
+
+function insertItemsStatements(db: D1Database, listId: number, appids: readonly number[]): D1PreparedStatement[] {
+  // Only appids present in the library are stored, filtered in SQL so a stale
+  // client can't add games that aren't in steam_cache.
+  return chunk(appids, APPIDS_PER_STATEMENT).map(part =>
+    db.prepare(
+      `INSERT OR IGNORE INTO steam_raffle_list_items (list_id, appid)
+       SELECT ?, appid FROM steam_cache WHERE appid IN (${part.map(() => '?').join(',')})`
+    ).bind(listId, ...part),
+  );
+}
+
+/** Adds many games at once; appids outside the library are skipped. */
+export async function addItems(db: D1Database, listId: number, appids: readonly number[]): Promise<void> {
+  const statements = insertItemsStatements(db, listId, appids);
+  if (statements.length > 0) await db.batch(statements);
+}
+
+/** Replaces the whole content of a list atomically (one D1 batch). */
+export async function replaceItems(db: D1Database, listId: number, appids: readonly number[]): Promise<void> {
+  await db.batch([
+    db.prepare('DELETE FROM steam_raffle_list_items WHERE list_id = ?').bind(listId),
+    ...insertItemsStatements(db, listId, appids),
+  ]);
 }
 
 export async function removeItem(db: D1Database, listId: number, appid: number): Promise<void> {

@@ -246,12 +246,12 @@ onMounted(fetchMovies);
           type="text"
           placeholder="Buscar película..."
           aria-label="Buscar película por nombre"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-emerald/40 transition-colors w-full sm:w-64"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-emerald/40 transition-colors w-full sm:w-64"
         />
         <select
           v-model="filterYear"
           aria-label="Filtrar por año visto"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-emerald/40 transition-colors cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-emerald/40 transition-colors cursor-pointer"
         >
           <option value="">Todos los años</option>
           <option v-for="y in allYears" :key="y" :value="y">{{ y }}</option>
@@ -259,7 +259,7 @@ onMounted(fetchMovies);
         <select
           v-model="filterGenre"
           aria-label="Filtrar por género"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-emerald/40 transition-colors cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-emerald/40 transition-colors cursor-pointer"
         >
           <option value="">Todos los géneros</option>
           <option v-for="g in allGenres" :key="g" :value="g">{{ g }}</option>

@@ -74,7 +74,7 @@ function onPosterError(e: Event) {
         class="w-full h-full object-cover object-top scale-105 group-hover:opacity-30 group-hover:blur-sm transition-all duration-300"
         loading="lazy"
       />
-      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/92" />
     </div>
     <div
       v-else-if="displayPoster"
@@ -87,7 +87,7 @@ function onPosterError(e: Event) {
         class="w-full h-full object-cover scale-150 blur-md opacity-40"
         loading="lazy"
       />
-      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/92" />
     </div>
     <div
       v-else

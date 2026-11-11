@@ -13,6 +13,12 @@ import {
   buildReelSchedule,
   hasActiveFilters,
   sanitizeFilters,
+  sanitizeAppidList,
+  chunk,
+  wrapText,
+  raffleCaptureFileName,
+  formatHours,
+  formatPlaytime,
   type RaffleGame,
   type RaffleFilters,
   type RaffleList,
@@ -428,5 +434,60 @@ describe('sanitizeFilters', () => {
       name: 123,
     });
     expect(out).toEqual(filters({ genres: ['Rol'], controls: ['full'], durations: ['lt5'] }));
+  });
+});
+
+describe('sanitizeAppidList', () => {
+  it('keeps positive integers, deduped, in order', () => {
+    expect(sanitizeAppidList([10, '20', 10, 30.5, -1, 0, null, 20, 40])).toEqual([10, 20, 40]);
+  });
+  it('returns null for non-arrays, empty results or oversized input', () => {
+    expect(sanitizeAppidList('10,20')).toBeNull();
+    expect(sanitizeAppidList([])).toBeNull();
+    expect(sanitizeAppidList([0, -3])).toBeNull();
+    expect(sanitizeAppidList([1, 2, 3], 2)).toBeNull();
+  });
+});
+
+describe('chunk', () => {
+  it('splits into slices of at most `size`', () => {
+    expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
+    expect(chunk([], 3)).toEqual([]);
+  });
+});
+
+describe('wrapText', () => {
+  const measure = (s: string) => s.length;
+  it('wraps on spaces within the width', () => {
+    expect(wrapText('The Legend of Zelda', 10, measure)).toEqual(['The Legend', 'of Zelda']);
+  });
+  it('truncates with an ellipsis beyond maxLines', () => {
+    expect(wrapText('one two three four five six', 9, measure, 2)).toEqual(['one two', 'three fo…']);
+  });
+  it('hard-cuts a single word longer than the width', () => {
+    expect(wrapText('Supercalifragilistic', 8, measure)).toEqual(['Supercal', 'ifragili', 'stic']);
+  });
+});
+
+describe('raffleCaptureFileName', () => {
+  it('slugs the game name and stamps the date', () => {
+    const d = new Date(2026, 10, 11);
+    expect(raffleCaptureFileName("Baldur's Gate 3: Édition", d)).toBe('sorteo-baldur-s-gate-3-edition-2026-11-11.png');
+    expect(raffleCaptureFileName('★★★', d)).toBe('sorteo-juego-2026-11-11.png');
+  });
+});
+
+describe('formatHours / formatPlaytime', () => {
+  it('formats HLTB hours', () => {
+    expect(formatHours(null)).toBe('Sin dato');
+    expect(formatHours(0)).toBe('Sin dato');
+    expect(formatHours(12)).toBe('12 h');
+    expect(formatHours(12.5)).toBe('12 h 30 min');
+  });
+  it('formats Steam playtime minutes', () => {
+    expect(formatPlaytime(0)).toBe('Sin jugar');
+    expect(formatPlaytime(45)).toBe('45 min');
+    expect(formatPlaytime(120)).toBe('2 h');
+    expect(formatPlaytime(135)).toBe('2 h 15 min');
   });
 });

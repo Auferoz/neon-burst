@@ -45,7 +45,7 @@ const hasActiveFilters = computed(() =>
         :value="searchQuery"
         @input="emit('update:searchQuery', ($event.target as HTMLInputElement).value)"
         placeholder="Buscar juego..."
-        class="w-full bg-surface-2 border border-border-default rounded-lg px-4 py-2.5 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors duration-200"
+        class="w-full bg-surface-2 border border-border-input rounded-lg px-4 py-2.5 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors duration-200"
       />
     </div> -->
 
@@ -57,7 +57,7 @@ const hasActiveFilters = computed(() =>
           id="filter-año"
           :value="selectedAño"
           @change="emit('update:selectedAño', ($event.target as HTMLSelectElement).value)"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors duration-200 cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors duration-200 cursor-pointer"
         >
           <option value="">Todos los años</option>
           <option v-for="a in años" :key="a" :value="String(a)">{{ a }}</option>
@@ -70,7 +70,7 @@ const hasActiveFilters = computed(() =>
           id="filter-estado"
           :value="selectedEstado"
           @change="emit('update:selectedEstado', ($event.target as HTMLSelectElement).value)"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors duration-200 cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors duration-200 cursor-pointer"
         >
           <option value="">Todos los estados</option>
           <option v-for="e in estados" :key="e" :value="e">{{ e }}</option>
@@ -83,7 +83,7 @@ const hasActiveFilters = computed(() =>
           id="filter-plataforma"
           :value="selectedPlataforma"
           @change="emit('update:selectedPlataforma', ($event.target as HTMLSelectElement).value)"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors duration-200 cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors duration-200 cursor-pointer"
         >
           <option value="">Todas las plataformas</option>
           <option v-for="p in plataformas" :key="p" :value="p">{{ p }}</option>
@@ -96,7 +96,7 @@ const hasActiveFilters = computed(() =>
           id="filter-marca"
           :value="selectedMarca"
           @change="emit('update:selectedMarca', ($event.target as HTMLSelectElement).value)"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors duration-200 cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors duration-200 cursor-pointer"
         >
           <option value="">Todas las marcas</option>
           <option v-for="m in marcas" :key="m.value" :value="m.value">{{ m.label }}</option>

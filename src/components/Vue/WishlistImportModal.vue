@@ -214,7 +214,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onDocumentKeydown)
                 v-model="rawList"
                 rows="10"
                 placeholder="Hollow Knight: Silksong&#10;https://store.steampowered.com/app/1145350/Hades_II/&#10;3357650"
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-neon-pink/40 resize-y font-mono scrollbar-thin"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-neon-pink/40 resize-y font-mono scrollbar-thin"
               ></textarea>
               <p class="text-[11px] text-text-muted mt-1">
                 {{ lines.length }} juego{{ lines.length === 1 ? '' : 's' }} detectado{{ lines.length === 1 ? '' : 's' }}

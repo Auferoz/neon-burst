@@ -250,7 +250,7 @@ function onKeydown(e: KeyboardEvent) {
                 v-model="query"
                 type="text"
                 required
-                class="flex-1 min-w-0 bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
+                class="flex-1 min-w-0 bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
                 placeholder="ej: https://anilist.co/manga/30013 o 30013"
                 @keydown.enter.prevent="lookup"
               />
@@ -309,7 +309,7 @@ function onKeydown(e: KeyboardEvent) {
               <select
                 id="manga-estado"
                 v-model="estado"
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-orange/50 transition-colors cursor-pointer"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-orange/50 transition-colors cursor-pointer"
               >
                 <option value="Leyendo">Leyendo</option>
                 <option value="Completado">Completado</option>
@@ -325,7 +325,7 @@ function onKeydown(e: KeyboardEvent) {
                 v-model="capituloActual"
                 type="number"
                 min="0"
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
               />
             </div>
           </div>
@@ -339,7 +339,7 @@ function onKeydown(e: KeyboardEvent) {
               type="text"
               list="manga-platform-options"
               autocomplete="off"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
               placeholder="MangaPlus, Manta, físico..."
             />
             <datalist id="manga-platform-options">
@@ -356,7 +356,7 @@ function onKeydown(e: KeyboardEvent) {
                 v-model="fechaInicio"
                 type="text"
                 placeholder="DD/MM/YYYY"
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
               />
             </div>
             <div>
@@ -366,7 +366,7 @@ function onKeydown(e: KeyboardEvent) {
                 v-model="fechaFinal"
                 type="text"
                 placeholder="DD/MM/YYYY"
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
               />
             </div>
           </div>
@@ -380,7 +380,7 @@ function onKeydown(e: KeyboardEvent) {
               type="number"
               min="0"
               max="100"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-orange/50 focus:ring-1 focus:ring-neon-orange/20 transition-colors"
               placeholder="Opcional"
             />
           </div>

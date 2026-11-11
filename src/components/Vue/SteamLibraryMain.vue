@@ -177,12 +177,12 @@ onMounted(() => fetchGames());
           type="text"
           placeholder="Buscar juego, developer, género..."
           aria-label="Buscar juego por nombre, developer o género"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-cyan/40 transition-colors w-full sm:w-64"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-cyan/40 transition-colors w-full sm:w-64"
         />
         <select
           v-model="sortBy"
           aria-label="Ordenar por"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-cyan/40 transition-colors cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-cyan/40 transition-colors cursor-pointer"
         >
           <option value="recent">Recientes</option>
           <option value="name">Nombre</option>
@@ -191,7 +191,7 @@ onMounted(() => fetchGames());
         <select
           v-model="filterPlayed"
           aria-label="Filtrar por estado"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-cyan/40 transition-colors cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-cyan/40 transition-colors cursor-pointer"
         >
           <option value="all">Todos</option>
           <option value="played">Jugados</option>
@@ -256,7 +256,7 @@ onMounted(() => fetchGames());
               </div>
             </template>
           </SteamHeaderImage>
-          <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+          <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/92" />
         </div>
 
         <div class="relative z-10 flex gap-4 p-2 flex-1">

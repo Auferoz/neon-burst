@@ -159,7 +159,7 @@ function onBackdrop(e: MouseEvent) {
               type="text"
               required
               :disabled="isEdit"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-indigo/50 focus:ring-1 focus:ring-neon-indigo/20 transition-colors disabled:opacity-50"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-indigo/50 focus:ring-1 focus:ring-neon-indigo/20 transition-colors disabled:opacity-50"
               placeholder="ej: white-collar, solo-leveling"
             />
             <p class="text-[10px] text-text-muted mt-1">El slug de la serie en trakt.tv (parte final de la URL)</p>
@@ -175,7 +175,7 @@ function onBackdrop(e: MouseEvent) {
                 type="number"
                 min="1"
                 required
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 focus:ring-1 focus:ring-neon-indigo/20 transition-colors"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 focus:ring-1 focus:ring-neon-indigo/20 transition-colors"
                 placeholder="1"
               />
             </div>
@@ -187,7 +187,7 @@ function onBackdrop(e: MouseEvent) {
                 type="number"
                 min="2000"
                 required
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 focus:ring-1 focus:ring-neon-indigo/20 transition-colors"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 focus:ring-1 focus:ring-neon-indigo/20 transition-colors"
                 :placeholder="String(new Date().getFullYear())"
               />
             </div>
@@ -203,7 +203,7 @@ function onBackdrop(e: MouseEvent) {
                 type="text"
                 list="series-platform-options"
                 autocomplete="off"
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-indigo/50 focus:ring-1 focus:ring-neon-indigo/20 transition-colors"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-indigo/50 focus:ring-1 focus:ring-neon-indigo/20 transition-colors"
                 placeholder="Netflix, Crunchyroll..."
               />
               <!-- Sugerencias con las plataformas ya usadas; sigue admitiendo texto libre -->
@@ -216,7 +216,7 @@ function onBackdrop(e: MouseEvent) {
               <select
                 id="series-status"
                 v-model="form.status_viewed"
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors cursor-pointer"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors cursor-pointer"
               >
                 <option v-for="opt in SERIES_STATUS_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
               </select>

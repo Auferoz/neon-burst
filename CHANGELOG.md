@@ -6,6 +6,12 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.19.0 — 2026-11-11
+- Steam, sorteo: botón "Guardar como lista" en la pestaña Sorteo que guarda los juegos que siguen marcados en el bombo como una lista nueva, o reemplaza la lista que estás usando como filtro
+- Steam, sorteo: el resultado tiene una presentación nueva, con destello, confeti, anillo neón giratorio alrededor del póster, rayos de luz y el fondo del juego difuminado
+- Steam, sorteo: botón "Guardar captura" en el resultado que genera una imagen del juego elegido (en el celular abre el menú de compartir) y "Copiar imagen" para pegarla directo donde quieras
+- Accesibilidad: más contraste en todo el sitio — el texto gris tenue ahora se lee bien sobre cualquier fondo, el morado de los textos es más claro, los campos de los formularios tienen un borde visible y el texto de las tarjetas ya no se pierde sobre portadas claras
+
 ## 1.18.3 — 2026-10-31
 - Home: las tarjetas de Services Web, Wuwa Database y Cartera Mensual apuntan a sus subdominios de neonburst.cl
 

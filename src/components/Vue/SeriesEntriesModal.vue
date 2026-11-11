@@ -202,7 +202,7 @@ function onKeydown(e: KeyboardEvent) {
                   min="0"
                   max="100"
                   placeholder="Sin puntuar"
-                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
+                  class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
                 />
               </div>
               <div>
@@ -214,7 +214,7 @@ function onKeydown(e: KeyboardEvent) {
                   min="0"
                   max="100"
                   placeholder="Vacío = automático"
-                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
+                  class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
                 />
               </div>
               <div>
@@ -226,7 +226,7 @@ function onKeydown(e: KeyboardEvent) {
                   min="0"
                   max="100"
                   placeholder="Vacío = automático"
-                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
+                  class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
                 />
               </div>
             </div>
@@ -308,7 +308,7 @@ function onKeydown(e: KeyboardEvent) {
                   v-model="row.year_watched"
                   type="number"
                   min="2000"
-                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
+                  class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
                 />
               </div>
               <div>
@@ -319,7 +319,7 @@ function onKeydown(e: KeyboardEvent) {
                   type="text"
                   :list="`series-entry-platform-options-${row.id}`"
                   autocomplete="off"
-                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
+                  class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors"
                 />
                 <datalist :id="`series-entry-platform-options-${row.id}`">
                   <option v-for="p in platformSuggestions" :key="p" :value="p" />
@@ -330,7 +330,7 @@ function onKeydown(e: KeyboardEvent) {
                 <select
                   :id="`series-entry-status-${row.id}`"
                   v-model="row.status_viewed"
-                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors cursor-pointer"
+                  class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-indigo/50 transition-colors cursor-pointer"
                 >
                   <option v-for="opt in SERIES_STATUS_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                 </select>

@@ -32,6 +32,8 @@ html {
   --color-neon-pink: #ff2d95;
   --color-neon-pink-dim: #ff2d9566;
   --color-neon-purple: #b026ff;
+  /* Text-only variant of neon-purple: #b026ff is 3.4-4.2:1 on the surfaces (fails AA 4.5:1). Keep the base for fills, borders and glows (white text on #b026ff is 4.6:1; on this one it would drop to 3.05:1). */
+  --color-neon-purple-text: #c46bff;
   --color-neon-orange: #ff7b00;
   --color-neon-gold: #ffd700;
   --color-neon-yellow: #e5ff00;
@@ -49,11 +51,13 @@ html {
   /* Text hierarchy — WCAG AA compliant on surface-0 */
   --color-text-primary: #e8e8f0;
   --color-text-secondary: #9898b0;
-  --color-text-muted: #5c5c78;
+  --color-text-muted: #8080a0;
 
   /* Borders */
   --color-border-default: #1e1e30;
   --color-border-hover: #2a2a42;
+  /* Form fields: WCAG 1.4.11 asks 3:1 for the boundary of a control; border-default is 1.2:1. */
+  --color-border-input: #60607f;
 
   /* Font stack — monospace for terminal aesthetic */
   --font-mono: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace;

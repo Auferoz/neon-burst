@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { addItem, listExists, steamGameExists } from '../../../../../../services/steamRaffleService';
+import { addItem, getListById, listExists, replaceItems, steamGameExists } from '../../../../../../services/steamRaffleService';
+import { sanitizeAppidList } from '../../../../../../utils/steamRaffle';
 
 export const prerender = false;
 
@@ -24,4 +25,19 @@ export const POST: APIRoute = async ({ params, request }) => {
 
   await addItem(env.DB, listId, appid);
   return json({ success: true }, 201);
+};
+
+/** `{ appids }` replaces the whole list (games outside the library are skipped). */
+export const PUT: APIRoute = async ({ params, request }) => {
+  const listId = Number(params.id);
+  if (!Number.isInteger(listId) || listId <= 0) return json({ error: 'Id de lista inválido' }, 400);
+
+  const body = await request.json().catch(() => null);
+  const appids = sanitizeAppidList(body?.appids);
+  if (!appids) return json({ error: 'Lista de juegos inválida' }, 400);
+
+  if (!(await listExists(env.DB, listId))) return json({ error: 'Lista no encontrada' }, 404);
+
+  await replaceItems(env.DB, listId, appids);
+  return json(await getListById(env.DB, listId));
 };

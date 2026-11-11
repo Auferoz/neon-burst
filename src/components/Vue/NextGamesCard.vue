@@ -103,7 +103,7 @@ function getPlatformColor(platform: string): string {
           loading="lazy"
         />
       </div>
-      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/92" />
     </div>
 
     <div class="relative z-10 flex gap-4 p-2 flex-1">
@@ -141,7 +141,7 @@ function getPlatformColor(platform: string): string {
               :aria-label="featured ? `Quitar ${game.name} de destacados` : `Marcar ${game.name} como destacado`"
               :aria-pressed="featured"
               class="w-6 h-6 flex items-center justify-center rounded-md transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neon-pink"
-              :class="featured ? 'text-neon-pink hover:text-neon-pink/70' : 'text-text-secondary hover:text-neon-pink hover:bg-neon-pink/10'"
+              :class="featured ? 'text-neon-pink hover:bg-neon-pink/10' : 'text-text-secondary hover:text-neon-pink hover:bg-neon-pink/10'"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" :fill="featured ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 2h14a1 1 0 0 1 1 1v19.143a.5.5 0 0 1-.766.424L12 18.03l-7.234 4.536A.5.5 0 0 1 4 22.143V3a1 1 0 0 1 1-1z"/></svg>
             </button>

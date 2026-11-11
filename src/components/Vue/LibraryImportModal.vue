@@ -232,7 +232,7 @@ watch(
             <select
               id="import-store"
               v-model="store"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             >
               <option v-for="s in STORES" :key="s" :value="s">{{ s }}</option>
             </select>
@@ -244,7 +244,7 @@ watch(
             <select
               id="import-owned"
               v-model="ownedVia"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             >
               <option v-for="o in OWNED_VIA" :key="o" :value="o">{{ o }}</option>
             </select>
@@ -260,7 +260,7 @@ watch(
             v-model="rawList"
             rows="10"
             placeholder="Control&#10;Alan Wake II&#10;Disco Elysium"
-            class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:border-neon-yellow/40 focus-visible:outline-none resize-y font-mono"
+            class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:border-neon-yellow/40 focus-visible:outline-none resize-y font-mono"
           ></textarea>
           <p class="text-[11px] text-text-muted mt-1">
             {{ titles.length }} título{{ titles.length === 1 ? '' : 's' }} detectado{{ titles.length === 1 ? '' : 's' }}

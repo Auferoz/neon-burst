@@ -30,7 +30,7 @@ const props = defineProps<{
 const typeClass: Record<string, string> = {
   Manga: 'text-neon-orange border-neon-orange/30 bg-neon-orange/10',
   Manhwa: 'text-neon-cyan border-neon-cyan/30 bg-neon-cyan/10',
-  Manhua: 'text-neon-purple border-neon-purple/30 bg-neon-purple/10',
+  Manhua: 'text-neon-purple-text border-neon-purple/30 bg-neon-purple/10',
 };
 
 const estadoClass: Record<string, string> = {
@@ -74,7 +74,7 @@ const progressLabel = computed(() => {
     <!-- Cover background (decorative) -->
     <div v-if="manga.cover" class="absolute inset-0 z-0" aria-hidden="true">
       <img :src="manga.cover" alt="" class="w-full h-full object-cover scale-150 blur-md opacity-40" loading="lazy" />
-      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/92" />
     </div>
     <div v-else class="absolute inset-0 z-0 bg-surface-1" aria-hidden="true" />
 

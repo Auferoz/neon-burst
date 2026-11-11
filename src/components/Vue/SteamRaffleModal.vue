@@ -23,6 +23,7 @@ import SteamRaffleFilters from './SteamRaffleFilters.vue';
 import SteamRaffleReel from './SteamRaffleReel.vue';
 import SteamRaffleLists from './SteamRaffleLists.vue';
 import SteamRaffleResult from './SteamRaffleResult.vue';
+import SteamRaffleSaveList from './SteamRaffleSaveList.vue';
 
 const props = defineProps<{
   open: boolean;
@@ -49,10 +50,18 @@ const listsLoaded = ref(false);
 const listsBusy = ref(false);
 const listsError = ref('');
 
+const saveBusy = ref(false);
+const saveError = ref('');
+const saveMessage = ref('');
+
 const winner = ref<RaffleGame | null>(null);
 const reelPool = ref<RaffleGame[]>([]);
 const schedule = ref<ReelStep[]>([]);
 const announcement = ref('');
+/** Pool size of the last draw (shown on the result capture). */
+const drawnPoolSize = ref(0);
+/** Bumped on every draw so the result re-mounts and replays its reveal. */
+const drawId = ref(0);
 
 const panelEl = ref<HTMLElement | null>(null);
 let lastFocused: HTMLElement | null = null;
@@ -67,6 +76,15 @@ const counterText = computed(() => {
   const n = pool.value.length;
   return `🎲 ${n} ${n === 1 ? 'juego' : 'juegos'} en el bombo`;
 });
+const activeList = computed(() =>
+  filters.value.listId === null ? null : lists.value.find(l => l.id === filters.value.listId) ?? null,
+);
+
+// Any change to what's in the pool makes the last "saved" message stale.
+watch([filters, excluded], () => {
+  saveMessage.value = '';
+  saveError.value = '';
+}, { deep: true });
 
 // ── Persistence (filters only; exclusions are per session) ──
 
@@ -174,6 +192,55 @@ function onRemoveItem(listId: number, appid: number) {
   });
 }
 
+// ── Save the current pool as a list ──
+
+function sortByName(all: RaffleList[]): RaffleList[] {
+  return [...all].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+}
+
+/**
+ * After saving, the list is selected as filter and the exclusions cleared:
+ * the pool stays exactly the same, but now it's backed by the saved list.
+ */
+function adoptSavedList(saved: RaffleList, message: string) {
+  lists.value = sortByName([...lists.value.filter(l => l.id !== saved.id), saved]);
+  filters.value = { ...filters.value, listId: saved.id };
+  excluded.value = new Set();
+  // Set after the watcher above has cleared it for the filter/exclusion change.
+  nextTick(() => { saveMessage.value = message; });
+}
+
+async function savePool(request: () => Promise<RaffleList>, message: (l: RaffleList) => string) {
+  const appids = pool.value.map(g => g.appid);
+  if (appids.length === 0) return;
+  saveBusy.value = true;
+  saveError.value = '';
+  try {
+    const saved = await request();
+    adoptSavedList(saved, message(saved));
+  } catch (e) {
+    saveError.value = (e as Error).message;
+  } finally {
+    saveBusy.value = false;
+  }
+}
+
+const savedText = (l: RaffleList) => `${l.appids.length} ${l.appids.length === 1 ? 'juego' : 'juegos'}`;
+
+function onSavePoolAsNew(name: string) {
+  return savePool(
+    () => api<RaffleList>('/api/steam/raffle-lists', jsonInit('POST', { name, appids: pool.value.map(g => g.appid) })),
+    l => `Lista «${l.name}» guardada con ${savedText(l)}`,
+  );
+}
+
+function onReplaceListWithPool(id: number) {
+  return savePool(
+    () => api<RaffleList>(`/api/steam/raffle-lists/${id}/items`, jsonInit('PUT', { appids: pool.value.map(g => g.appid) })),
+    l => `Lista «${l.name}» actualizada: ${savedText(l)}`,
+  );
+}
+
 // ── Exclusions ──
 
 function toggleExcluded(appid: number) {
@@ -213,6 +280,8 @@ function start() {
   const index = pickWinnerIndex(frozen.length, cryptoUint32);
   const chosen = frozen[index];
   winner.value = chosen;
+  drawnPoolSize.value = frozen.length;
+  drawId.value++;
 
   if (frozen.length === 1 || prefersReducedMotion()) {
     showResult(chosen);
@@ -395,6 +464,17 @@ const tabClass = (active: boolean) =>
               <p v-if="matching.length > 0" class="text-[11px] text-text-muted mb-3">
                 Haz clic en un juego para sacarlo de este sorteo.
               </p>
+              <div v-if="matching.length > 0" class="mb-4">
+                <SteamRaffleSaveList
+                  :count="pool.length"
+                  :active-list="activeList"
+                  :busy="saveBusy"
+                  :error="saveError"
+                  :saved="saveMessage"
+                  @save-new="onSavePoolAsNew"
+                  @replace="onReplaceListWithPool"
+                />
+              </div>
 
               <p v-if="matching.length === 0" class="border border-dashed border-neon-cyan/20 rounded-xl p-8 text-center text-sm text-text-secondary">
                 No hay juegos con estos filtros
@@ -463,7 +543,9 @@ const tabClass = (active: boolean) =>
           <!-- Result -->
           <div v-else-if="phase === 'result' && winner" class="lg:h-full lg:overflow-y-auto">
             <SteamRaffleResult
+              :key="drawId"
               :game="winner"
+              :pool-size="drawnPoolSize"
               @again="start"
               @exclude-and-again="excludeWinnerAndAgain"
               @back-to-filters="phase = 'filters'"

@@ -45,7 +45,7 @@ function hideBroken(e: Event) {
         @error="hideBroken"
       />
     </div>
-    <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/90 to-surface-0/70"></div>
+    <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/92"></div>
 
     <div class="relative z-10 flex gap-4 p-3 flex-1">
       <!-- Cover -->
@@ -99,7 +99,7 @@ function hideBroken(e: Event) {
         <!-- Names exactly what IGDB could not fill, so the fix is obvious -->
         <p
           v-if="missingLabels.length"
-          class="text-[10px] text-neon-pink/90 mb-2"
+          class="text-[10px] text-neon-pink mb-2"
           :title="`Sin datos: ${missingLabels.join(', ')}`"
         >
           ⚠ Falta: {{ missingLabels.join(' · ') }}

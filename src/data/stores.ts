@@ -38,7 +38,7 @@ export type OwnedVia = (typeof OWNED_VIA)[number];
  */
 export const STORE_BADGE: Record<Store, string> = {
   'Epic Games': 'text-text-primary bg-surface-4 border-border-hover',
-  'GOG': 'text-neon-purple bg-neon-purple/15 border-neon-purple/30',
+  'GOG': 'text-neon-purple-text bg-neon-purple/15 border-neon-purple/30',
   'EA app': 'text-neon-pink bg-neon-pink/10 border-neon-pink/30',
   'Ubisoft Connect': 'text-neon-cyan bg-neon-cyan/10 border-neon-cyan/30',
   'Battle.net': 'text-neon-blue bg-neon-blue/10 border-neon-blue/30',

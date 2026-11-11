@@ -64,7 +64,7 @@ async function submit() {
         type="text"
         placeholder="Agregar tarea... ej: pagar luz mañana 18:00 p1 #Casa @urgente cada mes"
         aria-label="Agregar tarea rápida"
-        class="flex-1 bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-neon-green/50 transition-colors"
+        class="flex-1 bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-neon-green/50 transition-colors"
       />
       <button
         type="submit"

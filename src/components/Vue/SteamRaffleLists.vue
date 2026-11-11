@@ -158,7 +158,7 @@ const activeDescendant = computed(() => {
 });
 
 const inputClass =
-  'w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-neon-cyan/50 transition-colors';
+  'w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-neon-cyan/50 transition-colors';
 const btnClass =
   'px-3 py-1.5 text-xs font-medium text-neon-cyan border border-neon-cyan/30 rounded-lg hover:bg-neon-cyan/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
 const btnMutedClass =

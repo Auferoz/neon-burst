@@ -215,13 +215,13 @@ onMounted(fetchManga);
           type="text"
           placeholder="Buscar manga..."
           aria-label="Buscar manga por título"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-orange/40 transition-colors w-full sm:w-64"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-orange/40 transition-colors w-full sm:w-64"
         />
-        <select v-model="filterType" aria-label="Filtrar por tipo" class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-orange/40 transition-colors cursor-pointer">
+        <select v-model="filterType" aria-label="Filtrar por tipo" class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-orange/40 transition-colors cursor-pointer">
           <option value="">Todos los tipos</option>
           <option v-for="t in allTypes" :key="t" :value="t">{{ t }}</option>
         </select>
-        <select v-model="filterEstado" aria-label="Filtrar por estado" class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-orange/40 transition-colors cursor-pointer">
+        <select v-model="filterEstado" aria-label="Filtrar por estado" class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-orange/40 transition-colors cursor-pointer">
           <option value="">Todos los estados</option>
           <option value="Leyendo">Leyendo</option>
           <option value="Completado">Completado</option>
@@ -229,11 +229,11 @@ onMounted(fetchManga);
           <option value="Abandonado">Abandonado</option>
           <option value="Pendiente">Pendiente</option>
         </select>
-        <select v-model="filterFormat" aria-label="Filtrar por formato" class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-orange/40 transition-colors cursor-pointer">
+        <select v-model="filterFormat" aria-label="Filtrar por formato" class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-orange/40 transition-colors cursor-pointer">
           <option value="">Todos los formatos</option>
           <option v-for="f in allFormats" :key="f" :value="f">{{ f }}</option>
         </select>
-        <select v-model="filterGenre" aria-label="Filtrar por género" class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-orange/40 transition-colors cursor-pointer">
+        <select v-model="filterGenre" aria-label="Filtrar por género" class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-orange/40 transition-colors cursor-pointer">
           <option value="">Todos los géneros</option>
           <option v-for="g in allGenres" :key="g" :value="g">{{ g }}</option>
         </select>

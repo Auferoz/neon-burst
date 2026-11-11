@@ -337,3 +337,104 @@ export const CONTROL_LABELS: Record<ControlKey, string> = {
 export function controllerLabel(support: string): string {
   return (CONTROL_LABELS as Record<string, string>)[support] ?? 'Sin dato de control';
 }
+
+// ── Saved lists from the current pool ──
+
+/** Upper bound of appids accepted in one save (well above any real library). */
+export const RAFFLE_LIST_MAX_ITEMS = 5000;
+
+/**
+ * Positive integer appids, deduped and in their original order. Null when the
+ * input is not an array, nothing valid survives, or it exceeds `max`.
+ */
+export function sanitizeAppidList(raw: unknown, max = RAFFLE_LIST_MAX_ITEMS): number[] | null {
+  if (!Array.isArray(raw) || raw.length > max) return null;
+  const seen = new Set<number>();
+  for (const value of raw) {
+    const n = typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
+    if (typeof n === 'number' && Number.isInteger(n) && n > 0) seen.add(n);
+  }
+  return seen.size > 0 ? [...seen] : null;
+}
+
+export function chunk<T>(items: readonly T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
+// ── Result capture ──
+
+/**
+ * Greedy word wrap for canvas text. Words wider than `maxWidth` are hard-cut;
+ * past `maxLines` the last line is shortened to fit with an ellipsis.
+ */
+export function wrapText(
+  text: string,
+  maxWidth: number,
+  measure: (s: string) => number,
+  maxLines = Infinity,
+): string[] {
+  const lines: string[] = [];
+  let current = '';
+
+  const pushWord = (word: string) => {
+    let rest = word;
+    while (measure(rest) > maxWidth && rest.length > 1) {
+      let cut = rest.length - 1;
+      while (cut > 1 && measure(rest.slice(0, cut)) > maxWidth) cut--;
+      lines.push(rest.slice(0, cut));
+      rest = rest.slice(cut);
+    }
+    current = rest;
+  };
+
+  for (const word of text.trim().split(/\s+/).filter(Boolean)) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (measure(candidate) <= maxWidth) {
+      current = candidate;
+    } else {
+      if (current) lines.push(current);
+      pushWord(word);
+    }
+  }
+  if (current) lines.push(current);
+
+  if (lines.length <= maxLines) return lines;
+
+  const kept = lines.slice(0, maxLines);
+  let last = lines.slice(maxLines - 1).join(' ');
+  while (last.length > 0 && measure(`${last}…`) > maxWidth) last = last.slice(0, -1);
+  kept[maxLines - 1] = `${last.trimEnd()}…`;
+  return kept;
+}
+
+/** `sorteo-<slug>-YYYY-MM-DD.png`, in local time. */
+export function raffleCaptureFileName(gameName: string, date: Date): string {
+  const slug = gameName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'juego';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const stamp = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `sorteo-${slug}-${stamp}.png`;
+}
+
+/** HLTB hours (decimal) → "12 h 30 min"; empty → "Sin dato". */
+export function formatHours(hours: number | null): string {
+  if (!hours) return 'Sin dato';
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  return m > 0 ? `${h} h ${m} min` : `${h} h`;
+}
+
+/** Steam playtime minutes → "2 h 15 min"; 0 → "Sin jugar". */
+export function formatPlaytime(minutes: number): string {
+  if (minutes <= 0) return 'Sin jugar';
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h} h ${m} min` : `${h} h`;
+}

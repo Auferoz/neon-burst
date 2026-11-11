@@ -130,7 +130,7 @@ onMounted(load);
             aria-label="URL de la tienda de Steam o appid del juego"
             :aria-invalid="!!addError"
             aria-describedby="wishlist-add-help"
-            class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-pink/40 transition-colors"
+            class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-pink/40 transition-colors"
           />
           <p v-if="addError" id="wishlist-add-help" class="mt-1 text-[11px] text-neon-pink" role="alert">{{ addError }}</p>
           <p v-else id="wishlist-add-help" class="mt-1 text-[11px] text-text-muted">
@@ -191,12 +191,12 @@ onMounted(load);
             type="search"
             placeholder="Buscar por nombre..."
             aria-label="Buscar en la lista por nombre"
-            class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-pink/40 transition-colors w-full sm:w-64"
+            class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-pink/40 transition-colors w-full sm:w-64"
           />
           <select
             v-model="filters.price"
             aria-label="Filtrar por precio"
-            class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+            class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
           >
             <option value="">Todos los precios</option>
             <option v-for="b in PRICE_BUCKETS" :key="b.value" :value="b.value">{{ b.label }}</option>
@@ -205,7 +205,7 @@ onMounted(load);
           <select
             v-model="filters.release"
             aria-label="Filtrar por fecha de salida"
-            class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+            class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
           >
             <option value="">Cualquier fecha</option>
             <option value="released">Ya lanzados</option>
@@ -248,7 +248,7 @@ onMounted(load);
         <select
           v-model="sortBy"
           aria-label="Ordenar la lista"
-          class="ml-auto bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+          class="ml-auto bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
         >
           <option value="recent">Agregados recientemente</option>
           <option value="discount">Mayor descuento</option>

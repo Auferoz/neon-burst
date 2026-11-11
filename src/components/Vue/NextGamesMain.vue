@@ -308,12 +308,12 @@ onMounted(() => {
               type="text"
               placeholder="Buscar juego, developer, género..."
               aria-label="Buscar juego por nombre, developer o género"
-              class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-pink/40 transition-colors w-full sm:w-64"
+              class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-pink/40 transition-colors w-full sm:w-64"
             />
             <select
               v-model="selectedMonth"
               aria-label="Filtrar por mes"
-              class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+              class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
             >
               <option value="">Todos los meses</option>
               <option v-for="m in allMonths" :key="m.value" :value="String(m.value)">
@@ -323,7 +323,7 @@ onMounted(() => {
             <select
               v-model="selectedPlatform"
               aria-label="Filtrar por plataforma"
-              class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+              class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
             >
               <option value="">Todas las plataformas</option>
               <option v-for="p in availablePlatforms" :key="p" :value="p">
@@ -333,7 +333,7 @@ onMounted(() => {
             <select
               v-model="filterType"
               aria-label="Filtrar por estado"
-              class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
+              class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-pink/40 transition-colors cursor-pointer"
             >
               <option value="all">Todos</option>
               <option value="upcoming">Por lanzar</option>

@@ -45,7 +45,7 @@ const onSale = computed(() => !!props.item.price && props.item.price.discount > 
         class="w-full h-full object-cover object-top scale-105 group-hover:opacity-30 group-hover:blur-sm transition-all duration-300"
         loading="lazy"
       />
-      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/92" />
     </div>
 
     <div class="relative z-10 flex gap-4 p-2 flex-1">

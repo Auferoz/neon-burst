@@ -118,7 +118,7 @@ function onList(e: Event) {
 }
 
 const fieldClass =
-  'w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-cyan/50 transition-colors';
+  'w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-cyan/50 transition-colors';
 </script>
 
 <template>

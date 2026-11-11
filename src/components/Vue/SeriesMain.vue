@@ -271,12 +271,12 @@ onMounted(fetchSeries);
           type="text"
           placeholder="Buscar serie..."
           aria-label="Buscar serie por nombre"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-indigo/40 transition-colors w-full sm:w-64"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-neon-indigo/40 transition-colors w-full sm:w-64"
         />
         <select
           v-model="filterYear"
           aria-label="Filtrar por año visto"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-indigo/40 transition-colors cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-indigo/40 transition-colors cursor-pointer"
         >
           <option value="">Todos los años</option>
           <option v-for="y in allYears" :key="y" :value="String(y)">{{ y }}</option>
@@ -284,7 +284,7 @@ onMounted(fetchSeries);
         <select
           v-model="filterPlatform"
           aria-label="Filtrar por plataforma"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-indigo/40 transition-colors cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-indigo/40 transition-colors cursor-pointer"
         >
           <option value="">Todas las plataformas</option>
           <option v-for="p in allPlatforms" :key="p" :value="p.toLowerCase()">{{ p }}</option>
@@ -292,7 +292,7 @@ onMounted(fetchSeries);
         <select
           v-model="filterStatus"
           aria-label="Filtrar por estado"
-          class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-indigo/40 transition-colors cursor-pointer"
+          class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:border-neon-indigo/40 transition-colors cursor-pointer"
         >
           <option value="">Todos los estados</option>
           <option value="completed">Completed</option>

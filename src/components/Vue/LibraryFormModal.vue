@@ -198,7 +198,7 @@ watch(
               v-model="igdbQuery"
               type="text"
               placeholder="URL de IGDB, slug o ID"
-              class="flex-1 bg-surface-1 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="flex-1 bg-surface-1 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:border-neon-yellow/40 focus-visible:outline-none"
               @keydown.enter.prevent="importFromIgdb"
             />
             <button
@@ -220,7 +220,7 @@ watch(
               v-model="form.title"
               type="text"
               required
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             />
           </div>
 
@@ -229,7 +229,7 @@ watch(
             <select
               id="lib-store"
               v-model="form.store"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             >
               <option v-for="s in STORES" :key="s" :value="s">{{ s }}</option>
             </select>
@@ -240,7 +240,7 @@ watch(
             <select
               id="lib-owned"
               v-model="form.owned_via"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             >
               <option v-for="o in OWNED_VIA" :key="o" :value="o">{{ o }}</option>
             </select>
@@ -255,7 +255,7 @@ watch(
               v-model="form.released"
               type="text"
               placeholder="15/10/2019"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             />
           </div>
 
@@ -265,7 +265,7 @@ watch(
               id="lib-companie"
               v-model="form.companie"
               type="text"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             />
           </div>
 
@@ -276,7 +276,7 @@ watch(
               v-model="form.genre"
               type="text"
               placeholder="Action, RPG"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             />
           </div>
 
@@ -289,7 +289,7 @@ watch(
               v-model="form.poster"
               type="text"
               placeholder="co1sfj"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             />
           </div>
 
@@ -302,7 +302,7 @@ watch(
               v-model="form.artworks"
               type="text"
               placeholder="ar4pd7"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             />
           </div>
 
@@ -314,7 +314,7 @@ watch(
               id="lib-store-url"
               v-model="form.store_url"
               type="url"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none"
             />
           </div>
 
@@ -324,7 +324,7 @@ watch(
               id="lib-notes"
               v-model="form.notes"
               rows="2"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none resize-y"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-xs text-text-primary focus:border-neon-yellow/40 focus-visible:outline-none resize-y"
             ></textarea>
           </div>
         </div>

@@ -199,7 +199,7 @@ function onKeydown(e: KeyboardEvent) {
                   min="0"
                   max="100"
                   placeholder="Sin puntuar"
-                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
+                  class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
                 />
               </div>
               <div>
@@ -211,7 +211,7 @@ function onKeydown(e: KeyboardEvent) {
                   min="0"
                   max="100"
                   placeholder="Vacío = automático"
-                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
+                  class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
                 />
               </div>
               <div>
@@ -223,7 +223,7 @@ function onKeydown(e: KeyboardEvent) {
                   min="0"
                   max="100"
                   placeholder="Vacío = automático"
-                  class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
+                  class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
                 />
               </div>
             </div>
@@ -310,7 +310,7 @@ function onKeydown(e: KeyboardEvent) {
                       type="number"
                       min="1900"
                       max="2100"
-                      class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
+                      class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
                     />
                   </div>
                   <div>
@@ -321,7 +321,7 @@ function onKeydown(e: KeyboardEvent) {
                       type="text"
                       :list="`movie-entry-platform-options-${row.watched_id}`"
                       autocomplete="off"
-                      class="w-full bg-surface-2 border border-border-default rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
+                      class="w-full bg-surface-2 border border-border-input rounded-lg px-2.5 py-1.5 text-sm text-text-primary focus:outline-none focus:border-neon-emerald/50 transition-colors"
                     />
                     <datalist :id="`movie-entry-platform-options-${row.watched_id}`">
                       <option v-for="p in platformSuggestions" :key="p" :value="p" />

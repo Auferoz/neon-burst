@@ -39,7 +39,7 @@ const estadoColor: Record<string, string> = {
   Completado: 'text-neon-gold border-neon-gold/30 bg-neon-gold/10',
   Abandonado: 'text-neon-pink border-neon-pink/30 bg-neon-pink/10',
   Jugando: 'text-neon-blue border-neon-blue/30 bg-neon-blue/10',
-  Recurrente: 'text-neon-purple border-neon-purple/30 bg-neon-purple/10',
+  Recurrente: 'text-neon-purple-text border-neon-purple/30 bg-neon-purple/10',
   Pausado: 'text-neon-yellow border-neon-yellow/30 bg-neon-yellow/10',
 };
 
@@ -76,7 +76,7 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
         class="w-full h-full object-cover object-top scale-105 group-hover:opacity-30 group-hover:blur-sm transition-all duration-300"
         loading="lazy"
       />
-      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/92" />
     </div>
     <div
       v-else-if="posterUrl"
@@ -89,7 +89,7 @@ const artworkUrl = igdbImage(props.game.artworks, 'screenshot_big');
         class="w-full h-full object-cover scale-150 blur-md opacity-40"
         loading="lazy"
       />
-      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/85 opacity-90" />
+      <div class="absolute inset-0 bg-linear-to-t from-surface-0 via-surface-0/95 to-surface-0/92" />
     </div>
     <div
       v-else

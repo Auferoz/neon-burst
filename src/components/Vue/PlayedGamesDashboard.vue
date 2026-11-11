@@ -32,7 +32,7 @@ const stats = computed(() => {
       icon: IconRepeat as Component,
       bg: 'bg-neon-purple/10',
       border: 'border-neon-purple/25',
-      text: 'text-neon-purple',
+      text: 'text-neon-purple-text',
     },
     {
       label: 'Pausado',

@@ -271,7 +271,7 @@ function onBackdrop(e: MouseEvent) {
                 type="text"
                 :disabled="importing"
                 @keydown.enter.prevent="importFromIgdb"
-                class="flex-1 bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-cyan/50 focus:ring-1 focus:ring-neon-cyan/20 disabled:opacity-50 transition-colors"
+                class="flex-1 bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-cyan/50 focus:ring-1 focus:ring-neon-cyan/20 disabled:opacity-50 transition-colors"
                 placeholder="https://www.igdb.com/games/bright-memory  ·  bright-memory  ·  103298"
               />
               <button
@@ -302,7 +302,7 @@ function onBackdrop(e: MouseEvent) {
                 v-model="form.title"
                 type="text"
                 required
-                class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors"
+                class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors"
                 placeholder="Nombre del juego"
               />
             </div>
@@ -311,7 +311,7 @@ function onBackdrop(e: MouseEvent) {
               <select
                 id="game-estado"
                 v-model="form.estado"
-                class="bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors cursor-pointer"
+                class="bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors cursor-pointer"
               >
                 <option value="Jugando">Jugando</option>
                 <option value="Recurrente">Recurrente</option>
@@ -329,7 +329,7 @@ function onBackdrop(e: MouseEvent) {
               <input
                 type="checkbox"
                 v-model="form.is_demo"
-                class="w-4 h-4 rounded border-border-default bg-surface-2 text-neon-purple accent-neon-purple cursor-pointer"
+                class="w-4 h-4 rounded border-border-input bg-surface-2 text-neon-purple-text accent-neon-purple cursor-pointer"
               />
               <span class="text-xs text-text-secondary">Demo</span>
             </label>
@@ -337,7 +337,7 @@ function onBackdrop(e: MouseEvent) {
               <input
                 type="checkbox"
                 v-model="form.is_early_access"
-                class="w-4 h-4 rounded border-border-default bg-surface-2 text-neon-yellow accent-neon-yellow cursor-pointer"
+                class="w-4 h-4 rounded border-border-input bg-surface-2 text-neon-yellow accent-neon-yellow cursor-pointer"
               />
               <span class="text-xs text-text-secondary">Early Access</span>
             </label>
@@ -345,7 +345,7 @@ function onBackdrop(e: MouseEvent) {
               <input
                 type="checkbox"
                 v-model="form.is_testing"
-                class="w-4 h-4 rounded border-border-default bg-surface-2 text-neon-cyan accent-neon-cyan cursor-pointer"
+                class="w-4 h-4 rounded border-border-input bg-surface-2 text-neon-cyan accent-neon-cyan cursor-pointer"
               />
               <span class="text-xs text-text-secondary">Review</span>
             </label>
@@ -355,37 +355,37 @@ function onBackdrop(e: MouseEvent) {
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label for="game-companie" class="block text-xs text-text-muted mb-1">Compañía</label>
-              <input id="game-companie" v-model="form.companie" type="text" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="Studio / Publisher" />
+              <input id="game-companie" v-model="form.companie" type="text" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="Studio / Publisher" />
             </div>
             <div>
               <label for="game-released" class="block text-xs text-text-muted mb-1">Lanzamiento</label>
-              <input id="game-released" v-model="form.released" type="text" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="2024" />
+              <input id="game-released" v-model="form.released" type="text" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="2024" />
             </div>
             <div>
               <label for="game-platform" class="block text-xs text-text-muted mb-1">Plataforma</label>
-              <input id="game-platform" v-model="form.console_pc" type="text" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="PC, Xbox, PS5..." />
+              <input id="game-platform" v-model="form.console_pc" type="text" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="PC, Xbox, PS5..." />
             </div>
           </div>
 
           <!-- Genre -->
           <div>
             <label for="game-genre" class="block text-xs text-text-muted mb-1">Géneros</label>
-            <input id="game-genre" v-model="form.genre" type="text" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="RPG, Acción, Aventura..." />
+            <input id="game-genre" v-model="form.genre" type="text" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="RPG, Acción, Aventura..." />
           </div>
 
           <!-- Media IDs -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label for="game-poster" class="block text-xs text-text-muted mb-1">Poster (IGDB ID)</label>
-              <input id="game-poster" v-model="form.poster" type="text" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="co1234" />
+              <input id="game-poster" v-model="form.poster" type="text" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="co1234" />
             </div>
             <div>
               <label for="game-artworks" class="block text-xs text-text-muted mb-1">Artwork (IGDB ID)</label>
-              <input id="game-artworks" v-model="form.artworks" type="text" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="ar1234" />
+              <input id="game-artworks" v-model="form.artworks" type="text" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="ar1234" />
             </div>
             <div>
               <label for="game-trailer" class="block text-xs text-text-muted mb-1">Trailer (YouTube ID)</label>
-              <input id="game-trailer" v-model="form.trailer" type="text" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="dQw4w9WgXcQ" />
+              <input id="game-trailer" v-model="form.trailer" type="text" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="dQw4w9WgXcQ" />
             </div>
           </div>
 
@@ -393,15 +393,15 @@ function onBackdrop(e: MouseEvent) {
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label for="game-logros-obt" class="block text-xs text-text-muted mb-1">Logros obt.</label>
-              <input id="game-logros-obt" v-model="form.logros_obt" type="number" min="0" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0" />
+              <input id="game-logros-obt" v-model="form.logros_obt" type="number" min="0" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0" />
             </div>
             <div>
               <label for="game-logros-total" class="block text-xs text-text-muted mb-1">Logros total</label>
-              <input id="game-logros-total" v-model="form.logros_total" type="number" min="0" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0" />
+              <input id="game-logros-total" v-model="form.logros_total" type="number" min="0" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0" />
             </div>
             <div>
               <label for="game-first-year" class="block text-xs text-text-muted mb-1">Primer año</label>
-              <input id="game-first-year" v-model="form.first_year_played" type="number" min="1990" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="2024" />
+              <input id="game-first-year" v-model="form.first_year_played" type="number" min="1990" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="2024" />
             </div>
           </div>
 
@@ -409,19 +409,19 @@ function onBackdrop(e: MouseEvent) {
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
               <label for="game-mc" class="block text-xs text-text-muted mb-1">Metacritic</label>
-              <input id="game-mc" v-model="form.rating_metacritic" type="number" min="0" max="100" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
+              <input id="game-mc" v-model="form.rating_metacritic" type="number" min="0" max="100" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
             </div>
             <div>
               <label for="game-opencritic" class="block text-xs text-text-muted mb-1">OpenCritic</label>
-              <input id="game-opencritic" v-model="form.rating_opencritic" type="number" step="0.01" min="0" max="100" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
+              <input id="game-opencritic" v-model="form.rating_opencritic" type="number" step="0.01" min="0" max="100" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
             </div>
             <div>
               <label for="game-personal" class="block text-xs text-text-muted mb-1">Mi score</label>
-              <input id="game-personal" v-model="form.rating_personal" type="number" min="0" max="100" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
+              <input id="game-personal" v-model="form.rating_personal" type="number" min="0" max="100" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="0-100" />
             </div>
             <div>
               <label for="game-igdb" class="block text-xs text-text-muted mb-1">IGDB ID</label>
-              <input id="game-igdb" v-model="form.igdb_id" type="number" class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="12345" />
+              <input id="game-igdb" v-model="form.igdb_id" type="number" class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors" placeholder="12345" />
             </div>
           </div>
 
@@ -432,7 +432,7 @@ function onBackdrop(e: MouseEvent) {
               id="game-desc"
               v-model="form.description"
               rows="3"
-              class="w-full bg-surface-2 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors resize-y"
+              class="w-full bg-surface-2 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/20 transition-colors resize-y"
               placeholder="Descripción del juego..."
             />
           </div>
@@ -465,19 +465,19 @@ function onBackdrop(e: MouseEvent) {
               >
                 <div>
                   <label v-if="i === 0" class="block text-[10px] text-text-muted mb-1">Año</label>
-                  <input v-model="d.year" type="number" min="1990" placeholder="2024" class="w-full bg-surface-2 border border-border-default rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors" />
+                  <input v-model="d.year" type="number" min="1990" placeholder="2024" class="w-full bg-surface-2 border border-border-input rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors" />
                 </div>
                 <div>
                   <label v-if="i === 0" class="block text-[10px] text-text-muted mb-1">Inicio</label>
-                  <input v-model="d.fecha_inicio" type="text" placeholder="01/01/2024" class="w-full bg-surface-2 border border-border-default rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors" />
+                  <input v-model="d.fecha_inicio" type="text" placeholder="01/01/2024" class="w-full bg-surface-2 border border-border-input rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors" />
                 </div>
                 <div>
                   <label v-if="i === 0" class="block text-[10px] text-text-muted mb-1">Final</label>
-                  <input v-model="d.fecha_final" type="text" placeholder="31/01/2024" class="w-full bg-surface-2 border border-border-default rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors" />
+                  <input v-model="d.fecha_final" type="text" placeholder="31/01/2024" class="w-full bg-surface-2 border border-border-input rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors" />
                 </div>
                 <div>
                   <label v-if="i === 0" class="block text-[10px] text-text-muted mb-1">Horas</label>
-                  <input v-model="d.horas" type="number" step="0.1" min="0" placeholder="0" class="w-full bg-surface-2 border border-border-default rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors" />
+                  <input v-model="d.horas" type="number" step="0.1" min="0" placeholder="0" class="w-full bg-surface-2 border border-border-input rounded-lg px-2 py-1.5 text-xs text-text-primary focus:outline-none focus:border-neon-blue/50 transition-colors" />
                 </div>
                 <button
                   type="button"
