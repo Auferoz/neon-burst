@@ -104,8 +104,15 @@ async function searchManga(db: D1Database, pattern: string, prefix: string): Pro
   return results.map(mapMangaRow);
 }
 
-/** Runs one LIKE query per public section in parallel and flattens the results. */
-export async function searchAll(db: D1Database, query: string): Promise<SearchResult[]> {
+/**
+ * Runs one LIKE query per section in parallel and flattens the results.
+ * Manga is private (PIN session), so it is only searched when `includeManga` is set.
+ */
+export async function searchAll(
+  db: D1Database,
+  query: string,
+  { includeManga = false }: { includeManga?: boolean } = {},
+): Promise<SearchResult[]> {
   const pattern = toLikePattern(query);
   const prefix = toPrefixPattern(query);
 
@@ -115,7 +122,7 @@ export async function searchAll(db: D1Database, query: string): Promise<SearchRe
     searchSteam(db, pattern, prefix),
     searchMovies(db, pattern, prefix),
     searchSeries(db, pattern, prefix),
-    searchManga(db, pattern, prefix),
+    includeManga ? searchManga(db, pattern, prefix) : Promise.resolve([]),
   ]);
 
   return sections.flat();

@@ -2,15 +2,17 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { searchAll } from '../../services/searchService';
 import { normalizeSearchQuery } from '../../utils/search';
+import { SESSION_COOKIE, isValidSessionToken } from '../../services/streamingAuth';
 
 export const prerender = false;
 
 /**
  * GET /api/search?q=<texto>
  * Busca en todas las secciones públicas a la vez (juegos, biblioteca, Steam,
- * películas, series, manga). Nunca toca /streaming ni /myTodoist.
+ * películas, series). Manga solo con la sesión del PIN. Nunca toca /streaming
+ * ni /myTodoist.
  */
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, cookies }) => {
   const raw = url.searchParams.get('q');
   const query = normalizeSearchQuery(raw);
 
@@ -18,7 +20,8 @@ export const GET: APIRoute = async ({ url }) => {
     return json({ error: 'La búsqueda necesita entre 2 y 100 caracteres' }, 400);
   }
 
-  const results = await searchAll(env.DB, query);
+  const includeManga = await isValidSessionToken(cookies.get(SESSION_COOKIE)?.value);
+  const results = await searchAll(env.DB, query, { includeManga });
 
   return new Response(JSON.stringify({ results }), {
     headers: {

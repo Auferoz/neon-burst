@@ -6,6 +6,9 @@ y el home la muestra desde ahí. Reglas en CLAUDE.md → "Versionado".
 Las versiones anteriores a 1.11.0 se reconstruyeron a partir del historial de git
 (los commits viejos no seguían convenciones), así que sus fechas son aproximadas.
 
+## 1.22.0 — 2026-11-17
+- Manga: la sección ahora es privada y pide el mismo PIN que Streaming y TodoList; su tarjeta vuelve al inicio, pero el buscador global solo muestra manga con la sesión abierta
+
 ## 1.21.0 — 2026-11-11
 - Steam: nuevo filtro "Lista" en la biblioteca para ver solo los juegos de una de las listas del sorteo; se combina con la búsqueda, el estado y cualquier orden, y se actualiza al cerrar el sorteo si creaste, editaste o borraste listas
 

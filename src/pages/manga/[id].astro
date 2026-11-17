@@ -4,8 +4,14 @@ import { env } from 'cloudflare:workers';
 import { getMangaDetail } from '../../services/mangaService';
 import MangaEditButton from '../../components/Vue/MangaEditButton.vue';
 import MangaRefresher from '../../components/Vue/MangaRefresher.vue';
+import { SESSION_COOKIE, isValidSessionToken } from '../../services/streamingAuth';
 
 export const prerender = false;
+
+// Private section: without the shared PIN session, send the user to the list page gate.
+if (!(await isValidSessionToken(Astro.cookies.get(SESSION_COOKIE)?.value))) {
+	return Astro.redirect('/ListManga');
+}
 
 const { id } = Astro.params;
 const anilistId = Number(id);

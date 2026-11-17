@@ -251,7 +251,7 @@ las 481 que vinieron de Trakt; la sinopsis se queda en español.
 | `/api/steam/raffle-lists` | GET, POST | Listas del sorteo `{ id, name, appids[] }[]` / alta `{ name, appids? }` (1-60 caracteres; 409 si el nombre ya existe, sin distinguir mayúsculas). Con `appids` la crea ya llena; solo se guardan los que están en `steam_cache` (filtrado en SQL, de a 90 por sentencia por el límite de 100 parámetros de D1) |
 | `/api/steam/raffle-lists/[id]` | PATCH, DELETE | Renombrar / borrar (borra también sus ítems) |
 | `/api/steam/raffle-lists/[id]/items`, `/[appid]` | POST, PUT, DELETE | Agregar `{ appid }` (404 si no está en `steam_cache`) / reemplazar todo el contenido con `{ appids }` (un solo `batch`, devuelve la lista) / quitar un juego de la lista |
-| `/api/search` | GET | `?q=` (2-100 caracteres, si no 400) → `{ results: SearchResult[] }`, hasta 5 por sección (juegos, biblioteca, Steam, películas vistas, series vistas, manga leído), los que empiezan por `q` primero. `no-store`. Excluye Streaming y Todo a propósito |
+| `/api/search` | GET | `?q=` (2-100 caracteres, si no 400) → `{ results: SearchResult[] }`, hasta 5 por sección (juegos, biblioteca, Steam, películas vistas, series vistas, y manga leído **solo con la sesión del PIN**), los que empiezan por `q` primero. `no-store`. Excluye Streaming y Todo a propósito |
 | `/api/igdb/lookup` | GET | `?q=<url\|slug\|id>` → datos de un juego de IGDB para autocompletar el modal |
 | `/api/manga` | GET, POST | Lista de manga leído (JOIN `manga_read` ↔ `manga_cache`) / alta. El navegador ya resolvió y trajo el `media` de AniList; el POST manda `{ anilist_id, media, ...tracking }` y el servidor solo valida y guarda |
 | `/api/manga/[id]` | PUT, DELETE | CRUD de una entrada de `manga_read` por su `id` |
@@ -437,9 +437,10 @@ que no esté en el mapa cae a la URL de `streaming_accounts.logo`.
 fallos por IP (`CF-Connecting-IP`) y bloquea 15 min tras 8 fallos consecutivos. Con la IP
 bloqueada, ni siquiera un PIN correcto pasa. Un acierto borra la fila.
 
-**Sesión compartida con Todo.** El mismo PIN y la misma cookie `nb_streaming` desbloquean
-`/streaming` y `/myTodoist`: no hay un PIN separado para Todo. `src/middleware.ts` exige
-`isValidSessionToken()` para **todo** `/api/todo/*` (`isTodoApiPath()` en
+**Sesión compartida con Todo y Manga.** El mismo PIN y la misma cookie `nb_streaming` desbloquean
+`/streaming`, `/myTodoist` y `/ListManga` (+ `/manga/[id]`, que sin sesión redirige a `/ListManga`):
+no hay un PIN separado. `src/middleware.ts` exige
+`isValidSessionToken()` para **todo** `/api/todo/*` y `/api/manga/*` (`isPrivateApiPath()` en
 `src/utils/todo/routeMatch.ts`), devolviendo **403** (no 401, mismo motivo que el punto
 siguiente) con `{ "error": "Sesión requerida" }`. Para desarrollar Todo en local hace
 falta `STREAMING_PIN` y `STREAMING_SESSION_SECRET` en `.dev.vars` o `.env` (ver

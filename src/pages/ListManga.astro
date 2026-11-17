@@ -1,8 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import StreamingPinGate from '../components/Astro/StreamingPinGate.astro';
 import MangaMain from '../components/Vue/MangaMain.vue';
+import { PIN_LENGTH, SESSION_COOKIE, isValidSessionToken } from '../services/streamingAuth';
+
+// SSR obligatorio: misma sesión que /streaming y /myTodoist (un único PIN).
+export const prerender = false;
+
+const unlocked = await isValidSessionToken(Astro.cookies.get(SESSION_COOKIE)?.value);
 ---
 
-<Layout title="Manga">
-	<MangaMain client:load />
+<Layout title="Manga" noindex>
+	{!unlocked && <StreamingPinGate length={PIN_LENGTH} />}
+	{unlocked && <MangaMain client:load />}
 </Layout>
